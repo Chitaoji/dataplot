@@ -14,9 +14,9 @@ __all__ = ["figure", "data"]
 
 
 @hintwith(FigWrapper)
-def figure(nrows: int = 1, ncols: int = 1) -> FigWrapper:
+def figure(*args, **kwargs) -> FigWrapper:
     """Calls `FigWrapper()`."""
-    return FigWrapper(nrows=nrows, ncols=ncols)
+    return FigWrapper(*args, **kwargs)
 
 
 @hintwith(PlotData)
