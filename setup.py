@@ -22,13 +22,13 @@ AUTHOR = "Chitaoji"
 REQUIRES_PYTHON = ">=3.8.13"
 VERSION = None
 REQUIRED = [
-    "lazyr>=0.0.10",
-    "numpy",
-    "scipy",
-    "pandas",
-    "hintwith>=0.0.1",
-    "matplotlib",
     "attrs",
+    "hintwith>=0.0.1",
+    "lazyr>=0.0.10",
+    "matplotlib",
+    "numpy",
+    "pandas",
+    "scipy",
 ]
 EXTRAS = {}
 
