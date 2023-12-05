@@ -39,47 +39,51 @@ __all__ = ["PlotData"]
 
 class PlotData(PlotSetter, metaclass=ABCMeta):
     """
-    Initializes a dataset interface which provides methods for mathematical operations
-    and plotting.
-
-    Parameters
-    ----------
-    data : Union[NDArray, List[NDArray]]
-        Input values, this takes either a single array or a list of arrays, each
-        representing a set of data.
-    label : Union[str, List[str], None], optional
-        Labels of the data, this takes either a single string or a list of strings.
-        If is a list, should be the same length as `data`, with each element
-        corresponding to a specific array in `data`. By default None.
-
-    Returns
-    -------
-    PlotData
-        Provides methods for mathematical operations and plotting.
+    Provides methods for mathematical operations and plotting.
 
     """
+
+    @overload
+    def __new__(cls, data: "NDArray", label: Optional[str] = None) -> "PlotData":
+        ...
+
+    @overload
+    def __new__(
+        cls, data: List["NDArray"], label: Optional[List[str]] = None
+    ) -> "PlotData":
+        ...
 
     def __new__(
         cls,
         data: Union["NDArray", List["NDArray"]],
         label: Union[str, List[str], None] = None,
     ) -> "PlotData":
+        """
+        Initializes a dataset interface which provides methods for mathematical operations
+        and plotting.
+
+        Parameters
+        ----------
+        data : Union[NDArray, List[NDArray]]
+            Input values, this takes either a single array or a list of arrays, each
+            representing a set of data.
+        label : Union[str, List[str], None], optional
+            Labels of the data, this takes either a single string or a list of strings.
+            If is a list, should be the same length as `data`, with each element
+            corresponding to a specific array in `data`. By default None.
+
+        Returns
+        -------
+        PlotData
+            Provides methods for mathematical operations and plotting.
+
+        """
         if isinstance(data, list):
             if label is None:
                 label = cls.__default_label(len(data))
             dataset: List["PlotData"] = [PlotData(d, lb) for d, lb in zip(data, label)]
             return _PlotDataBatch(*dataset)
         return cls.__base__.__new__(cls)
-
-    @overload
-    def __init__(self, data: "NDArray", label: Optional[str] = None) -> None:
-        ...
-
-    @overload
-    def __init__(
-        self, data: List["NDArray"], label: Optional[List[str]] = None
-    ) -> None:
-        ...
 
     def __init__(self, data: "NDArray", label: Optional[str] = None) -> None:
         self.data = data
