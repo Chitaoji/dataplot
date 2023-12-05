@@ -19,7 +19,7 @@ __all__ = ["Histogram"]
 @define
 class Histogram(DataSetter):
     """
-    A plotting class that creates histograms of data.
+    A plotting class that creates a histogram.
 
     """
 

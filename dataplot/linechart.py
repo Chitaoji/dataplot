@@ -19,7 +19,7 @@ __all__ = ["LineChart"]
 @define
 class LineChart(DataSetter):
     """
-    A plotting class that creates line charts of data.
+    A plotting class that creates a line chart.
 
     """
 
