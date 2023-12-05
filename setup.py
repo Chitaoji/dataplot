@@ -211,12 +211,12 @@ try:
     init_path = here / PROJECT_SLUG / "__init__.py"
     module_file = init_path.read_text()
     NEW_DOC = readme2doc(LONG_DESCRIPTION)
+    if "'''" in NEW_DOC and '"""' in NEW_DOC:
+        raise ReadmeFormatError("Both \"\"\" and ''' are found in the README")
     if "'''" in NEW_DOC:
         NEW_DOC = f'"""{NEW_DOC}"""'
     elif '"""' in NEW_DOC:
         NEW_DOC = f"'''{NEW_DOC}'''"
-    else:
-        raise ReadmeFormatError("Both \"\"\" and ''' are found in the README")
     module_file = re.sub(
         "^\"\"\".*\"\"\"|^'''.*'''", NEW_DOC, module_file, flags=re.DOTALL
     )
