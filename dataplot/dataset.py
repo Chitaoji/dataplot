@@ -364,7 +364,7 @@ class PlotData(PlotSetter, metaclass=ABCMeta):
 class _PlotDataBatch:
     def __init__(self, *args: Any) -> None:
         if not args:
-            raise ValueError("Number of data sets is 0")
+            raise ValueError("number of data sets is 0")
         self.children: List[PlotData] = []
         for a in args:
             if isinstance(a, self.__class__):
