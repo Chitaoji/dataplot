@@ -19,7 +19,7 @@ __all__ = ["Histogram"]
 @define
 class Histogram(DataSetter):
     """
-    A plotting class that creates histograms of data.
+    A plotting class that creates a histogram.
 
     """
 
@@ -30,7 +30,7 @@ class Histogram(DataSetter):
     stats: bool = True
 
     def perform(self, reflex: Optional[List[float]] = None) -> List[float]:
-        """Do the plotting.
+        """Do the plotting job.
 
         Parameters
         ----------

@@ -172,6 +172,11 @@ class PlotSetter:
         PlotSetableVar
             The new instance.
 
+        Raises
+        ------
+        ValueError
+            Raised when `cls` cannot be customized.
+
         """
         if issubclass(cls, PlotSetter):
             matched: Dict[str, Any] = {}
@@ -186,7 +191,7 @@ class PlotSetter:
             for k, v in unmatched.items():
                 setattr(obj, k, v)
             return obj
-        raise TypeError(f"type `{cls}` cannot be customized by `{self}`")
+        raise ValueError(f"type {cls} cannot be customized by a PlotSetter")
 
 
 @define(init=False, slots=False)
@@ -222,25 +227,7 @@ class DataSetter(PlotSetter):
 
 @define
 class FigWrapper(PlotSetter):
-    """
-    Provides a context manager interface (`__enter__` and `__exit__` methods) for
-    creating a figure with subplots and setting various properties for the figure.
-
-    Parameters
-    ----------
-    nrows : int, optional
-        Determines how many subplots can be arranged vertically in the figure,
-        by default 1.
-    ncols : int, optional
-        Determines how many subplots can be arranged horizontally in the figure,
-        by default 1.
-
-    Returns
-    -------
-    FigWrapper
-        A wrapper of figure.
-
-    """
+    """A wrapper of figure."""
 
     nrows: int = 1
     ncols: int = 1

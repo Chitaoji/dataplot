@@ -5,7 +5,7 @@ NOTE: this module is private. All functions and objects are available in the mai
 `dataplot` namespace - use that instead.
 
 """
-from typing import Any, List, NewType, Optional, Union
+from typing import Any, List, NewType, Optional
 
 from attrs import define, field
 
@@ -19,12 +19,11 @@ __all__ = ["LineChart"]
 @define
 class LineChart(DataSetter):
     """
-    A plotting class that creates line charts of data.
+    A plotting class that creates a line chart.
 
     """
 
     timestamps: Optional[List[DateLike]] = field(default=None, init=False)
-    max_num: Union[int, None] = None
     scatter: bool = False
     figsize_adjust: bool = True
 
@@ -33,7 +32,7 @@ class LineChart(DataSetter):
     #     self._date: pd.DatetimeIndex = pd.to_datetime([str(x) for x in self.timestamps])
 
     def perform(self, reflex: None = None) -> None:
-        """Do the plotting."""
+        """Do the plotting job."""
         with self.prepare() as ax:
             self.__plot(ax.loading(self.settings))
         return reflex

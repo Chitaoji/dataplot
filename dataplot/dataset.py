@@ -39,47 +39,51 @@ __all__ = ["PlotData"]
 
 class PlotData(PlotSetter, metaclass=ABCMeta):
     """
-    Initializes a dataset interface which provides methods for mathematical operations
-    and plotting.
-
-    Parameters
-    ----------
-    data : Union[NDArray, List[NDArray]]
-        Input values, this takes either a single array or a list of arrays, each
-        representing a set of data.
-    label : Union[str, List[str], None], optional
-        Labels of the data, this takes either a single string or a list of strings.
-        If is a list, should be the same length as `data`, with each element
-        corresponding to a specific array in `data`. By default None.
-
-    Returns
-    -------
-    PlotData
-        Provides methods for mathematical operations and plotting.
+    Provides methods for mathematical operations and plotting.
 
     """
+
+    @overload
+    def __new__(cls, data: "NDArray", label: Optional[str] = None) -> "PlotData":
+        ...
+
+    @overload
+    def __new__(
+        cls, data: List["NDArray"], label: Optional[List[str]] = None
+    ) -> "PlotData":
+        ...
 
     def __new__(
         cls,
         data: Union["NDArray", List["NDArray"]],
         label: Union[str, List[str], None] = None,
     ) -> "PlotData":
+        """
+        Initializes a dataset interface which provides methods for mathematical
+        operations and plotting.
+
+        Parameters
+        ----------
+        data : Union[NDArray, List[NDArray]]
+            Input values, this takes either a single array or a list of arrays, each
+            representing a set of data.
+        label : Union[str, List[str], None], optional
+            Labels of the data, this takes either a single string or a list of strings.
+            If is a list, should be the same length as `data`, with each element
+            corresponding to a specific array in `data`. By default None.
+
+        Returns
+        -------
+        PlotData
+            Provides methods for mathematical operations and plotting.
+
+        """
         if isinstance(data, list):
             if label is None:
                 label = cls.__default_label(len(data))
             dataset: List["PlotData"] = [PlotData(d, lb) for d, lb in zip(data, label)]
             return _PlotDataBatch(*dataset)
         return cls.__base__.__new__(cls)
-
-    @overload
-    def __init__(self, data: "NDArray", label: Optional[str] = None) -> None:
-        ...
-
-    @overload
-    def __init__(
-        self, data: List["NDArray"], label: Optional[List[str]] = None
-    ) -> None:
-        ...
 
     def __init__(self, data: "NDArray", label: Optional[str] = None) -> None:
         self.data = data
@@ -295,7 +299,7 @@ class PlotData(PlotSetter, metaclass=ABCMeta):
     @hintwith(Histogram.__init__)
     def hist(self, **kwargs) -> None:
         """
-        Plot a histogram of data.
+        Plot a histogram of the data.
 
         Parameters
         ----------
@@ -305,13 +309,18 @@ class PlotData(PlotSetter, metaclass=ABCMeta):
         fit : bool, optional
             Fit a curve to the histogram or not, by default True.
         density : bool, optional
-            Draw a probability density or not. If set to True, the histogram will
-            be normalized such that the area under it equals to 1. By default True.
+            Draw a probability density or not. If True, the histogram will be
+            normalized such that the area under it equals to 1. By default True.
         same_bin : bool, optional
-            Whether the bins should be the same for all sets of data, by default True.
+            Determines whether the bins should be the same for all sets of data, by
+            default True.
         stats : bool, optional
             Determines whether to show the statistics, including the calculated mean,
-            standard deviation, skewness, and kurtosis of the input. By default True.
+            standard deviation, skewness, and kurtosis of the input, by default True.
+        on : Optional[AxesWrapper], optional
+            Specifies the axes wrapper on which the histogram should be plotted. If
+            not specified, the histogram will be plotted on a new axes in a new
+            figure. By default None.
 
         """
         with unbatched(self.customize)(FigWrapper, 1, 1) as fig:
@@ -326,19 +335,20 @@ class PlotData(PlotSetter, metaclass=ABCMeta):
     @hintwith(LineChart.__init__)
     def plot(self, **kwargs) -> None:
         """
-        Create line charts for the data.
+        Create a line chart for the data.
 
         Parameters
         ----------
-        max_num : Union[int, None], optional
-            Specifies the maximum number of line charts to be plotted in one figure.
-            If None, all line charts will be plotted in a single figure. By default None.
         scatter : bool, optional
             Determines whether to include scatter points in the line chart, by default
             False.
         figsize_adjust : bool, optional
             Determines whether the size of the figure should be adjusted automatically
             based on the data being plotted, by default True.
+        on : Optional[AxesWrapper], optional
+            Specifies the axes wrapper on which the line chart should be plotted. If
+            not specified, the histogram will be plotted on a new axes in a new
+            figure. By default None.
 
         """
         with unbatched(self.customize)(FigWrapper, 1, 1) as fig:
@@ -354,7 +364,7 @@ class PlotData(PlotSetter, metaclass=ABCMeta):
 class _PlotDataBatch:
     def __init__(self, *args: Any) -> None:
         if not args:
-            raise ValueError("Number of data sets is 0.")
+            raise ValueError("number of data sets is 0")
         self.children: List[PlotData] = []
         for a in args:
             if isinstance(a, self.__class__):
@@ -392,8 +402,8 @@ class BatchList(list):
     *args : Any
         Arguments for initializing a `list` object.
     returns : Any, optional
-        Specifies the returns of `__call__()`. If None, a new `BatchList`
-        object will be returned. By default None.
+        Specifies the returns of `__call__()`. If not specified, a new
+        `BatchList` object will be returned. By default None.
     reducer : Optional[Callable], optional
         Specifies a reducer for the returns of `__call__()`, by default None.
     reflex : Optional[str], optional
