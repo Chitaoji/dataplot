@@ -1,4 +1,18 @@
-"""dataplot"""
+"""
+# dataplot
+Provides plotters useful in datascience.
+
+## See Also
+### Github repository
+* https://github.com/Chitaoji/dataplot/
+
+### PyPI project
+* https://pypi.org/project/dataplot/
+
+## License
+This project falls under the BSD 3-Clause License.
+
+"""
 import lazyr
 
 VERBOSE = 0
