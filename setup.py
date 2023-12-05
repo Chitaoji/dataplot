@@ -14,9 +14,9 @@ from typing import List, Union
 from setuptools import Command, find_packages, setup
 
 # Package meta-data.
-NAME = "textpy"
-DESCRIPTION = "Reads a python file/module and statically analyzes it."
-URL = "https://github.com/Chitaoji/textpy"
+NAME = "dataplot"
+DESCRIPTION = "Provides plotters useful in datascience."
+URL = "https://github.com/Chitaoji/dataplot"
 EMAIL = "2360742040@qq.com"
 AUTHOR = "Chitaoji"
 REQUIRES_PYTHON = ">=3.8.13"
