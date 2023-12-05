@@ -339,10 +339,6 @@ class PlotData(PlotSetter, metaclass=ABCMeta):
 
         Parameters
         ----------
-        max_num : Union[int, None], optional
-            Specifies the maximum number of line charts to be plotted in one figure.
-            If not specified, all line charts will be plotted in a single figure. By
-            default None.
         scatter : bool, optional
             Determines whether to include scatter points in the line chart, by default
             False.
@@ -368,7 +364,7 @@ class PlotData(PlotSetter, metaclass=ABCMeta):
 class _PlotDataBatch:
     def __init__(self, *args: Any) -> None:
         if not args:
-            raise ValueError("Number of data sets is 0.")
+            raise ValueError("Number of data sets is 0")
         self.children: List[PlotData] = []
         for a in args:
             if isinstance(a, self.__class__):

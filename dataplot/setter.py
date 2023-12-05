@@ -172,6 +172,11 @@ class PlotSetter:
         PlotSetableVar
             The new instance.
 
+        Raises
+        ------
+        ValueError
+            Raised when `cls` cannot be customized.
+
         """
         if issubclass(cls, PlotSetter):
             matched: Dict[str, Any] = {}
@@ -186,7 +191,7 @@ class PlotSetter:
             for k, v in unmatched.items():
                 setattr(obj, k, v)
             return obj
-        raise TypeError(f"type `{cls}` cannot be customized by `{self}`")
+        raise ValueError(f"type {cls} cannot be customized by a PlotSetter")
 
 
 @define(init=False, slots=False)

@@ -5,7 +5,7 @@ NOTE: this module is private. All functions and objects are available in the mai
 `dataplot` namespace - use that instead.
 
 """
-from typing import Any, List, NewType, Optional, Union
+from typing import Any, List, NewType, Optional
 
 from attrs import define, field
 
@@ -24,7 +24,6 @@ class LineChart(DataSetter):
     """
 
     timestamps: Optional[List[DateLike]] = field(default=None, init=False)
-    max_num: Union[int, None] = None
     scatter: bool = False
     figsize_adjust: bool = True
 
