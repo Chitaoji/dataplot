@@ -52,8 +52,11 @@ except FileNotFoundError:
 about = {}
 python_exec = exec
 if not VERSION:
-    PROJECT_SLUG = NAME.lower().replace("-", "_").replace(" ", "_")
-    python_exec((here / PROJECT_SLUG / "__version__.py").read_text(), about)
+    try:
+        PROJECT_SLUG = NAME.lower().replace("-", "_").replace(" ", "_")
+        python_exec((here / PROJECT_SLUG / "__version__.py").read_text(), about)
+    except FileNotFoundError:
+        about["__version__"] = "0.0.0"
 else:
     about["__version__"] = VERSION
 
@@ -66,17 +69,17 @@ class UploadCommand(Command):
 
     @staticmethod
     def status(s):
-        """Prints things in bold."""
+        """Print things in bold."""
         print(f"\033[1m{s}\033[0m")
 
     def initialize_options(self):
-        """Initializes options."""
+        """Initialize options."""
 
     def finalize_options(self):
-        """Finalizes options."""
+        """Finalize options."""
 
     def run(self):
-        """Runs commands."""
+        """Run commands."""
         try:
             self.status("Removing previous builds…")
             rmtree(os.path.join(here, "dist"))
@@ -212,54 +215,55 @@ class ReadmeFormatError(Exception):
     """Raised when the README has a wrong format."""
 
 
-# Import the __init__.py and change the module docstring.
-try:
-    init_path = here / PROJECT_SLUG / "__init__.py"
-    module_file = init_path.read_text()
-    NEW_DOC = readme2doc(LONG_DESCRIPTION)
-    if "'''" in NEW_DOC and '"""' in NEW_DOC:
-        raise ReadmeFormatError("Both \"\"\" and ''' are found in the README")
-    if '"""' in NEW_DOC:
-        NEW_DOC = f"'''{NEW_DOC}'''"
-    else:
-        NEW_DOC = f'"""{NEW_DOC}"""'
-    module_file = re.sub(
-        "^\"\"\".*\"\"\"|^'''.*'''|^", NEW_DOC, module_file, flags=re.DOTALL
+if __name__ == "__main__":
+    # Import the __init__.py and change the module docstring.
+    try:
+        init_path = here / PROJECT_SLUG / "__init__.py"
+        module_file = init_path.read_text()
+        NEW_DOC = readme2doc(LONG_DESCRIPTION)
+        if "'''" in NEW_DOC and '"""' in NEW_DOC:
+            raise ReadmeFormatError("Both \"\"\" and ''' are found in the README")
+        if '"""' in NEW_DOC:
+            NEW_DOC = f"'''{NEW_DOC}'''"
+        else:
+            NEW_DOC = f'"""{NEW_DOC}"""'
+        module_file = re.sub(
+            "^\"\"\".*\"\"\"|^'''.*'''|^", NEW_DOC, module_file, flags=re.DOTALL
+        )
+        init_path.write_text(module_file)
+    except FileNotFoundError:
+        pass
+
+    # Where the magic happens
+    setup(
+        name=NAME,
+        version=about["__version__"],
+        description=DESCRIPTION,
+        long_description=LONG_DESCRIPTION,
+        long_description_content_type="text/markdown",
+        author=AUTHOR,
+        author_email=EMAIL,
+        python_requires=REQUIRES_PYTHON,
+        url=URL,
+        packages=find_packages(exclude=["examples"]),
+        install_requires=REQUIRED,
+        extras_require=EXTRAS,
+        include_package_data=True,
+        license="BSD",
+        classifiers=[
+            # Trove classifiers
+            # Full list: https://pypi.python.org/pypi?%3Aaction=list_classifiers
+            "License :: OSI Approved :: BSD License",
+            "Programming Language :: Python",
+            "Programming Language :: Python :: 3",
+            "Programming Language :: Python :: 3.8",
+            "Programming Language :: Python :: 3.9",
+            "Programming Language :: Python :: 3.10",
+            "Programming Language :: Python :: 3.11",
+            "Programming Language :: Python :: 3.12",
+        ],
+        # $ setup.py publish support.
+        cmdclass={
+            "upload": UploadCommand,
+        },
     )
-    init_path.write_text(module_file)
-except FileNotFoundError:
-    pass
-
-
-setup(
-    name=NAME,
-    version=about["__version__"],
-    description=DESCRIPTION,
-    long_description=LONG_DESCRIPTION,
-    long_description_content_type="text/markdown",
-    author=AUTHOR,
-    author_email=EMAIL,
-    python_requires=REQUIRES_PYTHON,
-    url=URL,
-    packages=find_packages(exclude=["examples"]),
-    install_requires=REQUIRED,
-    extras_require=EXTRAS,
-    include_package_data=True,
-    license="BSD",
-    classifiers=[
-        # Trove classifiers
-        # Full list: https://pypi.python.org/pypi?%3Aaction=list_classifiers
-        "License :: OSI Approved :: BSD License",
-        "Programming Language :: Python",
-        "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9",
-        "Programming Language :: Python :: 3.10",
-        "Programming Language :: Python :: 3.11",
-        "Programming Language :: Python :: 3.12",
-    ],
-    # $ setup.py publish support.
-    cmdclass={
-        "upload": UploadCommand,
-    },
-)
