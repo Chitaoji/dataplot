@@ -213,12 +213,12 @@ try:
     NEW_DOC = readme2doc(LONG_DESCRIPTION)
     if "'''" in NEW_DOC and '"""' in NEW_DOC:
         raise ReadmeFormatError("Both \"\"\" and ''' are found in the README")
-    if "'''" in NEW_DOC:
-        NEW_DOC = f'"""{NEW_DOC}"""'
-    elif '"""' in NEW_DOC:
+    if '"""' in NEW_DOC:
         NEW_DOC = f"'''{NEW_DOC}'''"
+    else:
+        NEW_DOC = f'"""{NEW_DOC}"""'
     module_file = re.sub(
-        "^\"\"\".*\"\"\"|^'''.*'''", NEW_DOC, module_file, flags=re.DOTALL
+        "^\"\"\".*\"\"\"|^'''.*'''|^", NEW_DOC, module_file, flags=re.DOTALL
     )
     init_path.write_text(module_file)
 except FileNotFoundError:
