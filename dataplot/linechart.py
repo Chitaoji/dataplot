@@ -32,7 +32,7 @@ class LineChart(DataSetter):
     #     self._date: pd.DatetimeIndex = pd.to_datetime([str(x) for x in self.timestamps])
 
     def perform(self, reflex: None = None) -> None:
-        """Do the plotting."""
+        """Do the plotting job."""
         with self.prepare() as ax:
             self.__plot(ax.loading(self.settings))
         return reflex

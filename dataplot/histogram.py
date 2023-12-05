@@ -30,7 +30,7 @@ class Histogram(DataSetter):
     stats: bool = True
 
     def perform(self, reflex: Optional[List[float]] = None) -> List[float]:
-        """Do the plotting.
+        """Do the plotting job.
 
         Parameters
         ----------
