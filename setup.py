@@ -34,7 +34,7 @@ AUTHOR_EMAIL: Final[str] = yml["AUTHOR_EMAIL"]
 REQUIRES_PYTHON: Final[str] = yml["REQUIRES_PYTHON"]
 REQUIRES: Final[List[str]] = yml["REQUIRES"]
 EXTRAS: Final[Dict] = yml["EXTRAS"]
-
+PACKAGE_DIR = "src"
 
 # Import the README and use it as the long-description.
 try:
@@ -48,7 +48,7 @@ about = {}
 python_exec = exec
 if not VERSION:
     try:
-        python_exec((here / "src" / "__version__.py").read_text(), about)
+        python_exec((here / PACKAGE_DIR / "__version__.py").read_text(), about)
     except FileNotFoundError:
         about["__version__"] = "0.0.0"
 else:
@@ -212,7 +212,7 @@ class ReadmeFormatError(Exception):
 if __name__ == "__main__":
     # Import the __init__.py and change the module docstring.
     try:
-        init_path = here / "src" / "__init__.py"
+        init_path = here / PACKAGE_DIR / "__init__.py"
         module_file = init_path.read_text()
         new_doc = readme2doc(long_description)  # pylint: disable=invalid-name
         if "'''" in new_doc and '"""' in new_doc:
@@ -240,7 +240,7 @@ if __name__ == "__main__":
         python_requires=REQUIRES_PYTHON,
         url=HOMEPAGE,
         packages=[NAME],
-        package_dir={NAME: "src"},
+        package_dir={NAME: PACKAGE_DIR},
         install_requires=REQUIRES,
         extras_require=EXTRAS,
         include_package_data=True,
