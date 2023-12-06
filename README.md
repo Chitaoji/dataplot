@@ -29,5 +29,8 @@ This project falls under the BSD 3-Clause License.
 
 ## History
 
+### v0.0.2
+* Updated meta-data.
+
 ### v0.0.1
 * Initial release.

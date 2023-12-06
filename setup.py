@@ -1,7 +1,7 @@
 """
 Setup the package.
 
-To use this file, you must:
+To use the full functionality of this file, you must:
 
 ```sh
 $ pip install twine
@@ -15,37 +15,31 @@ import re
 import sys
 from pathlib import Path
 from shutil import rmtree
-from typing import List, Union
+from typing import Any, Dict, Final, List, Optional, Union
 
+import yaml
 from setuptools import Command, find_packages, setup
-
-# Package meta-data.
-NAME = "dataplot"
-DESCRIPTION = "Provides plotters useful in datascience."
-URL = "https://github.com/Chitaoji/dataplot"
-EMAIL = "2360742040@qq.com"
-AUTHOR = "Chitaoji"
-REQUIRES_PYTHON = ">=3.8.13"
-VERSION = None
-REQUIRED = [
-    "attrs",
-    "hintwith>=0.0.1",
-    "lazyr>=0.0.10",
-    "matplotlib",
-    "numpy",
-    "pandas",
-    "scipy",
-]
-EXTRAS = {}
-
 
 here = Path(__file__).parent
 
+# Load the package's meta-data from metadata.yml.
+yml: Dict[str, Any] = yaml.safe_load((here / "metadata.yml").read_text())
+NAME: Final[str] = yml["NAME"]
+DESCRIPTION: Final[str] = yml["DESCRIPTION"]
+URL: Final[str] = yml["URL"]
+EMAIL: Final[str] = yml["EMAIL"]
+AUTHOR: Final[str] = yml["AUTHOR"]
+REQUIRES_PYTHON: Final[str] = yml["REQUIRES_PYTHON"]
+VERSION: Final[Optional[str]] = yml["VERSION"]
+REQUIRED: Final[List[str]] = yml["REQUIRED"]
+EXTRAS: Final[Dict] = yml["EXTRAS"]
+
+
 # Import the README and use it as the long-description.
 try:
-    LONG_DESCRIPTION = "\n" + (here / "README.md").read_text()
+    long_description = "\n" + (here / "README.md").read_text()
 except FileNotFoundError:
-    LONG_DESCRIPTION = DESCRIPTION
+    long_description = DESCRIPTION
 
 
 # Load the package's __version__.py module as a dictionary.
@@ -53,8 +47,8 @@ about = {}
 python_exec = exec
 if not VERSION:
     try:
-        PROJECT_SLUG = NAME.lower().replace("-", "_").replace(" ", "_")
-        python_exec((here / PROJECT_SLUG / "__version__.py").read_text(), about)
+        project_slug = NAME.lower().replace("-", "_").replace(" ", "_")
+        python_exec((here / project_slug / "__version__.py").read_text(), about)
     except FileNotFoundError:
         about["__version__"] = "0.0.0"
 else:
@@ -218,17 +212,17 @@ class ReadmeFormatError(Exception):
 if __name__ == "__main__":
     # Import the __init__.py and change the module docstring.
     try:
-        init_path = here / PROJECT_SLUG / "__init__.py"
+        init_path = here / project_slug / "__init__.py"
         module_file = init_path.read_text()
-        NEW_DOC = readme2doc(LONG_DESCRIPTION)
-        if "'''" in NEW_DOC and '"""' in NEW_DOC:
+        new_doc = readme2doc(long_description)  # pylint: disable=invalid-name
+        if "'''" in new_doc and '"""' in new_doc:
             raise ReadmeFormatError("Both \"\"\" and ''' are found in the README")
-        if '"""' in NEW_DOC:
-            NEW_DOC = f"'''{NEW_DOC}'''"
+        if '"""' in new_doc:
+            new_doc = f"'''{new_doc}'''"
         else:
-            NEW_DOC = f'"""{NEW_DOC}"""'
+            new_doc = f'"""{new_doc}"""'
         module_file = re.sub(
-            "^\"\"\".*\"\"\"|^'''.*'''|^", NEW_DOC, module_file, flags=re.DOTALL
+            "^\"\"\".*\"\"\"|^'''.*'''|^", new_doc, module_file, flags=re.DOTALL
         )
         init_path.write_text(module_file)
     except FileNotFoundError:
@@ -239,7 +233,7 @@ if __name__ == "__main__":
         name=NAME,
         version=about["__version__"],
         description=DESCRIPTION,
-        long_description=LONG_DESCRIPTION,
+        long_description=long_description,
         long_description_content_type="text/markdown",
         author=AUTHOR,
         author_email=EMAIL,
