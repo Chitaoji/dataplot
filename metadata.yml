@@ -8,8 +8,8 @@ REQUIRES_PYTHON: ">=3.8.13"
 VERSION:
 REQUIRED:
     - attrs
-    - "hintwith>=0.1.0"
-    - "lazyr>=0.0.11"
+    - hintwith>=0.1.0
+    - lazyr>=0.0.11
     - matplotlib
     - numpy
     - pandas
