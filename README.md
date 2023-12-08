@@ -9,8 +9,8 @@ $ pip install dataplot
 ## Requirements
 ```txt
 attrs
-hintwith>=0.0.1
-lazyr>=0.0.10
+hintwith>=0.1.0
+lazyr>=0.0.11
 matplotlib
 numpy
 pandas
