@@ -13,6 +13,8 @@ Provides plotters useful in datascience.
 This project falls under the BSD 3-Clause License.
 
 """
+from typing import List
+
 import lazyr
 
 VERBOSE = 0
@@ -31,7 +33,7 @@ from .histogram import *
 from .linechart import *
 from .setter import *
 
-__all__ = []
+__all__: List[str] = []
 __all__.extend(core.__all__)
 __all__.extend(dataset.__all__)
 __all__.extend(histogram.__all__)
