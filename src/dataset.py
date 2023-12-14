@@ -21,7 +21,7 @@ from typing import (
 
 import numpy as np
 import pandas as pd
-from hintwith import hintwith
+from hintwith import hintwithmethod
 from typing_extensions import Self
 
 from .histogram import Histogram
@@ -296,7 +296,7 @@ class PlotData(PlotSetter, metaclass=ABCMeta):
         self.fmtdata = self.data
         return self
 
-    @hintwith(Histogram.__init__)
+    @hintwithmethod(Histogram.__init__, True)
     def hist(self, **kwargs) -> None:
         """
         Plot a histogram of the data.
@@ -332,7 +332,7 @@ class PlotData(PlotSetter, metaclass=ABCMeta):
                 **kwargs,
             ).perform()
 
-    @hintwith(LineChart.__init__)
+    @hintwithmethod(LineChart.__init__, True)
     def plot(self, **kwargs) -> None:
         """
         Create a line chart for the data.

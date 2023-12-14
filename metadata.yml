@@ -1,0 +1,17 @@
+# Package meta-data.
+NAME: dataplot
+VERSION:
+SUMMARY: Provides plotters useful in datascience.
+HOMEPAGE: https://github.com/Chitaoji/dataplot/
+AUTHOR: Chitaoji
+AUTHOR_EMAIL: 2360742040@qq.com
+REQUIRES_PYTHON: ">=3.8.13"
+REQUIRES:     
+    - attrs
+    - hintwith>=0.1.0
+    - lazyr>=0.0.11
+    - matplotlib
+    - numpy
+    - pandas
+    - scipy
+EXTRAS: {}

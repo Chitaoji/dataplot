@@ -37,7 +37,7 @@ class LineChart(DataSetter):
             self.__plot(ax.loading(self.settings))
         return reflex
 
-    def __plot(self, ax: AxesWrapper):
+    def __plot(self, ax: AxesWrapper) -> None:
         ax.ax.plot(self.data, label=self.label)
         if self.scatter:
             ax.ax.scatter(self.data)

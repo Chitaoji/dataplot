@@ -21,7 +21,7 @@ from typing import (
 import matplotlib.pyplot as plt
 import numpy as np
 from attrs import Factory, define, field
-from hintwith import hintwith
+from hintwith import hintwithmethod
 from typing_extensions import Self
 
 if TYPE_CHECKING:
@@ -55,7 +55,7 @@ class PlotSetter:
 
     settings: PlotSettings = field(default=Factory(PlotSettings), init=False)
 
-    @hintwith(PlotSettings.__init__)
+    @hintwithmethod(PlotSettings.__init__, True)
     def set_plot(self, **kwargs) -> Self:
         """
         Sets the settings for plotting.
@@ -91,7 +91,7 @@ class PlotSetter:
                 setattr(self.settings, key, value)
         return self
 
-    @hintwith(PlotSettings.__init__)
+    @hintwithmethod(PlotSettings.__init__, True)
     def set_plot_default(self, **kwargs) -> Self:
         """
         Set the default settings for plotting.
