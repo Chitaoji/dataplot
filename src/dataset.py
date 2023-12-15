@@ -41,6 +41,9 @@ class PlotData(PlotSetter, metaclass=ABCMeta):
     """
     Provides methods for mathematical operations and plotting.
 
+    Note that this should NEVER be instantiated directly, but always through the
+    module-level function `dataplot.data()`.
+
     """
 
     def __init__(self, x: "NDArray", label: Optional[str] = None) -> None:

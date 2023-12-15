@@ -227,7 +227,13 @@ class DataSetter(PlotSetter):
 
 @define
 class FigWrapper(PlotSetter):
-    """A wrapper of figure."""
+    """
+    A wrapper of figure.
+
+    Note that this should NEVER be instantiated directly, but always through the
+    module-level function `dataplot.figure()`.
+
+    """
 
     nrows: int = 1
     ncols: int = 1
