@@ -240,7 +240,7 @@ class PlotData(PlotSetter, metaclass=ABCMeta):
         return self
 
     @hintwithmethod(Histogram.__init__, True)
-    def hist(self, **kwargs) -> None:
+    def hist(self, *args, **kwargs) -> None:
         """
         Plot a histogram of the data.
 
@@ -270,18 +270,22 @@ class PlotData(PlotSetter, metaclass=ABCMeta):
             kwargs["on"] = fig.axes[0]
             self.customize(
                 Histogram,
+                *args,
                 data=self.fmtdata,
                 label=self.fmtlabel,
                 **kwargs,
             ).perform()
 
     @hintwithmethod(LineChart.__init__, True)
-    def plot(self, **kwargs) -> None:
+    def plot(self, *args, **kwargs) -> None:
         """
         Create a line chart for the data.
 
         Parameters
         ----------
+        ticks : Optional[NDArray[np.float64]], optional
+            Specifies the x-ticks for the line chart. If not provided, the x-ticks will
+            be set to `range(len(data))`. By default None.
         scatter : bool, optional
             Determines whether to include scatter points in the line chart, by default
             False.
@@ -298,6 +302,7 @@ class PlotData(PlotSetter, metaclass=ABCMeta):
             kwargs["on"] = fig.axes[0]
             self.customize(
                 LineChart,
+                *args,
                 data=self.fmtdata,
                 label=self.fmtlabel,
                 **kwargs,

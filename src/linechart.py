@@ -5,13 +5,15 @@ NOTE: this module is private. All functions and objects are available in the mai
 `dataplot` namespace - use that instead.
 
 """
-from typing import Any, List, NewType, Optional
+from typing import TYPE_CHECKING, Optional
 
+import numpy as np
 from attrs import define, field
 
 from .setter import AxesWrapper, DataSetter
 
-DateLike = NewType("DateLike", Any)
+if TYPE_CHECKING:
+    from numpy.typing import NDArray
 
 __all__ = ["LineChart"]
 
@@ -23,13 +25,9 @@ class LineChart(DataSetter):
 
     """
 
-    timestamps: Optional[List[DateLike]] = field(default=None, init=False)
+    ticks: Optional["NDArray[np.float64]"] = field(default=None)
     scatter: bool = False
     figsize_adjust: bool = True
-
-    # def q(self, timestamps):
-    #     self.timestamps = timestamps
-    #     self._date: pd.DatetimeIndex = pd.to_datetime([str(x) for x in self.timestamps])
 
     def perform(self, reflex: None = None) -> None:
         """Do the plotting job."""
@@ -38,6 +36,17 @@ class LineChart(DataSetter):
         return reflex
 
     def __plot(self, ax: AxesWrapper) -> None:
-        ax.ax.plot(self.data, label=self.label)
+        if self.ticks is None:
+            ax.ax.plot(self.data, label=self.label)
+        elif (len_t := len(self.ticks)) < (len_d := len(self.data)):
+            ax.ax.plot(self.ticks, self.data[:len_t], label=self.label)
+        elif len_t == len_d:
+            ax.ax.plot(self.ticks, self.data, label=self.label)
+        else:
+            ax.ax.plot(self.ticks[:len_d], self.data, label=self.label)
         if self.scatter:
             ax.ax.scatter(self.data)
+
+
+class TicksLenError(Exception):
+    """Raised when the length of ticks is shorter than the data length."""
