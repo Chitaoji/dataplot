@@ -43,51 +43,9 @@ class PlotData(PlotSetter, metaclass=ABCMeta):
 
     """
 
-    @overload
-    def __new__(cls, data: "NDArray", label: Optional[str] = None) -> "PlotData":
-        ...
-
-    @overload
-    def __new__(
-        cls, data: List["NDArray"], label: Optional[List[str]] = None
-    ) -> "PlotData":
-        ...
-
-    def __new__(
-        cls,
-        data: Union["NDArray", List["NDArray"]],
-        label: Union[str, List[str], None] = None,
-    ) -> "PlotData":
-        """
-        Initializes a dataset interface which provides methods for mathematical
-        operations and plotting.
-
-        Parameters
-        ----------
-        data : Union[NDArray, List[NDArray]]
-            Input values, this takes either a single array or a list of arrays, each
-            representing a set of data.
-        label : Union[str, List[str], None], optional
-            Labels of the data, this takes either a single string or a list of strings.
-            If is a list, should be the same length as `data`, with each element
-            corresponding to a specific array in `data`. By default None.
-
-        Returns
-        -------
-        PlotData
-            Provides methods for mathematical operations and plotting.
-
-        """
-        if isinstance(data, list):
-            if label is None:
-                label = cls.__default_label(len(data))
-            dataset: List["PlotData"] = [PlotData(d, lb) for d, lb in zip(data, label)]
-            return _PlotDataBatch(*dataset)
-        return cls.__base__.__new__(cls)
-
-    def __init__(self, data: "NDArray", label: Optional[str] = None) -> None:
-        self.data = data
-        self.label = self.__default_label(1)[0] if label is None else label
+    def __init__(self, x: "NDArray", label: Optional[str] = None) -> None:
+        self.data = x
+        self.label = "x1" if label is None else label
         self.fmt: str = "{0}"
         self.fmtdata = self.data
         self.settings = PlotSettings()
@@ -108,27 +66,9 @@ class PlotData(PlotSetter, metaclass=ABCMeta):
             Returns whether the given subclass is a subclass of `PlotData`.
 
         """
-        if issubclass(__subclass, _PlotDataBatch):
+        if issubclass(__subclass, _PlotDatas):
             return True
         return super().__subclasshook__(__subclass)
-
-    @classmethod
-    def __default_label(cls, n: int = 1) -> List[str]:
-        """
-        Generates default labels for the data.
-
-        Parameters
-        ----------
-        n : int, optional
-            Number of labels, by default 1.
-
-        Returns
-        -------
-        List[str]
-            List of labels.
-
-        """
-        return [f"x{i}" for i in range(1, 1 + n)]
 
     def __create(self, fmt: str, fmtdata: "NDArray") -> "PlotData":
         obj = self.customize(self.__class__, self.data, self.label)
@@ -187,7 +127,7 @@ class PlotData(PlotSetter, metaclass=ABCMeta):
             A new instance of `PlotData`.
 
         """
-        return _PlotDataBatch(self, *others)
+        return _PlotDatas(self, *others)
 
     def log(self) -> "PlotData":
         """
@@ -361,7 +301,7 @@ class PlotData(PlotSetter, metaclass=ABCMeta):
             ).perform()
 
 
-class _PlotDataBatch:
+class _PlotDatas:
     def __init__(self, *args: Any) -> None:
         if not args:
             raise ValueError("number of data sets is 0")
