@@ -21,12 +21,11 @@ from typing import (
 
 import numpy as np
 import pandas as pd
-from hintwith import hintwithmethod
 from typing_extensions import Self
 
 from .histogram import Histogram
 from .linechart import LineChart
-from .setter import FigWrapper, PlotSetter, PlotSettings
+from .setter import AxesWrapper, FigWrapper, PlotSetter, PlotSettings
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
@@ -239,8 +238,16 @@ class PlotData(PlotSetter, metaclass=ABCMeta):
         self.fmtdata = self.data
         return self
 
-    @hintwithmethod(Histogram.__init__, True)
-    def hist(self, *args, **kwargs) -> None:
+    def hist(
+        self,
+        bins: int = 100,
+        fit: bool = True,
+        density: bool = True,
+        same_bin: bool = True,
+        stats: bool = True,
+        *,
+        on: Optional[AxesWrapper] = None,
+    ) -> None:
         """
         Plot a histogram of the data.
 
@@ -267,17 +274,27 @@ class PlotData(PlotSetter, metaclass=ABCMeta):
 
         """
         with unbatched(self.customize)(FigWrapper, 1, 1) as fig:
-            kwargs["on"] = fig.axes[0]
+            on = fig.axes[0]
             self.customize(
                 Histogram,
-                *args,
                 data=self.fmtdata,
                 label=self.fmtlabel,
-                **kwargs,
+                bins=bins,
+                fit=fit,
+                density=density,
+                same_bin=same_bin,
+                stats=stats,
+                on=on,
             ).perform()
 
-    @hintwithmethod(LineChart.__init__, True)
-    def plot(self, *args, **kwargs) -> None:
+    def plot(
+        self,
+        ticks: Optional["NDArray[np.float64]"] = None,
+        scatter: bool = False,
+        figsize_adjust: bool = True,
+        *,
+        on: Optional[AxesWrapper] = None,
+    ) -> None:
         """
         Create a line chart for the data.
 
@@ -299,13 +316,15 @@ class PlotData(PlotSetter, metaclass=ABCMeta):
 
         """
         with unbatched(self.customize)(FigWrapper, 1, 1) as fig:
-            kwargs["on"] = fig.axes[0]
+            on = fig.axes[0]
             self.customize(
                 LineChart,
-                *args,
                 data=self.fmtdata,
                 label=self.fmtlabel,
-                **kwargs,
+                ticks=ticks,
+                scatter=scatter,
+                figsize_adjust=figsize_adjust,
+                on=on,
             ).perform()
 
 

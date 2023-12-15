@@ -16,12 +16,12 @@ from typing import (
     Tuple,
     Type,
     TypeVar,
+    get_args,
 )
 
 import matplotlib.pyplot as plt
 import numpy as np
 from attrs import Factory, define, field
-from hintwith import hintwithmethod
 from typing_extensions import Self
 
 if TYPE_CHECKING:
@@ -32,7 +32,39 @@ if TYPE_CHECKING:
 
 PlotSetterVar = TypeVar("PlotSetterVar", bound="PlotSetter")
 DefaultVar = TypeVar("DefaultVar")
-
+SettingAvailable = Literal[
+    "title", "xlabel", "ylabel", "alpha", "figsize", "style", "legend_loc"
+]
+StyleAvailable = Literal[
+    "Solarize_Light2",
+    "_classic_test_patch",
+    "_mpl-gallery",
+    "_mpl-gallery-nogrid",
+    "bmh",
+    "classic",
+    "dark_background",
+    "fast",
+    "fivethirtyeight",
+    "ggplot",
+    "grayscale",
+    "seaborn-v0_8",
+    "seaborn-v0_8-bright",
+    "seaborn-v0_8-colorblind",
+    "seaborn-v0_8-dark",
+    "seaborn-v0_8-dark-palette",
+    "seaborn-v0_8-darkgrid",
+    "seaborn-v0_8-deep",
+    "seaborn-v0_8-muted",
+    "seaborn-v0_8-notebook",
+    "seaborn-v0_8-paper",
+    "seaborn-v0_8-pastel",
+    "seaborn-v0_8-poster",
+    "seaborn-v0_8-talk",
+    "seaborn-v0_8-ticks",
+    "seaborn-v0_8-white",
+    "seaborn-v0_8-whitegrid",
+    "tableau-colorblind10",
+]
 __all__ = ["PlotSettings", "PlotSetter", "DataSetter", "FigWrapper", "AxesWrapper"]
 
 
@@ -45,7 +77,7 @@ class PlotSettings:
     ylabel: Optional[str] = None
     alpha: Optional[float] = None
     figsize: Optional[Tuple[int, int]] = None
-    style: Optional[str] = None
+    style: Optional[StyleAvailable] = None
     legend_loc: Optional[str] = None
 
 
@@ -55,8 +87,17 @@ class PlotSetter:
 
     settings: PlotSettings = field(default=Factory(PlotSettings), init=False)
 
-    @hintwithmethod(PlotSettings.__init__, True)
-    def set_plot(self, **kwargs) -> Self:
+    # pylint: disable=unused-argument
+    def set_plot(
+        self,
+        title: Optional[str] = None,
+        xlabel: Optional[str] = None,
+        ylabel: Optional[str] = None,
+        alpha: Optional[float] = None,
+        figsize: Optional[Tuple[int, int]] = None,
+        style: Optional[StyleAvailable] = None,
+        legend_loc: Optional[str] = None,
+    ) -> Self:
         """
         Sets the settings for plotting.
 
@@ -86,13 +127,21 @@ class PlotSetter:
             An instance of self.
 
         """
-        for key, value in kwargs.items():
-            if value is not None:
+        for key in get_args(SettingAvailable):
+            if (value := locals()[key]) is not None:
                 setattr(self.settings, key, value)
         return self
 
-    @hintwithmethod(PlotSettings.__init__, True)
-    def set_plot_default(self, **kwargs) -> Self:
+    def set_plot_default(
+        self,
+        title: Optional[str] = None,
+        xlabel: Optional[str] = None,
+        ylabel: Optional[str] = None,
+        alpha: Optional[float] = None,
+        figsize: Optional[Tuple[int, int]] = None,
+        style: Optional[StyleAvailable] = None,
+        legend_loc: Optional[str] = None,
+    ) -> Self:
         """
         Set the default settings for plotting.
 
@@ -102,11 +151,12 @@ class PlotSetter:
             An instance of self.
 
         """
-        for key, value in kwargs.items():
+        for key in get_args(SettingAvailable):
             if getattr(self.settings, key) is None:
-                setattr(self.settings, key, value)
+                setattr(self.settings, key, locals()[key])
         return self
 
+    # pylint: enable=unused-argument
     def loading(self, settings: PlotSettings) -> Self:
         """
         Load in settings.
@@ -122,16 +172,13 @@ class PlotSetter:
             An instance of self.
         """
         self.set_plot(
-            **{
-                key: getattr(settings, key)
-                for key in settings.__init__.__code__.co_names
-            }
+            **{key: getattr(settings, key) for key in get_args(SettingAvailable)}
         )
         return self
 
     def get_setting(
         self,
-        key: Literal["title", "xlabel", "ylabel", "alpha", "figsize", "style"],
+        key: SettingAvailable,
         default: Optional[DefaultVar] = None,
     ) -> DefaultVar:
         """

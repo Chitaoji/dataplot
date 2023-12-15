@@ -8,7 +8,7 @@ NOTE: this module is private. All functions and objects are available in the mai
 from typing import TYPE_CHECKING, Optional
 
 import numpy as np
-from attrs import define, field
+from attrs import define
 
 from .setter import AxesWrapper, DataSetter
 
@@ -25,7 +25,7 @@ class LineChart(DataSetter):
 
     """
 
-    ticks: Optional["NDArray[np.float64]"] = field(default=None)
+    ticks: Optional["NDArray[np.float64]"] = None
     scatter: bool = False
     figsize_adjust: bool = True
 
