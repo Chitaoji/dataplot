@@ -5,7 +5,6 @@ NOTE: this module is private. All functions and objects are available in the mai
 `dataplot` namespace - use that instead.
 
 """
-from copy import deepcopy
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -80,6 +79,51 @@ class PlotSettings:
     style: Optional[StyleAvailable] = None
     legend_loc: Optional[str] = None
 
+    def __getitem__(self, __key: SettingAvailable) -> Any:
+        return getattr(self, __key)
+
+    def __setitem__(self, __key: SettingAvailable, __value: Any) -> None:
+        setattr(self, __key, __value)
+
+    @classmethod
+    @property
+    def available(cls) -> List[SettingAvailable]:
+        """
+        Available settings.
+
+        Returns
+        -------
+        List[SettingAvailable]
+            Names of the settings.
+
+        """
+        return get_args(SettingAvailable)
+
+    def from_dict(self, d: Dict[SettingAvailable, Any]) -> None:
+        """
+        Reads settings from a dict.
+
+        Parameters
+        ----------
+        d : Dict[SettingAvailable, Any]
+            A dict of plot settings.
+
+        """
+        for k, v in d.items():
+            setattr(self, k, v)
+
+    def to_dict(self) -> Dict[SettingAvailable, Any]:
+        """
+        Returns a dict of the settings.
+
+        Returns
+        -------
+        Dict[SettingAvailable]
+            A dict of plot settings.
+
+        """
+        return {x: getattr(self, x) for x in self.available}
+
 
 @define(init=False)
 class PlotSetter:
@@ -127,9 +171,9 @@ class PlotSetter:
             An instance of self.
 
         """
-        for key in get_args(SettingAvailable):
+        for key in self.settings.available:
             if (value := locals()[key]) is not None:
-                setattr(self.settings, key, value)
+                self.settings[key] = value
         return self
 
     def set_plot_default(
@@ -151,9 +195,9 @@ class PlotSetter:
             An instance of self.
 
         """
-        for key in get_args(SettingAvailable):
-            if getattr(self.settings, key) is None:
-                setattr(self.settings, key, locals()[key])
+        for key in self.settings.available:
+            if self.settings[key] is None:
+                self.settings[key] = locals()[key]
         return self
 
     # pylint: enable=unused-argument
@@ -171,9 +215,7 @@ class PlotSetter:
         Self
             An instance of self.
         """
-        self.set_plot(
-            **{key: getattr(settings, key) for key in get_args(SettingAvailable)}
-        )
+        self.set_plot(**settings.to_dict())
         return self
 
     def get_setting(
@@ -199,7 +241,7 @@ class PlotSetter:
             The value of the specified setting.
 
         """
-        return default if (value := getattr(self.settings, key)) is None else value
+        return default if (value := self.settings[key]) is None else value
 
     def customize(self, cls: Type[PlotSetterVar], *args, **kwargs) -> PlotSetterVar:
         """
@@ -234,7 +276,7 @@ class PlotSetter:
                 else:
                     unmatched[k] = v
             obj = cls(*args, **matched)
-            obj.settings = deepcopy(self.settings)
+            obj.settings = PlotSettings(**self.settings.to_dict())
             for k, v in unmatched.items():
                 setattr(obj, k, v)
             return obj

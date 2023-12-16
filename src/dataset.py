@@ -11,6 +11,7 @@ from typing import (
     TYPE_CHECKING,
     Any,
     Callable,
+    Dict,
     Iterable,
     List,
     Optional,
@@ -238,6 +239,7 @@ class PlotData(PlotSetter, metaclass=ABCMeta):
         self.fmtdata = self.data
         return self
 
+    # pylint: disable=unused-argument
     def hist(
         self,
         bins: int = 100,
@@ -275,16 +277,11 @@ class PlotData(PlotSetter, metaclass=ABCMeta):
         """
         with unbatched(self.customize)(FigWrapper, 1, 1) as fig:
             on = fig.axes[0]
+            kwargs: Dict[str] = {}
+            for key in Histogram.__init__.__code__.co_varnames[1:]:
+                kwargs[key] = locals()[key]
             self.customize(
-                Histogram,
-                data=self.fmtdata,
-                label=self.fmtlabel,
-                bins=bins,
-                fit=fit,
-                density=density,
-                same_bin=same_bin,
-                stats=stats,
-                on=on,
+                Histogram, data=self.fmtdata, label=self.fmtlabel, **kwargs
             ).perform()
 
     def plot(
@@ -317,15 +314,14 @@ class PlotData(PlotSetter, metaclass=ABCMeta):
         """
         with unbatched(self.customize)(FigWrapper, 1, 1) as fig:
             on = fig.axes[0]
+            kwargs: Dict[str] = {}
+            for key in LineChart.__init__.__code__.co_varnames[1:]:
+                kwargs[key] = locals()[key]
             self.customize(
-                LineChart,
-                data=self.fmtdata,
-                label=self.fmtlabel,
-                ticks=ticks,
-                scatter=scatter,
-                figsize_adjust=figsize_adjust,
-                on=on,
+                LineChart, data=self.fmtdata, label=self.fmtlabel, **kwargs
             ).perform()
+
+    # pylint: enable=unused-argument
 
 
 class _PlotDatas:
