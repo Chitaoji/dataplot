@@ -86,7 +86,6 @@ class PlotSettings:
         setattr(self, __key, __value)
 
     @classmethod
-    @property
     def available(cls) -> List[SettingAvailable]:
         """
         Available settings.
@@ -122,7 +121,7 @@ class PlotSettings:
             A dict of plot settings.
 
         """
-        return {x: getattr(self, x) for x in self.available}
+        return {x: getattr(self, x) for x in self.available()}
 
 
 @define(init=False)
@@ -171,7 +170,7 @@ class PlotSetter:
             An instance of self.
 
         """
-        for key in self.settings.available:
+        for key in self.settings.available():
             if (value := locals()[key]) is not None:
                 self.settings[key] = value
         return self
@@ -195,7 +194,7 @@ class PlotSetter:
             An instance of self.
 
         """
-        for key in self.settings.available:
+        for key in self.settings.available():
             if self.settings[key] is None:
                 self.settings[key] = locals()[key]
         return self
