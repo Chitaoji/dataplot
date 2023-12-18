@@ -22,6 +22,7 @@ from typing import (
 
 import numpy as np
 import pandas as pd
+from attrs import define, field
 from typing_extensions import Self
 
 from .histogram import Histogram
@@ -37,6 +38,12 @@ T = TypeVar("T")
 __all__ = ["PlotData"]
 
 
+def _set_default_if_none(__obj: object, __name: str, __default: Any) -> None:
+    if getattr(__obj, __name) is None:
+        setattr(__obj, __name, __default)
+
+
+@define
 class PlotData(PlotSetter, metaclass=ABCMeta):
     """
     Provides methods for mathematical operations and plotting.
@@ -46,12 +53,15 @@ class PlotData(PlotSetter, metaclass=ABCMeta):
 
     """
 
-    def __init__(self, x: "NDArray", label: Optional[str] = None) -> None:
-        self.data = x
-        self.label = "x1" if label is None else label
-        self.fmt: str = "{0}"
-        self.fmtdata = self.data
-        self.settings = PlotSettings()
+    data: "NDArray" = field(
+        repr=False,
+        validator=lambda i, n, v: setattr(i, "fmtdata", v)
+        or _set_default_if_none(i, "label", "x1"),
+    )  # NOTE: wait until Pylance supports converter
+    label: Optional[str] = field(default=None)
+    fmt: str = field(init=False, default="{0}")
+    fmtdata: "NDArray" = field(init=False, repr=False)
+    settings: PlotSettings = field(init=False, factory=PlotSettings)
 
     @classmethod
     def __subclasshook__(cls, __subclass: type) -> bool:
@@ -321,6 +331,24 @@ class PlotData(PlotSetter, metaclass=ABCMeta):
                 LineChart, data=self.fmtdata, label=self.fmtlabel, **kwargs
             ).perform()
 
+    def batched(self, n: int) -> Self:
+        """
+        If this instance is joined by multiple PlotData objects, batch the objects into
+        tuples of length n, otherwise return self.
+
+        Parameters
+        ----------
+        n : int
+            Specifies the batch size.
+
+        Returns
+        -------
+        PlotData
+            An instance of PlotData.
+
+        """
+        return self
+
     # pylint: enable=unused-argument
 
 
@@ -336,7 +364,7 @@ class _PlotDatas:
                 self.children.append(a)
 
     def __getattr__(self, __name: str) -> Any:
-        if __name in {"hist", "plot", "set_label"}:
+        if __name in {"hist", "plot", "set_label", "batched"}:
             return partial(getattr(PlotData, __name), self)
         attribs = (getattr(c, __name) for c in self.children)
         if __name in {"set_plot", "set_plot_default"}:
@@ -351,6 +379,23 @@ class _PlotDatas:
             BatchList(attribs)(batched(__value))
         else:
             super().__setattr__(__name, __value)
+
+    def __repr__(self) -> str:
+        return "[" + ",\n ".join([repr(x) for x in self.children]) + "]"
+
+    def __getitem__(self, __key: str) -> PlotData:
+        return self.children[__key]
+
+    def batched(self, n: int) -> "BatchList":
+        """Overrides `PlotData.batched()`."""
+        if n <= 0:
+            raise ValueError(f"batch size <= 0: {n}")
+        if n > len(self.children):
+            return self
+        batch = BatchList(reducer=cleaner)
+        for i in range(0, len(self.children), n):
+            batch.append(_PlotDatas(*self.children[i : i + n]))
+        return batch
 
 
 class BatchList(list):
@@ -417,7 +462,7 @@ class BatchList(list):
         )
 
     def __call__(self, *args: Any, **kwargs: Any) -> Any:
-        batch: BatchList = self.__class__([], reflex=self.__reflex)
+        batch = self.__class__([], reducer=self.__reducer, reflex=self.__reflex)
         for i, obj in enumerate(self):
             clean_args = [a[i] if isinstance(a, self.__class__) else a for a in args]
             clean_kwargs = {
@@ -431,10 +476,31 @@ class BatchList(list):
         return self.__reducer(returns) if self.__reducer is not None else returns
 
 
+def cleaner(x: BatchList) -> Optional[BatchList]:
+    """
+    If the BatchList is consist of None's only, return None, otherwise return
+    the BatchList itself.
+
+    Parameters
+    ----------
+    x : BatchList
+        A BatchList.
+
+    Returns
+    -------
+    Optional[BatchList]
+        None or a BatchList.
+
+    """
+    if all([i is None for i in x]):
+        return None
+    return x
+
+
 def batched(x: T) -> T:
     """
-    If a `list` object is provided, returns a `BatchList` object initialized
-    by it. Otherwise, return the input itself.
+    If a `list` object is provided, return a `BatchList` object initialized
+    by it, otherwise return the input itself.
 
     Parameters
     ----------
@@ -452,13 +518,13 @@ def batched(x: T) -> T:
 
 def unbatched(x: T) -> T:
     """
-    If a `BatchList` object is provided, returns its last element.
-    Otherwise, return the input itself.
+    If a BatchList is provided, return its last element, otherwise return
+    the input itself.
 
     Parameters
     ----------
     x : T
-        Can be an instance of `BatchList` or anything else.
+        Can be a BatchList or anything else.
 
     Returns
     -------
