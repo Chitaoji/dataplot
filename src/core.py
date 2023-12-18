@@ -7,8 +7,6 @@ NOTE: this module is private. All functions and objects are available in the mai
 """
 from typing import TYPE_CHECKING, List, Optional, Union, overload
 
-from hintwith import hintwithmethod
-
 from .dataset import PlotData, _PlotDatas
 from .setter import FigWrapper
 
@@ -19,8 +17,7 @@ if TYPE_CHECKING:
 __all__ = ["figure", "data"]
 
 
-@hintwithmethod(FigWrapper.__init__)
-def figure(*args, **kwargs) -> FigWrapper:
+def figure(nrows: int = 1, ncols: int = 1) -> FigWrapper:
     """
     Provides a context manager interface (`__enter__` and `__exit__` methods) for
     creating a figure with subplots and setting various properties for the figure.
@@ -40,7 +37,7 @@ def figure(*args, **kwargs) -> FigWrapper:
         A wrapper of figure.
 
     """
-    return FigWrapper(*args, **kwargs)
+    return FigWrapper(nrows=nrows, ncols=ncols)
 
 
 @overload
