@@ -23,6 +23,7 @@ from typing import (
 import numpy as np
 import pandas as pd
 from attrs import define, field
+from attrs.converters import default_if_none
 from typing_extensions import Self
 
 from .histogram import Histogram
@@ -38,11 +39,6 @@ T = TypeVar("T")
 __all__ = ["PlotData"]
 
 
-def _set_default_if_none(__obj: object, __name: str, __default: Any) -> None:
-    if getattr(__obj, __name) is None:
-        setattr(__obj, __name, __default)
-
-
 @define
 class PlotData(PlotSetter, metaclass=ABCMeta):
     """
@@ -54,11 +50,10 @@ class PlotData(PlotSetter, metaclass=ABCMeta):
     """
 
     data: "NDArray" = field(
-        repr=False,
-        validator=lambda i, n, v: setattr(i, "fmtdata", v)
-        or _set_default_if_none(i, "label", "x1"),
-    )  # NOTE: wait until Pylance supports converter
-    label: Optional[str] = field(default=None)
+        repr=False, validator=lambda i, n, v: setattr(i, "fmtdata", v)
+    )
+    label: Optional[str]
+    label = field(default=None, converter=default_if_none("x1"))
     fmt: str = field(init=False, default="{0}")
     fmtdata: "NDArray" = field(init=False, repr=False)
     settings: PlotSettings = field(init=False, factory=PlotSettings)
@@ -296,7 +291,7 @@ class PlotData(PlotSetter, metaclass=ABCMeta):
 
     def plot(
         self,
-        ticks: Optional["NDArray[np.float64]"] = None,
+        ticks: Optional["NDArray"] = None,
         scatter: bool = False,
         figsize_adjust: bool = True,
         *,
@@ -307,7 +302,7 @@ class PlotData(PlotSetter, metaclass=ABCMeta):
 
         Parameters
         ----------
-        ticks : Optional[NDArray[np.float64]], optional
+        ticks : Optional[NDArray], optional
             Specifies the x-ticks for the line chart. If not provided, the x-ticks will
             be set to `range(len(data))`. By default None.
         scatter : bool, optional
