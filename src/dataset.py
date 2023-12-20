@@ -14,16 +14,15 @@ from typing import (
     Dict,
     Iterable,
     List,
+    Mapping,
     Optional,
     TypeVar,
-    Union,
     overload,
 )
 
 import numpy as np
 import pandas as pd
 from attrs import define, field
-from attrs.converters import default_if_none
 from typing_extensions import Self
 
 from .histogram import Histogram
@@ -49,31 +48,19 @@ class PlotData(PlotSetter, metaclass=ABCMeta):
 
     """
 
-    data: "NDArray" = field(
-        repr=False, validator=lambda i, n, v: setattr(i, "fmtdata", v)
-    )
-    label: Optional[str]
-    label = field(default=None, converter=default_if_none("x1"))
-    fmt: str = field(init=False, default="{0}")
+    data: "NDArray" = field(repr=False)
+    label: Optional[str] = field(default=None)
+    fmt: str = field(init=False, repr=False, default="{0}")
     fmtdata: "NDArray" = field(init=False, repr=False)
+    # records: List[str] = field(init=False, factory=list)
     settings: PlotSettings = field(init=False, factory=PlotSettings)
+
+    def __attrs_post_init__(self) -> None:
+        self.label = "x1" if self.label is None else self.label
+        self.fmtdata = self.data
 
     @classmethod
     def __subclasshook__(cls, __subclass: type) -> bool:
-        """
-        Checks if a given subclass is a subclass of `PlotData`.
-
-        Parameters
-        ----------
-        __subclass : type
-            The class that is being checked.
-
-        Returns
-        -------
-        bool
-            Returns whether the given subclass is a subclass of `PlotData`.
-
-        """
         if issubclass(__subclass, _PlotDatas):
             return True
         return super().__subclasshook__(__subclass)
@@ -84,16 +71,14 @@ class PlotData(PlotSetter, metaclass=ABCMeta):
         obj.fmtdata = fmtdata
         return obj
 
-    def set_label(self, label: Union[str, List[str], None] = None) -> Self:
+    def set_label(self, mapper: Optional[Mapping[str, str]] = None) -> Self:
         """
-        Reset the labels.
+        Reset the labels according to the mapper.
 
         Parameters
         ----------
-        label : Union[str, List[str], None], optional
-            Labels of the data, this takes either a single string or a list of strings.
-            If is a list, should be the same length as `data`, with each element
-            corresponding to a specific array in `data`. By default None.
+        mapper : Optional[Mapping], optional
+            Mapper to apply to the labels, by default None.
 
         Returns
         -------
@@ -101,9 +86,21 @@ class PlotData(PlotSetter, metaclass=ABCMeta):
             An instance of self.
 
         """
-        if label is not None:
-            self.label = label
-            self.fmt = "{0}"
+        if self.label in mapper:
+            self.label = mapper[self.label]
+        return self
+
+    def stage(self) -> Self:
+        """
+        Stage all the operations on the data while cleaning the records.
+
+        Returns
+        -------
+        Self
+            An instance of self.
+
+        """
+        self.fmt = "{0}"
         return self
 
     @property
@@ -359,7 +356,7 @@ class _PlotDatas:
                 self.children.append(a)
 
     def __getattr__(self, __name: str) -> Any:
-        if __name in {"hist", "plot", "set_label", "batched"}:
+        if __name in {"hist", "plot", "batched"}:
             return partial(getattr(PlotData, __name), self)
         attribs = (getattr(c, __name) for c in self.children)
         if __name in {"set_plot", "set_plot_default"}:
@@ -368,12 +365,12 @@ class _PlotDatas:
             return BatchList(attribs, reflex="reflex")
         return BatchList(attribs, reducer=lambda x: self.__class__(*x))
 
-    def __setattr__(self, __name: str, __value: Any) -> None:
-        if __name in {"fmt", "label"}:
-            attribs = (partial(c.__setattr__, __name) for c in self.children)
-            BatchList(attribs)(batched(__value))
-        else:
-            super().__setattr__(__name, __value)
+    # def __setattr__(self, __name: str, __value: Any) -> None:
+    #     if __name in {}:
+    #         attribs = (partial(c.__setattr__, __name) for c in self.children)
+    #         BatchList(attribs)(batched(__value))
+    #     else:
+    #         super().__setattr__(__name, __value)
 
     def __repr__(self) -> str:
         return "[" + ",\n ".join([repr(x) for x in self.children]) + "]"
