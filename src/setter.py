@@ -85,6 +85,20 @@ class PlotSettings:
     def __setitem__(self, __key: SettingAvailable, __value: Any) -> None:
         setattr(self, __key, __value)
 
+    def repr_not_none(self) -> str:
+        """
+        Returns a string representation of the object, where only the
+        attributes with non-None values are included.
+
+        Returns
+        -------
+        str
+            String representation.
+
+        """
+        diff = [f"{k}={repr(v)}" for k, v in self.asdict().items() if v is not None]
+        return f"{self.__class__.__name__}({', '.join(diff)})"
+
     @classmethod
     def available(cls) -> List[SettingAvailable]:
         """
@@ -98,7 +112,7 @@ class PlotSettings:
         """
         return get_args(SettingAvailable)
 
-    def from_dict(self, d: Dict[SettingAvailable, Any]) -> None:
+    def fromdict(self, d: Dict[SettingAvailable, Any]) -> None:
         """
         Reads settings from a dict.
 
@@ -111,7 +125,7 @@ class PlotSettings:
         for k, v in d.items():
             setattr(self, k, v)
 
-    def to_dict(self) -> Dict[SettingAvailable, Any]:
+    def asdict(self) -> Dict[SettingAvailable, Any]:
         """
         Returns a dict of the settings.
 
@@ -214,7 +228,7 @@ class PlotSetter:
         Self
             An instance of self.
         """
-        self.set_plot(**settings.to_dict())
+        self.set_plot(**settings.asdict())
         return self
 
     def get_setting(
@@ -275,7 +289,7 @@ class PlotSetter:
                 else:
                     unmatched[k] = v
             obj = cls(*args, **matched)
-            obj.settings = PlotSettings(**self.settings.to_dict())
+            obj.settings = PlotSettings(**self.settings.asdict())
             for k, v in unmatched.items():
                 setattr(obj, k, v)
             return obj

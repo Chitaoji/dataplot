@@ -50,10 +50,11 @@ class PlotData(PlotSetter, metaclass=ABCMeta):
 
     data: "NDArray" = field(repr=False)
     label: Optional[str] = field(default=None)
-    fmt: str = field(init=False, repr=False, default="{0}")
+    fmt: str = field(init=False, repr=lambda x: repr(x).format(""), default="{0}")
     fmtdata: "NDArray" = field(init=False, repr=False)
-    # records: List[str] = field(init=False, factory=list)
-    settings: PlotSettings = field(init=False, factory=PlotSettings)
+    settings: PlotSettings = field(
+        init=False, factory=PlotSettings, repr=PlotSettings.repr_not_none
+    )
 
     def __attrs_post_init__(self) -> None:
         self.label = "x1" if self.label is None else self.label
