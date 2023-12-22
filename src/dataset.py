@@ -7,18 +7,7 @@ NOTE: this module is private. All functions and objects are available in the mai
 """
 from abc import ABCMeta
 from functools import partial
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Callable,
-    Dict,
-    Iterable,
-    List,
-    Mapping,
-    Optional,
-    TypeVar,
-    overload,
-)
+from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional, TypeVar
 
 import numpy as np
 import pandas as pd
@@ -28,6 +17,7 @@ from typing_extensions import Self
 from .histogram import Histogram
 from .linechart import LineChart
 from .setter import AxesWrapper, FigWrapper, PlotSetter, PlotSettings
+from .utils.multis import MultiObject, cleaner, single
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
@@ -278,7 +268,7 @@ class PlotData(PlotSetter, metaclass=ABCMeta):
             figure. By default None.
 
         """
-        with unbatched(self.customize)(FigWrapper, 1, 1) as fig:
+        with single(self.customize)(FigWrapper, 1, 1) as fig:
             on = fig.axes[0]
             kwargs: Dict[str] = {}
             for key in Histogram.__init__.__code__.co_varnames[1:]:
@@ -315,7 +305,7 @@ class PlotData(PlotSetter, metaclass=ABCMeta):
             figure. By default None.
 
         """
-        with unbatched(self.customize)(FigWrapper, 1, 1) as fig:
+        with single(self.customize)(FigWrapper, 1, 1) as fig:
             on = fig.axes[0]
             kwargs: Dict[str] = {}
             for key in LineChart.__init__.__code__.co_varnames[1:]:
@@ -324,15 +314,15 @@ class PlotData(PlotSetter, metaclass=ABCMeta):
                 LineChart, data=self.fmtdata, label=self.fmtlabel, **kwargs
             ).perform()
 
-    def batched(self, n: int) -> Self:
+    def batched(self, n: int = 1) -> Self:
         """
         If this instance is joined by multiple PlotData objects, batch the objects into
         tuples of length n, otherwise return self.
 
         Parameters
         ----------
-        n : int
-            Specifies the batch size.
+        n : int, optional
+            Specifies the batch size, by default 1.
 
         Returns
         -------
@@ -357,14 +347,14 @@ class _PlotDatas:
                 self.children.append(a)
 
     def __getattr__(self, __name: str) -> Any:
-        if __name in {"hist", "plot", "batched"}:
+        if __name in {"hist", "plot"}:
             return partial(getattr(PlotData, __name), self)
         attribs = (getattr(c, __name) for c in self.children)
         if __name in {"set_plot", "set_plot_default"}:
-            return BatchList(attribs, returns=self)
+            return MultiObject(attribs, call_reducer=lambda x: self)
         if __name == "customize":
-            return BatchList(attribs, reflex="reflex")
-        return BatchList(attribs, reducer=lambda x: self.__class__(*x))
+            return MultiObject(attribs, call_reflex="reflex")
+        return MultiObject(attribs, call_reducer=lambda x: self.__class__(*x))
 
     # def __setattr__(self, __name: str, __value: Any) -> None:
     #     if __name in {}:
@@ -379,150 +369,13 @@ class _PlotDatas:
     def __getitem__(self, __key: str) -> PlotData:
         return self.children[__key]
 
-    def batched(self, n: int) -> "BatchList":
+    def batched(self, n: int = 1) -> "MultiObject":
         """Overrides `PlotData.batched()`."""
         if n <= 0:
             raise ValueError(f"batch size <= 0: {n}")
         if n > len(self.children):
             return self
-        batch = BatchList(reducer=cleaner)
+        multi = MultiObject(call_reducer=cleaner)
         for i in range(0, len(self.children), n):
-            batch.append(_PlotDatas(*self.children[i : i + n]))
-        return batch
-
-
-class BatchList(list):
-    """
-    A subclass of `list` that enables batched attrubutes-getting and calling.
-    Differences to `list` that if the `__getattr__()` or `__call__()` method
-    is called, each element's `__getattr__()` or `__call__()` will be called
-    instead, and the results come as a new `BatchList` object.
-
-    Parameters
-    ----------
-    *args : Any
-        Arguments for initializing a `list` object.
-    returns : Any, optional
-        Specifies the returns of `__call__()`. If not specified, a new
-        `BatchList` object will be returned. By default None.
-    reducer : Optional[Callable], optional
-        Specifies a reducer for the returns of `__call__()`, by default None.
-    reflex : Optional[str], optional
-        If str, the returns of an element's `__call__()` will be provided to
-        the next element as a keyword argument named as `reflex`, by default
-        None.
-
-    """
-
-    @overload
-    def __init__(
-        self,
-        returns: Any = None,
-        reducer: Optional[Callable] = None,
-        reflex: Optional[str] = None,
-    ) -> None:
-        ...
-
-    @overload
-    def __init__(
-        self,
-        __iterable: Iterable,
-        /,
-        returns: Any = None,
-        reducer: Optional[Callable] = None,
-        reflex: Optional[str] = None,
-    ) -> None:
-        ...
-
-    def __init__(
-        self,
-        *args: Any,
-        returns: Any = None,
-        reducer: Optional[Callable] = None,
-        reflex: Optional[str] = None,
-    ) -> None:
-        self.__returns = returns
-        self.__reducer = reducer
-        self.__reflex = reflex
-        super().__init__(*args)
-
-    def __getattr__(self, __name: str):
-        return BatchList(
-            (getattr(x, __name) for x in self),
-            returns=self.__returns,
-            reducer=self.__reducer,
-            reflex=self.__reflex,
-        )
-
-    def __call__(self, *args: Any, **kwargs: Any) -> Any:
-        batch = self.__class__([], reducer=self.__reducer, reflex=self.__reflex)
-        for i, obj in enumerate(self):
-            clean_args = [a[i] if isinstance(a, self.__class__) else a for a in args]
-            clean_kwargs = {
-                k: v[i] if isinstance(v, self.__class__) else v
-                for k, v in kwargs.items()
-            }
-            if self.__reflex and i > 0:
-                clean_kwargs[self.__reflex] = r
-            batch.append(r := obj(*clean_args, **clean_kwargs))
-        returns = batch if self.__returns is None else self.__returns
-        return self.__reducer(returns) if self.__reducer is not None else returns
-
-
-def cleaner(x: BatchList) -> Optional[BatchList]:
-    """
-    If the BatchList is consist of None's only, return None, otherwise return
-    the BatchList itself.
-
-    Parameters
-    ----------
-    x : BatchList
-        A BatchList.
-
-    Returns
-    -------
-    Optional[BatchList]
-        None or a BatchList.
-
-    """
-    if all([i is None for i in x]):
-        return None
-    return x
-
-
-def batched(x: T) -> T:
-    """
-    If a `list` object is provided, return a `BatchList` object initialized
-    by it, otherwise return the input itself.
-
-    Parameters
-    ----------
-    x : T
-        Can be a list or anything else.
-
-    Returns
-    -------
-    T
-        Batched object.
-
-    """
-    return BatchList(x) if isinstance(x, list) else x
-
-
-def unbatched(x: T) -> T:
-    """
-    If a BatchList is provided, return its last element, otherwise return
-    the input itself.
-
-    Parameters
-    ----------
-    x : T
-        Can be a BatchList or anything else.
-
-    Returns
-    -------
-    T
-        Unbatched object.
-
-    """
-    return x[-1] if isinstance(x, BatchList) else x
+            multi.__multiobjects__.append(_PlotDatas(*self.children[i : i + n]))
+        return multi
