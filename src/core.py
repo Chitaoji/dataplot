@@ -64,8 +64,8 @@ def data(
         representing a set of data.
     label : Union[str, List[str], None], optional
         Labels of the data, this takes either a single string or a list of strings.
-        If is a list, should be the same length as `x`, with each element
-        corresponding to a specific array in `x`. By default None.
+        If a list, should be the same length as `x`, with each element corresponding
+        to a specific array in `x`. By default None.
 
     Returns
     -------
