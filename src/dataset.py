@@ -356,13 +356,6 @@ class _PlotDatas:
             return MultiObject(attribs, call_reflex="reflex")
         return MultiObject(attribs, call_reducer=lambda x: self.__class__(*x))
 
-    # def __setattr__(self, __name: str, __value: Any) -> None:
-    #     if __name in {}:
-    #         attribs = (partial(c.__setattr__, __name) for c in self.children)
-    #         BatchList(attribs)(batched(__value))
-    #     else:
-    #         super().__setattr__(__name, __value)
-
     def __repr__(self) -> str:
         return "[" + ",\n ".join([repr(x) for x in self.children]) + "]"
 
