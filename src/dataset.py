@@ -7,26 +7,17 @@ NOTE: this module is private. All functions and objects are available in the mai
 """
 from abc import ABCMeta
 from functools import partial
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Callable,
-    Iterable,
-    List,
-    Optional,
-    TypeVar,
-    Union,
-    overload,
-)
+from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional, TypeVar
 
 import numpy as np
 import pandas as pd
-from hintwith import hintwithmethod
+from attrs import define, field
 from typing_extensions import Self
 
 from .histogram import Histogram
 from .linechart import LineChart
-from .setter import FigWrapper, PlotSetter, PlotSettings
+from .setter import AxesWrapper, FigWrapper, PlotSetter, PlotSettings
+from .utils.multis import MultiObject, cleaner, single
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
@@ -37,98 +28,33 @@ T = TypeVar("T")
 __all__ = ["PlotData"]
 
 
+@define
 class PlotData(PlotSetter, metaclass=ABCMeta):
     """
     Provides methods for mathematical operations and plotting.
 
+    Note that this should NEVER be instantiated directly, but always through the
+    module-level function `dataplot.data()`.
+
     """
 
-    @overload
-    def __new__(cls, data: "NDArray", label: Optional[str] = None) -> "PlotData":
-        ...
+    data: "NDArray" = field(repr=False)
+    label: Optional[str] = field(default=None)
+    fmt: str = field(init=False, repr=lambda x: repr(x).format(""), default="{0}")
+    fmtdata: "NDArray" = field(init=False, repr=False)
+    settings: PlotSettings = field(
+        init=False, factory=PlotSettings, repr=PlotSettings.repr_not_none
+    )
 
-    @overload
-    def __new__(
-        cls, data: List["NDArray"], label: Optional[List[str]] = None
-    ) -> "PlotData":
-        ...
-
-    def __new__(
-        cls,
-        data: Union["NDArray", List["NDArray"]],
-        label: Union[str, List[str], None] = None,
-    ) -> "PlotData":
-        """
-        Initializes a dataset interface which provides methods for mathematical
-        operations and plotting.
-
-        Parameters
-        ----------
-        data : Union[NDArray, List[NDArray]]
-            Input values, this takes either a single array or a list of arrays, each
-            representing a set of data.
-        label : Union[str, List[str], None], optional
-            Labels of the data, this takes either a single string or a list of strings.
-            If is a list, should be the same length as `data`, with each element
-            corresponding to a specific array in `data`. By default None.
-
-        Returns
-        -------
-        PlotData
-            Provides methods for mathematical operations and plotting.
-
-        """
-        if isinstance(data, list):
-            if label is None:
-                label = cls.__default_label(len(data))
-            dataset: List["PlotData"] = [PlotData(d, lb) for d, lb in zip(data, label)]
-            return _PlotDataBatch(*dataset)
-        return cls.__base__.__new__(cls)
-
-    def __init__(self, data: "NDArray", label: Optional[str] = None) -> None:
-        self.data = data
-        self.label = self.__default_label(1)[0] if label is None else label
-        self.fmt: str = "{0}"
+    def __attrs_post_init__(self) -> None:
+        self.label = "x1" if self.label is None else self.label
         self.fmtdata = self.data
-        self.settings = PlotSettings()
 
     @classmethod
     def __subclasshook__(cls, __subclass: type) -> bool:
-        """
-        Checks if a given subclass is a subclass of `PlotData`.
-
-        Parameters
-        ----------
-        __subclass : type
-            The class that is being checked.
-
-        Returns
-        -------
-        bool
-            Returns whether the given subclass is a subclass of `PlotData`.
-
-        """
-        if issubclass(__subclass, _PlotDataBatch):
+        if issubclass(__subclass, _PlotDatas):
             return True
         return super().__subclasshook__(__subclass)
-
-    @classmethod
-    def __default_label(cls, n: int = 1) -> List[str]:
-        """
-        Generates default labels for the data.
-
-        Parameters
-        ----------
-        n : int, optional
-            Number of labels, by default 1.
-
-        Returns
-        -------
-        List[str]
-            List of labels.
-
-        """
-        return [f"x{i}" for i in range(1, 1 + n)]
 
     def __create(self, fmt: str, fmtdata: "NDArray") -> "PlotData":
         obj = self.customize(self.__class__, self.data, self.label)
@@ -136,16 +62,14 @@ class PlotData(PlotSetter, metaclass=ABCMeta):
         obj.fmtdata = fmtdata
         return obj
 
-    def set_label(self, label: Union[str, List[str], None] = None) -> Self:
+    def set_label(self, mapper: Optional[Mapping[str, str]] = None) -> Self:
         """
-        Reset the labels.
+        Reset the labels according to the mapper.
 
         Parameters
         ----------
-        label : Union[str, List[str], None], optional
-            Labels of the data, this takes either a single string or a list of strings.
-            If is a list, should be the same length as `data`, with each element
-            corresponding to a specific array in `data`. By default None.
+        mapper : Optional[Mapping], optional
+            Mapper to apply to the labels, by default None.
 
         Returns
         -------
@@ -153,9 +77,21 @@ class PlotData(PlotSetter, metaclass=ABCMeta):
             An instance of self.
 
         """
-        if label is not None:
-            self.label = label
-            self.fmt = "{0}"
+        if self.label in mapper:
+            self.label = mapper[self.label]
+        return self
+
+    def stage(self) -> Self:
+        """
+        Stage all the operations on the data while cleaning the records.
+
+        Returns
+        -------
+        Self
+            An instance of self.
+
+        """
+        self.fmt = "{0}"
         return self
 
     @property
@@ -187,7 +123,7 @@ class PlotData(PlotSetter, metaclass=ABCMeta):
             A new instance of `PlotData`.
 
         """
-        return _PlotDataBatch(self, *others)
+        return _PlotDatas(self, *others)
 
     def log(self) -> "PlotData":
         """
@@ -296,8 +232,17 @@ class PlotData(PlotSetter, metaclass=ABCMeta):
         self.fmtdata = self.data
         return self
 
-    @hintwithmethod(Histogram.__init__, True)
-    def hist(self, **kwargs) -> None:
+    # pylint: disable=unused-argument
+    def hist(
+        self,
+        bins: int = 100,
+        fit: bool = True,
+        density: bool = True,
+        same_bin: bool = True,
+        stats: bool = True,
+        *,
+        on: Optional[AxesWrapper] = None,
+    ) -> None:
         """
         Plot a histogram of the data.
 
@@ -323,22 +268,31 @@ class PlotData(PlotSetter, metaclass=ABCMeta):
             figure. By default None.
 
         """
-        with unbatched(self.customize)(FigWrapper, 1, 1) as fig:
-            kwargs["on"] = fig.axes[0]
+        with single(self.customize)(FigWrapper, 1, 1) as fig:
+            on = fig.axes[0]
+            kwargs: Dict[str] = {}
+            for key in Histogram.__init__.__code__.co_varnames[1:]:
+                kwargs[key] = locals()[key]
             self.customize(
-                Histogram,
-                data=self.fmtdata,
-                label=self.fmtlabel,
-                **kwargs,
+                Histogram, data=self.fmtdata, label=self.fmtlabel, **kwargs
             ).perform()
 
-    @hintwithmethod(LineChart.__init__, True)
-    def plot(self, **kwargs) -> None:
+    def plot(
+        self,
+        ticks: Optional["NDArray"] = None,
+        scatter: bool = False,
+        figsize_adjust: bool = True,
+        *,
+        on: Optional[AxesWrapper] = None,
+    ) -> None:
         """
         Create a line chart for the data.
 
         Parameters
         ----------
+        ticks : Optional[NDArray], optional
+            Specifies the x-ticks for the line chart. If not provided, the x-ticks will
+            be set to `range(len(data))`. By default None.
         scatter : bool, optional
             Determines whether to include scatter points in the line chart, by default
             False.
@@ -351,17 +305,37 @@ class PlotData(PlotSetter, metaclass=ABCMeta):
             figure. By default None.
 
         """
-        with unbatched(self.customize)(FigWrapper, 1, 1) as fig:
-            kwargs["on"] = fig.axes[0]
+        with single(self.customize)(FigWrapper, 1, 1) as fig:
+            on = fig.axes[0]
+            kwargs: Dict[str] = {}
+            for key in LineChart.__init__.__code__.co_varnames[1:]:
+                kwargs[key] = locals()[key]
             self.customize(
-                LineChart,
-                data=self.fmtdata,
-                label=self.fmtlabel,
-                **kwargs,
+                LineChart, data=self.fmtdata, label=self.fmtlabel, **kwargs
             ).perform()
 
+    def batched(self, n: int = 1) -> Self:
+        """
+        If this instance is joined by multiple PlotData objects, batch the objects into
+        tuples of length n, otherwise return self.
 
-class _PlotDataBatch:
+        Parameters
+        ----------
+        n : int, optional
+            Specifies the batch size, by default 1.
+
+        Returns
+        -------
+        PlotData
+            An instance of PlotData.
+
+        """
+        return self
+
+    # pylint: enable=unused-argument
+
+
+class _PlotDatas:
     def __init__(self, *args: Any) -> None:
         if not args:
             raise ValueError("number of data sets is 0")
@@ -373,134 +347,28 @@ class _PlotDataBatch:
                 self.children.append(a)
 
     def __getattr__(self, __name: str) -> Any:
-        if __name in {"hist", "plot", "set_label"}:
+        if __name in {"hist", "plot"}:
             return partial(getattr(PlotData, __name), self)
         attribs = (getattr(c, __name) for c in self.children)
         if __name in {"set_plot", "set_plot_default"}:
-            return BatchList(attribs, returns=self)
+            return MultiObject(attribs, call_reducer=lambda x: self)
         if __name == "customize":
-            return BatchList(attribs, reflex="reflex")
-        return BatchList(attribs, reducer=lambda x: self.__class__(*x))
+            return MultiObject(attribs, call_reflex="reflex")
+        return MultiObject(attribs, call_reducer=lambda x: self.__class__(*x))
 
-    def __setattr__(self, __name: str, __value: Any) -> None:
-        if __name in {"fmt", "label"}:
-            attribs = (partial(c.__setattr__, __name) for c in self.children)
-            BatchList(attribs)(batched(__value))
-        else:
-            super().__setattr__(__name, __value)
+    def __repr__(self) -> str:
+        return "[" + ",\n ".join([repr(x) for x in self.children]) + "]"
 
+    def __getitem__(self, __key: str) -> PlotData:
+        return self.children[__key]
 
-class BatchList(list):
-    """
-    A subclass of `list` that enables batched attrubutes-getting and calling.
-    Differences to `list` that if the `__getattr__()` or `__call__()` method
-    is called, each element's `__getattr__()` or `__call__()` will be called
-    instead, and the results come as a new `BatchList` object.
-
-    Parameters
-    ----------
-    *args : Any
-        Arguments for initializing a `list` object.
-    returns : Any, optional
-        Specifies the returns of `__call__()`. If not specified, a new
-        `BatchList` object will be returned. By default None.
-    reducer : Optional[Callable], optional
-        Specifies a reducer for the returns of `__call__()`, by default None.
-    reflex : Optional[str], optional
-        If str, the returns of an element's `__call__()` will be provided to
-        the next element as a keyword argument named as `reflex`, by default
-        None.
-
-    """
-
-    @overload
-    def __init__(
-        self,
-        returns: Any = None,
-        reducer: Optional[Callable] = None,
-        reflex: Optional[str] = None,
-    ) -> None:
-        ...
-
-    @overload
-    def __init__(
-        self,
-        __iterable: Iterable,
-        /,
-        returns: Any = None,
-        reducer: Optional[Callable] = None,
-        reflex: Optional[str] = None,
-    ) -> None:
-        ...
-
-    def __init__(
-        self,
-        *args: Any,
-        returns: Any = None,
-        reducer: Optional[Callable] = None,
-        reflex: Optional[str] = None,
-    ) -> None:
-        self.__returns = returns
-        self.__reducer = reducer
-        self.__reflex = reflex
-        super().__init__(*args)
-
-    def __getattr__(self, __name: str):
-        return BatchList(
-            (getattr(x, __name) for x in self),
-            returns=self.__returns,
-            reducer=self.__reducer,
-            reflex=self.__reflex,
-        )
-
-    def __call__(self, *args: Any, **kwargs: Any) -> Any:
-        batch: BatchList = self.__class__([], reflex=self.__reflex)
-        for i, obj in enumerate(self):
-            clean_args = [a[i] if isinstance(a, self.__class__) else a for a in args]
-            clean_kwargs = {
-                k: v[i] if isinstance(v, self.__class__) else v
-                for k, v in kwargs.items()
-            }
-            if self.__reflex and i > 0:
-                clean_kwargs[self.__reflex] = r
-            batch.append(r := obj(*clean_args, **clean_kwargs))
-        returns = batch if self.__returns is None else self.__returns
-        return self.__reducer(returns) if self.__reducer is not None else returns
-
-
-def batched(x: T) -> T:
-    """
-    If a `list` object is provided, returns a `BatchList` object initialized
-    by it. Otherwise, return the input itself.
-
-    Parameters
-    ----------
-    x : T
-        Can be a list or anything else.
-
-    Returns
-    -------
-    T
-        Batched object.
-
-    """
-    return BatchList(x) if isinstance(x, list) else x
-
-
-def unbatched(x: T) -> T:
-    """
-    If a `BatchList` object is provided, returns its last element.
-    Otherwise, return the input itself.
-
-    Parameters
-    ----------
-    x : T
-        Can be an instance of `BatchList` or anything else.
-
-    Returns
-    -------
-    T
-        Unbatched object.
-
-    """
-    return x[-1] if isinstance(x, BatchList) else x
+    def batched(self, n: int = 1) -> "MultiObject":
+        """Overrides `PlotData.batched()`."""
+        if n <= 0:
+            raise ValueError(f"batch size <= 0: {n}")
+        if n > len(self.children):
+            return self
+        multi = MultiObject(call_reducer=cleaner)
+        for i in range(0, len(self.children), n):
+            multi.__multiobjects__.append(_PlotDatas(*self.children[i : i + n]))
+        return multi

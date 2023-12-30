@@ -9,7 +9,6 @@ $ pip install dataplot
 ## Requirements
 ```txt
 attrs
-hintwith>=0.1.0
 lazyr>=0.0.11
 matplotlib
 numpy

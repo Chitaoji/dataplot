@@ -40,6 +40,7 @@ class Histogram(DataSetter):
 
         Returns
         -------
+        List[float]
             The bins of the histogram plot.
 
         """

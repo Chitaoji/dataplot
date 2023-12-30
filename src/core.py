@@ -5,16 +5,19 @@ NOTE: this module is private. All functions and objects are available in the mai
 `dataplot` namespace - use that instead.
 
 """
-from hintwith import hintwithmethod
+from typing import TYPE_CHECKING, List, Optional, Union, overload
 
-from .dataset import PlotData
+from .dataset import PlotData, _PlotDatas
 from .setter import FigWrapper
+
+if TYPE_CHECKING:
+    from numpy.typing import NDArray
+
 
 __all__ = ["figure", "data"]
 
 
-@hintwithmethod(FigWrapper.__init__)
-def figure(*args, **kwargs) -> FigWrapper:
+def figure(nrows: int = 1, ncols: int = 1) -> FigWrapper:
     """
     Provides a context manager interface (`__enter__` and `__exit__` methods) for
     creating a figure with subplots and setting various properties for the figure.
@@ -34,10 +37,45 @@ def figure(*args, **kwargs) -> FigWrapper:
         A wrapper of figure.
 
     """
-    return FigWrapper(*args, **kwargs)
+    return FigWrapper(nrows=nrows, ncols=ncols)
 
 
-@hintwithmethod(PlotData.__new__)
-def data(*args, **kwargs) -> PlotData:
-    """Calls `PlotData()`."""
-    return PlotData(*args, **kwargs)
+@overload
+def data(x: "NDArray", label: Optional[str] = None) -> PlotData:
+    ...
+
+
+@overload
+def data(x: List["NDArray"], label: Optional[List[str]] = None) -> PlotData:
+    ...
+
+
+def data(
+    x: Union["NDArray", List["NDArray"]], label: Union[str, List[str], None] = None
+) -> PlotData:
+    """
+    Initializes a dataset interface which provides methods for mathematical
+    operations and plotting.
+
+    Parameters
+    ----------
+    x : Union[NDArray, List[NDArray]]
+        Input values, this takes either a single array or a list of arrays, each
+        representing a set of data.
+    label : Union[str, List[str], None], optional
+        Labels of the data, this takes either a single string or a list of strings.
+        If a list, should be the same length as `x`, with each element corresponding
+        to a specific array in `x`. By default None.
+
+    Returns
+    -------
+    PlotData
+        Provides methods for mathematical operations and plotting.
+
+    """
+    if isinstance(x, list):
+        if label is None:
+            label = [f"x{i}" for i in range(1, 1 + len(x))]
+        datas: List[PlotData] = [PlotData(d, lb) for d, lb in zip(x, label)]
+        return _PlotDatas(*datas)
+    return PlotData(x, label=label)
