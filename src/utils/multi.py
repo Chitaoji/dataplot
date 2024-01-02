@@ -2,11 +2,23 @@
 The core of multis: MultiObject, etc.
 
 """
-from typing import Any, Callable, Iterable, Optional, TypeVar, overload
+from typing import (
+    Any,
+    Callable,
+    Generic,
+    Iterable,
+    Literal,
+    Optional,
+    TypeVar,
+    overload,
+)
+
+from attrs import define
 
 T = TypeVar("T")
 
-__all__ = ["MultiObject", "cleaner", "single"]
+
+__all__ = ["MultiObject", "REMAIN", "cleaner", "single"]
 
 
 class MultiObject:
@@ -20,8 +32,6 @@ class MultiObject:
     Here are the methods that will be overloaded:
     * __getattr__()
     * __setattr__()
-    * __getitem__()
-    * __setitem__()
     * __call__()
     * All public methods
     * All private methods that starts with only one "_"
@@ -50,7 +60,7 @@ class MultiObject:
     @overload
     def __init__(
         self,
-        call_reducer: Callable[[list], Any] = None,
+        call_reducer: Optional[Callable[[list], Any]] = None,
         call_reflex: Optional[str] = None,
     ) -> None:
         ...
@@ -60,7 +70,7 @@ class MultiObject:
         self,
         __iterable: Iterable,
         /,
-        call_reducer: Callable[[list], Any] = None,
+        call_reducer: Optional[Callable[[list], Any]] = None,
         call_reflex: Optional[str] = None,
     ) -> None:
         ...
@@ -68,7 +78,7 @@ class MultiObject:
     def __init__(
         self,
         *args,
-        call_reducer: Callable[[list], Any] = None,
+        call_reducer: Optional[Callable[[list], Any]] = None,
         call_reflex: Optional[str] = None,
     ) -> None:
         self.__call_reducer = call_reducer
@@ -82,35 +92,51 @@ class MultiObject:
             call_reflex=self.__call_reflex,
         )
 
+    def __setattr__(self, __name: Any, __value: Any) -> None:
+        if isinstance(__name, str) and __name.startswith("_"):
+            super().__setattr__(__name, __value)
+        else:
+            for i, obj in enumerate(self.__items):
+                setattr(obj, single(__name, n=i), single(__value, n=i))
+
     def __call__(self, *args: Any, **kwargs: Any) -> Any:
         returns = []
         for i, obj in enumerate(self.__items):
-            clean_args = [
-                a.__multiobjects__[i] if isinstance(a, self.__class__) else a
-                for a in args
-            ]
-            clean_kwargs = {
-                k: v.__multiobjects__[i] if isinstance(v, self.__class__) else v
-                for k, v in kwargs.items()
-            }
+            clean_args = [single(a, n=i) for a in args]
+            clean_kwargs = {k: single(v, n=i) for k, v in kwargs.items()}
             if self.__call_reflex and i > 0:
                 clean_kwargs[self.__call_reflex] = r
             returns.append(r := obj(*clean_args, **clean_kwargs))
         if self.__call_reducer:
-            return self.__call_reducer(returns)
+            reduced = self.__call_reducer(returns)
+            if isinstance(reduced, MultiFlag) and reduced.flag == 0:
+                pass
+            else:
+                return reduced
         return self.__class__(returns, call_reflex=self.__call_reflex)
 
     def __repr__(self) -> str:
-        items_repr = ("\n- ").join(repr(x).replace("\n", "\n  ") for x in self.__items)
-        sig_repr = (
+        items = ("\n- ").join(repr(x).replace("\n", "\n  ") for x in self.__items)
+        call_reducer = self.__call_reducer.__name__ if self.__call_reducer else None
+        signature = (
             self.__class__.__name__
-            + f"(call_reducer={self.__call_reducer.__name__}, call_reflex={self.__call_reflex})"
+            + f"(call_reducer={call_reducer}, call_reflex={self.__call_reflex})"
         )
-        return f"{sig_repr} of {len(self.__items)}:\n- {items_repr}"
+        return f"{signature}:\n- {items}"
 
     @property
     def __multiobjects__(self):
         return self.__items
+
+
+@define
+class MultiFlag(Generic[T]):
+    """Flag for MultiObjects."""
+
+    flag: T
+
+
+REMAIN: MultiFlag[Literal[0]] = MultiFlag(0)
 
 
 def cleaner(x: list) -> Optional[list]:
@@ -134,15 +160,18 @@ def cleaner(x: list) -> Optional[list]:
     return MultiObject(x, call_reducer=cleaner)
 
 
-def single(x: T) -> T:
+def single(x: T, n: int = -1) -> T:
     """
-    If a MultiObject is provided, return its last element, otherwise return
+    If a MultiObject is provided, return its n-th element, otherwise return
     the input itself.
 
     Parameters
     ----------
     x : T
         Can be a MultiObject or anything else.
+    n : int, optional
+        Specifies which element to return if a MultiObject is provided, by
+        default -1.
 
     Returns
     -------
@@ -150,4 +179,4 @@ def single(x: T) -> T:
         A single object.
 
     """
-    return x.__multiobjects__[-1] if isinstance(x, MultiObject) else x
+    return x.__multiobjects__[n] if isinstance(x, MultiObject) else x
