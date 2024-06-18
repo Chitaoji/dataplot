@@ -5,6 +5,7 @@ NOTE: this module is private. All functions and objects are available in the mai
 `dataplot` namespace - use that instead.
 
 """
+
 from abc import ABCMeta
 from functools import partial
 from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional, TypeVar
@@ -61,7 +62,7 @@ class PlotDataSet(PlotSetter, metaclass=ABCMeta):
         return obj
 
     def __repr__(self) -> str:
-        return self.__class__.__name__ + ":\n- " + self._data_info()
+        return self.__class__.__name__ + "\n- " + self._data_info()
 
     def __getitem__(self, __key: str) -> Self:
         return self
@@ -369,7 +370,7 @@ class PlotDataSets:
 
     def __repr__(self) -> str:
         data_info = "\n- ".join([x._data_info() for x in self.children])
-        return f"{PlotDataSet.__name__}:\n- {data_info}"
+        return f"{PlotDataSet.__name__}\n- {data_info}"
 
     def __getitem__(self, __key: str) -> PlotDataSet:
         return self.children[__key]

@@ -2,6 +2,7 @@
 The core of multis: MultiObject, etc.
 
 """
+
 from typing import (
     Any,
     Callable,
@@ -62,8 +63,7 @@ class MultiObject:
         self,
         call_reducer: Optional[Callable[[list], Any]] = None,
         call_reflex: Optional[str] = None,
-    ) -> None:
-        ...
+    ) -> None: ...
 
     @overload
     def __init__(
@@ -72,8 +72,7 @@ class MultiObject:
         /,
         call_reducer: Optional[Callable[[list], Any]] = None,
         call_reflex: Optional[str] = None,
-    ) -> None:
-        ...
+    ) -> None: ...
 
     def __init__(
         self,
@@ -122,7 +121,7 @@ class MultiObject:
             self.__class__.__name__
             + f"(call_reducer={call_reducer}, call_reflex={self.__call_reflex})"
         )
-        return f"{signature}:\n- {items}"
+        return f"{signature}\n- {items}"
 
     @property
     def __multiobjects__(self):
