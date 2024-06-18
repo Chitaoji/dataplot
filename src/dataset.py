@@ -5,6 +5,7 @@ NOTE: this module is private. All functions and objects are available in the mai
 `dataplot` namespace - use that instead.
 
 """
+
 from abc import ABCMeta
 from functools import partial
 from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional, TypeVar
@@ -17,7 +18,7 @@ from typing_extensions import Self
 from .histogram import Histogram
 from .linechart import LineChart
 from .setter import AxesWrapper, FigWrapper, PlotSetter, PlotSettings
-from .utils.multis import MultiObject, cleaner, single
+from .utils.multi import REMAIN, MultiObject, cleaner, single
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
@@ -25,11 +26,11 @@ if TYPE_CHECKING:
 
 T = TypeVar("T")
 
-__all__ = ["PlotData"]
+__all__ = ["PlotDataSet"]
 
 
 @define
-class PlotData(PlotSetter, metaclass=ABCMeta):
+class PlotDataSet(PlotSetter, metaclass=ABCMeta):
     """
     Provides methods for mathematical operations and plotting.
 
@@ -38,29 +39,37 @@ class PlotData(PlotSetter, metaclass=ABCMeta):
 
     """
 
-    data: "NDArray" = field(repr=False)
+    data: "NDArray"
     label: Optional[str] = field(default=None)
-    fmt: str = field(init=False, repr=lambda x: repr(x).format(""), default="{0}")
-    fmtdata: "NDArray" = field(init=False, repr=False)
-    settings: PlotSettings = field(
-        init=False, factory=PlotSettings, repr=PlotSettings.repr_not_none
-    )
+    fmt: str = field(init=False, default="{0}")
+    fmtdata: "NDArray" = field(init=False)
+    settings: PlotSettings = field(init=False, factory=PlotSettings)
+
+    @classmethod
+    def __subclasshook__(cls, __subclass: type) -> bool:
+        if issubclass(__subclass, PlotDataSets):
+            return True
+        return super().__subclasshook__(__subclass)
 
     def __attrs_post_init__(self) -> None:
         self.label = "x1" if self.label is None else self.label
         self.fmtdata = self.data
 
-    @classmethod
-    def __subclasshook__(cls, __subclass: type) -> bool:
-        if issubclass(__subclass, _PlotDatas):
-            return True
-        return super().__subclasshook__(__subclass)
-
-    def __create(self, fmt: str, fmtdata: "NDArray") -> "PlotData":
+    def __create(self, fmt: str, fmtdata: "NDArray") -> "PlotDataSet":
         obj = self.customize(self.__class__, self.data, self.label)
         obj.fmt = fmt
         obj.fmtdata = fmtdata
         return obj
+
+    def __repr__(self) -> str:
+        return self.__class__.__name__ + "\n- " + self._data_info()
+
+    def __getitem__(self, __key: str) -> Self:
+        return self
+
+    def _data_info(self) -> str:
+        not_none = self.settings.repr_not_none()
+        return f"{self.fmtlabel}{': 'if not_none else ''}{not_none}"
 
     def set_label(self, mapper: Optional[Mapping[str, str]] = None) -> Self:
         """
@@ -97,7 +106,7 @@ class PlotData(PlotSetter, metaclass=ABCMeta):
     @property
     def fmtlabel(self) -> str:
         """
-        Returns the formatted label.
+        Return the formatted label.
 
         Returns
         -------
@@ -107,39 +116,38 @@ class PlotData(PlotSetter, metaclass=ABCMeta):
         """
         return self.fmt.format(self.label)
 
-    def join(self, *others: "PlotData") -> "PlotData":
+    def join(self, *others: "PlotDataSet") -> "PlotDataSet":
         """
-        Merge two or more `PlotData` instances, integrating the attributes
-        of each.
+        Merge two or more `PlotDataSet` instances.
 
         Parameters
         ----------
-        *others : PlotData
+        *others : PlotDataSet
             The instances to be merged.
 
         Returns
         -------
-        PlotData
-            A new instance of `PlotData`.
+        PlotDataSet
+            A new instance of `PlotDataSet`.
 
         """
-        return _PlotDatas(self, *others)
+        return PlotDataSets(self, *others)
 
-    def log(self) -> "PlotData":
+    def log(self) -> "PlotDataSet":
         """
         Perform a log operation on the data.
 
         Returns
         -------
-        PlotData
-            A new instance of `PlotData`.
+        PlotDataSet
+            A new instance of `PlotDataSet`.
 
         """
         new_fmt = f"log({self.fmt})"
         new_fmtdata = np.log(self.fmtdata)
         return self.__create(new_fmt, new_fmtdata)
 
-    def rolling(self, n: int) -> "PlotData":
+    def rolling(self, n: int) -> "PlotDataSet":
         """
         Perform a rolling-mean operation on the data.
 
@@ -151,15 +159,15 @@ class PlotData(PlotSetter, metaclass=ABCMeta):
 
         Returns
         -------
-        PlotData
-            A new instance of `PlotData`.
+        PlotDataSet
+            A new instance of `PlotDataSet`.
 
         """
         new_fmt = f"rolling({self.fmt}, {n})"
         new_fmtdata = pd.Series(self.fmtdata).rolling(n).mean().values
         return self.__create(new_fmt, new_fmtdata)
 
-    def exp(self) -> "PlotData":
+    def exp(self) -> "PlotDataSet":
         """
         Perform an exp operation on the data.
 
@@ -173,29 +181,29 @@ class PlotData(PlotSetter, metaclass=ABCMeta):
         new_fmtdata = np.exp(self.fmtdata)
         return self.__create(new_fmt, new_fmtdata)
 
-    def demean(self) -> "PlotData":
+    def demean(self) -> "PlotDataSet":
         """
         Perform a demean operation on the data by subtracting its mean.
 
         Returns
         -------
-        PlotData
-            A new instance of `PlotData`.
+        PlotDataSet
+            A new instance of `PlotDataSet`.
 
         """
         new_fmt = f"{self.fmt} - mean({self.fmt})"
         new_fmtdata = self.fmtdata - np.nanmean(self.fmtdata)
         return self.__create(new_fmt, new_fmtdata)
 
-    def zscore(self) -> "PlotData":
+    def zscore(self) -> "PlotDataSet":
         """
         Perform a zscore operation on the data by subtracting its mean and then
         dividing by its standard deviation.
 
         Returns
         -------
-        PlotData
-            A new instance of `PlotData`.
+        PlotDataSet
+            A new instance of `PlotDataSet`.
 
         """
         new_fmt = f"({self.fmt} - mean({self.fmt})) / std({self.fmt})"
@@ -204,15 +212,15 @@ class PlotData(PlotSetter, metaclass=ABCMeta):
         )
         return self.__create(new_fmt, new_fmtdata)
 
-    def cumsum(self) -> "PlotData":
+    def cumsum(self) -> "PlotDataSet":
         """
         Perform a cumsum operation on the data by calculating its cummulative
         sums.
 
         Returns
         -------
-        PlotData
-            A new instance of `PlotData`.
+        PlotDataSet
+            A new instance of `PlotDataSet`.
 
         """
         new_fmt = f"cumsum({self.fmt})"
@@ -316,8 +324,8 @@ class PlotData(PlotSetter, metaclass=ABCMeta):
 
     def batched(self, n: int = 1) -> Self:
         """
-        If this instance is joined by multiple PlotData objects, batch the objects into
-        tuples of length n, otherwise return self.
+        If this instance is joined by multiple `PlotDataSet` objects, batch the objects
+        into tuples of length n, otherwise return self.
 
         Parameters
         ----------
@@ -326,8 +334,8 @@ class PlotData(PlotSetter, metaclass=ABCMeta):
 
         Returns
         -------
-        PlotData
-            An instance of PlotData.
+        PlotDataSet
+            An instance of `PlotDataSet`.
 
         """
         return self
@@ -335,11 +343,13 @@ class PlotData(PlotSetter, metaclass=ABCMeta):
     # pylint: enable=unused-argument
 
 
-class _PlotDatas:
+class PlotDataSets:
+    """A duck subclass of `PlotDataSet`."""
+
     def __init__(self, *args: Any) -> None:
         if not args:
             raise ValueError("number of data sets is 0")
-        self.children: List[PlotData] = []
+        self.children: List[PlotDataSet] = []
         for a in args:
             if isinstance(a, self.__class__):
                 self.children.extend(a.children)
@@ -347,28 +357,38 @@ class _PlotDatas:
                 self.children.append(a)
 
     def __getattr__(self, __name: str) -> Any:
-        if __name in {"hist", "plot"}:
-            return partial(getattr(PlotData, __name), self)
+        if __name.startswith("_"):
+            raise AttributeError(f"cannot reach attribute '{__name}' after joining")
+        if __name in {"hist", "plot", "join"}:
+            return partial(getattr(PlotDataSet, __name), self)
         attribs = (getattr(c, __name) for c in self.children)
         if __name in {"set_plot", "set_plot_default"}:
             return MultiObject(attribs, call_reducer=lambda x: self)
         if __name == "customize":
             return MultiObject(attribs, call_reflex="reflex")
-        return MultiObject(attribs, call_reducer=lambda x: self.__class__(*x))
+        return MultiObject(attribs, call_reducer=self._join_if_dataset)
 
     def __repr__(self) -> str:
-        return "[" + ",\n ".join([repr(x) for x in self.children]) + "]"
+        data_info = "\n- ".join([x._data_info() for x in self.children])
+        return f"{PlotDataSet.__name__}\n- {data_info}"
 
-    def __getitem__(self, __key: str) -> PlotData:
+    def __getitem__(self, __key: str) -> PlotDataSet:
         return self.children[__key]
 
     def batched(self, n: int = 1) -> "MultiObject":
-        """Overrides `PlotData.batched()`."""
+        """Overrides `PlotDataSet.batched()`."""
         if n <= 0:
             raise ValueError(f"batch size <= 0: {n}")
         if n > len(self.children):
             return self
         multi = MultiObject(call_reducer=cleaner)
         for i in range(0, len(self.children), n):
-            multi.__multiobjects__.append(_PlotDatas(*self.children[i : i + n]))
+            multi.__multiobjects__.append(PlotDataSets(*self.children[i : i + n]))
         return multi
+
+    @classmethod
+    def _join_if_dataset(cls, x: list) -> Any:
+        if x:
+            if isinstance(x[0], PlotDataSet):
+                return cls(*x)
+        return REMAIN

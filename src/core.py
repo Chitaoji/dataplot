@@ -7,7 +7,7 @@ NOTE: this module is private. All functions and objects are available in the mai
 """
 from typing import TYPE_CHECKING, List, Optional, Union, overload
 
-from .dataset import PlotData, _PlotDatas
+from .dataset import PlotDataSet, PlotDataSets
 from .setter import FigWrapper
 
 if TYPE_CHECKING:
@@ -41,18 +41,18 @@ def figure(nrows: int = 1, ncols: int = 1) -> FigWrapper:
 
 
 @overload
-def data(x: "NDArray", label: Optional[str] = None) -> PlotData:
+def data(x: "NDArray", label: Optional[str] = None) -> PlotDataSet:
     ...
 
 
 @overload
-def data(x: List["NDArray"], label: Optional[List[str]] = None) -> PlotData:
+def data(x: List["NDArray"], label: Optional[List[str]] = None) -> PlotDataSet:
     ...
 
 
 def data(
     x: Union["NDArray", List["NDArray"]], label: Union[str, List[str], None] = None
-) -> PlotData:
+) -> PlotDataSet:
     """
     Initializes a dataset interface which provides methods for mathematical
     operations and plotting.
@@ -69,13 +69,13 @@ def data(
 
     Returns
     -------
-    PlotData
+    PlotDataSet
         Provides methods for mathematical operations and plotting.
 
     """
     if isinstance(x, list):
         if label is None:
             label = [f"x{i}" for i in range(1, 1 + len(x))]
-        datas: List[PlotData] = [PlotData(d, lb) for d, lb in zip(x, label)]
-        return _PlotDatas(*datas)
-    return PlotData(x, label=label)
+        datas = [PlotDataSet(d, lb) for d, lb in zip(x, label)]
+        return PlotDataSets(*datas)
+    return PlotDataSet(x, label=label)

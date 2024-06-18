@@ -5,6 +5,7 @@ NOTE: this module is private. All functions and objects are available in the mai
 `dataplot` namespace - use that instead.
 
 """
+
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -87,8 +88,7 @@ class PlotSettings:
 
     def repr_not_none(self) -> str:
         """
-        Returns a string representation of the object, where only the
-        attributes with non-None values are included.
+        Returns a string representation of attributes with non-None values.
 
         Returns
         -------
@@ -97,7 +97,7 @@ class PlotSettings:
 
         """
         diff = [f"{k}={repr(v)}" for k, v in self.asdict().items() if v is not None]
-        return f"{self.__class__.__name__}({', '.join(diff)})"
+        return ", ".join(diff)
 
     @classmethod
     def available(cls) -> List[SettingAvailable]:
