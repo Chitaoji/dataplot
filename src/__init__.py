@@ -13,6 +13,7 @@ Provides plotters useful in datascience.
 This project falls under the BSD 3-Clause License.
 
 """
+
 from typing import List
 
 import lazyr

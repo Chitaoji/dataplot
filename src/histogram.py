@@ -5,19 +5,20 @@ NOTE: this module is private. All functions and objects are available in the mai
 `dataplot` namespace - use that instead.
 
 """
+
 from typing import List, Optional, Tuple, Union
 
 import numpy as np
 from attrs import define
 from scipy import stats
 
-from .setter import AxesWrapper, DataSetter
+from .setter import AxesWrapper, Plotter
 
 __all__ = ["Histogram"]
 
 
 @define
-class Histogram(DataSetter):
+class Histogram(Plotter):
     """
     A plotting class that creates a histogram.
 
@@ -30,7 +31,7 @@ class Histogram(DataSetter):
     stats: bool = True
 
     def perform(self, reflex: Optional[List[float]] = None) -> List[float]:
-        """Do the plotting job.
+        """Do the plotting.
 
         Parameters
         ----------
@@ -50,7 +51,9 @@ class Histogram(DataSetter):
                 xlabel="value",
                 ylabel="density" if self.density else "count",
             ).loading(self.settings)
-            ds, b = self.__hist(ax, bins=self.bins if reflex is None else reflex)
+            ds, b = self.__hist(
+                ax, bins=self.bins if (reflex is None or not self.same_bin) else reflex
+            )
             if self.stats:
                 ax.set_plot(xlabel=ax.settings.xlabel + "\n" + ds)
         return b

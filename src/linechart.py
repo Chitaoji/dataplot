@@ -5,12 +5,13 @@ NOTE: this module is private. All functions and objects are available in the mai
 `dataplot` namespace - use that instead.
 
 """
+
 from typing import TYPE_CHECKING, Optional
 
 import numpy as np
 from attrs import define
 
-from .setter import AxesWrapper, DataSetter
+from .setter import AxesWrapper, Plotter
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
@@ -19,7 +20,7 @@ __all__ = ["LineChart"]
 
 
 @define
-class LineChart(DataSetter):
+class LineChart(Plotter):
     """
     A plotting class that creates a line chart.
 
@@ -27,10 +28,8 @@ class LineChart(DataSetter):
 
     ticks: Optional["NDArray[np.float64]"] = None
     scatter: bool = False
-    figsize_adjust: bool = True
 
     def perform(self, reflex: None = None) -> None:
-        """Do the plotting job."""
         with self.prepare() as ax:
             self.__plot(ax.loading(self.settings))
         return reflex

@@ -6,6 +6,7 @@ NOTE: this module is private. All functions and objects are available in the mai
 
 """
 
+import logging
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -32,10 +33,10 @@ if TYPE_CHECKING:
 
 PlotSetterVar = TypeVar("PlotSetterVar", bound="PlotSetter")
 DefaultVar = TypeVar("DefaultVar")
-SettingAvailable = Literal[
+SettingKey = Literal[
     "title", "xlabel", "ylabel", "alpha", "figsize", "style", "legend_loc"
 ]
-StyleAvailable = Literal[
+StyleStr = Literal[
     "Solarize_Light2",
     "_classic_test_patch",
     "_mpl-gallery",
@@ -65,7 +66,21 @@ StyleAvailable = Literal[
     "seaborn-v0_8-whitegrid",
     "tableau-colorblind10",
 ]
-__all__ = ["PlotSettings", "PlotSetter", "DataSetter", "FigWrapper", "AxesWrapper"]
+LegendLocStr = Literal[
+    "best",
+    "upper right",
+    "upper left",
+    "lower left",
+    "lower right",
+    "right",
+    "center left",
+    "center right",
+    "lower center",
+    "upper center",
+    "center",
+]
+
+__all__ = ["PlotSettings", "PlotSetter", "Plotter", "FigWrapper", "AxesWrapper"]
 
 
 @define
@@ -77,13 +92,13 @@ class PlotSettings:
     ylabel: Optional[str] = None
     alpha: Optional[float] = None
     figsize: Optional[Tuple[int, int]] = None
-    style: Optional[StyleAvailable] = None
+    style: Optional[StyleStr] = None
     legend_loc: Optional[str] = None
 
-    def __getitem__(self, __key: SettingAvailable) -> Any:
+    def __getitem__(self, __key: SettingKey) -> Any:
         return getattr(self, __key)
 
-    def __setitem__(self, __key: SettingAvailable, __value: Any) -> None:
+    def __setitem__(self, __key: SettingKey, __value: Any) -> None:
         setattr(self, __key, __value)
 
     def repr_not_none(self) -> str:
@@ -100,9 +115,9 @@ class PlotSettings:
         return ", ".join(diff)
 
     @classmethod
-    def available(cls) -> List[SettingAvailable]:
+    def keys(cls) -> List[SettingKey]:
         """
-        Available settings.
+        Keys of settings.
 
         Returns
         -------
@@ -110,9 +125,9 @@ class PlotSettings:
             Names of the settings.
 
         """
-        return get_args(SettingAvailable)
+        return get_args(SettingKey)
 
-    def fromdict(self, d: Dict[SettingAvailable, Any]) -> None:
+    def fromdict(self, d: Dict[SettingKey, Any]) -> None:
         """
         Reads settings from a dict.
 
@@ -125,7 +140,7 @@ class PlotSettings:
         for k, v in d.items():
             setattr(self, k, v)
 
-    def asdict(self) -> Dict[SettingAvailable, Any]:
+    def asdict(self) -> Dict[SettingKey, Any]:
         """
         Returns a dict of the settings.
 
@@ -135,7 +150,7 @@ class PlotSettings:
             A dict of plot settings.
 
         """
-        return {x: getattr(self, x) for x in self.available()}
+        return {x: getattr(self, x) for x in self.keys()}
 
 
 @define(init=False)
@@ -152,11 +167,11 @@ class PlotSetter:
         ylabel: Optional[str] = None,
         alpha: Optional[float] = None,
         figsize: Optional[Tuple[int, int]] = None,
-        style: Optional[StyleAvailable] = None,
-        legend_loc: Optional[str] = None,
+        style: Optional[StyleStr] = None,
+        legend_loc: Optional[LegendLocStr] = None,
     ) -> Self:
         """
-        Sets the settings for plotting.
+        Set the settings for plotting.
 
         Parameters
         ----------
@@ -173,9 +188,9 @@ class PlotSetter:
         figsize : Optional[Tuple[int, int]], optional
             Figure size, this takes a tuple of two integers that specifies the
             width and height of the figure in inches, by default None.
-        style : Optional[str], optional
+        style : Optional[StyleStr], optional
             A style specification, by default None.
-        legend_loc : Optional[str], optional
+        legend_loc : Optional[LegendLocStr], optional
             Location of the legend, by default None.
 
         Returns
@@ -184,8 +199,9 @@ class PlotSetter:
             An instance of self.
 
         """
-        for key in self.settings.available():
+        for key in self.settings.keys():
             if (value := locals()[key]) is not None:
+                self.set_plot_check(key, value)
                 self.settings[key] = value
         return self
 
@@ -196,11 +212,15 @@ class PlotSetter:
         ylabel: Optional[str] = None,
         alpha: Optional[float] = None,
         figsize: Optional[Tuple[int, int]] = None,
-        style: Optional[StyleAvailable] = None,
-        legend_loc: Optional[str] = None,
+        style: Optional[StyleStr] = None,
+        legend_loc: Optional[LegendLocStr] = None,
     ) -> Self:
         """
         Set the default settings for plotting.
+
+        Parameters
+        ----------
+        Same as set_plot().
 
         Returns
         -------
@@ -208,15 +228,28 @@ class PlotSetter:
             An instance of self.
 
         """
-        for key in self.settings.available():
+        for key in self.settings.keys():
             if self.settings[key] is None:
                 self.settings[key] = locals()[key]
         return self
 
+    def set_plot_check(self, key: SettingKey, value: Any) -> None:
+        """
+        Checks if a new setting is illegal.
+
+        Parameters
+        ----------
+        key : SettingAvailable
+            Key of the setting.
+        value : Any
+            Value of the setting.
+
+        """
+
     # pylint: enable=unused-argument
     def loading(self, settings: PlotSettings) -> Self:
         """
-        Load in settings.
+        Load in the settings.
 
         Parameters
         ----------
@@ -233,25 +266,25 @@ class PlotSetter:
 
     def get_setting(
         self,
-        key: SettingAvailable,
+        key: SettingKey,
         default: Optional[DefaultVar] = None,
     ) -> DefaultVar:
         """
-        Returns the value of a specified setting if it is not None, otherwise
-        returns the default value.
+        Returns the value of a setting if it is not None, otherwise returns the
+        default value.
 
         Parameters
         ----------
-        key : Literal["title", "xlabel", "ylabel", "alpha", "figsize", "style"]
-            Specifies the setting to be loaded.
+        key : SettingAvailable
+            Key of the setting.
         default : Optional[DefaultVar], optional
-            Specifies the default value to be returned if the requested setting
+            Specifies the default value to be returned if the requested value
             is None, by default None.
 
         Returns
         -------
         DefaultVar
-            The value of the specified setting.
+            Value of the setting.
 
         """
         return default if (value := self.settings[key]) is None else value
@@ -293,12 +326,12 @@ class PlotSetter:
             for k, v in unmatched.items():
                 setattr(obj, k, v)
             return obj
-        raise ValueError(f"type {cls} cannot be customized by a PlotSetter")
+        raise ValueError(f"type {cls} cannot be customized")
 
 
 @define(init=False, slots=False)
-class DataSetter(PlotSetter):
-    """Sets the settings for data."""
+class Plotter(PlotSetter):
+    """Plots the data and the label."""
 
     data: Optional["NDArray"] = field(default=None, init=False)
     label: Optional[str] = field(default=None, init=False)
@@ -306,8 +339,8 @@ class DataSetter(PlotSetter):
 
     def prepare(self) -> "AxesWrapper":
         """
-        Prepares the data and labels and raises an error if they are not set
-        correctly.
+        Prepares the data and the label. Raises an error if they are not
+        passed in correctly.
 
         Returns
         -------
@@ -317,14 +350,16 @@ class DataSetter(PlotSetter):
         Raises
         ------
         DataSetterError
-            Raised when data or labels are not set yet.
+            Raised when the data or the label is not set yet.
 
         """
         for name in ["data", "label", "on"]:
             if getattr(self, name) is None:
                 raise DataSetterError(f"'{name}' not set yet.")
-        self.on: "AxesWrapper"
         return self.on
+
+    def perform(self, reflex: None = None) -> None:
+        """Do the plotting."""
 
 
 @define
@@ -339,6 +374,8 @@ class FigWrapper(PlotSetter):
 
     nrows: int = 1
     ncols: int = 1
+    active: bool = True
+    entered: bool = False
     fig: "Figure" = field(init=False)
     axes: List["AxesWrapper"] = field(init=False)
 
@@ -351,6 +388,8 @@ class FigWrapper(PlotSetter):
             An instance of self.
 
         """
+        if not self.active:
+            return self
         self.set_plot_default(style="seaborn-v0_8-darkgrid", figsize=(10, 5))
         plt.style.use(self.settings.style)
         self.fig, axes = plt.subplots(
@@ -359,6 +398,7 @@ class FigWrapper(PlotSetter):
         self.axes: List["AxesWrapper"] = [
             AxesWrapper(x) for x in np.array(axes).reshape(-1)
         ]
+        self.entered = True
         return self
 
     def __exit__(self, *args) -> None:
@@ -366,12 +406,28 @@ class FigWrapper(PlotSetter):
         Sets various properties for the figure and displays it.
 
         """
+        if not self.active:
+            return
         self.axes[0].ax.set_title(self.settings.title)
         if self.settings.figsize is not None:
             self.fig.set_size_inches(*self.settings.figsize)
         plt.show()
         plt.close(self.fig)
         plt.style.use("default")
+
+    def set_plot_check(self, key: SettingKey, value: Any) -> None:
+        if key in ["xlabel", "ylabel", "alpha", "legend_loc"]:
+            logging.warning(
+                "setting the '%s' of a figure will have no effect, try on one of "
+                "the axes instead",
+                key,
+            )
+        if self.entered and key == "style":
+            logging.warning(
+                "setting the '%s' of a figure will have no effect unless it's done "
+                "before invoking context manager",
+                key,
+            )
 
 
 @define

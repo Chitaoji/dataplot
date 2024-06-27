@@ -19,7 +19,7 @@ from attrs import define
 T = TypeVar("T")
 
 
-__all__ = ["MultiObject", "REMAIN", "cleaner", "single"]
+__all__ = ["MultiObject", "REMAIN", "multi", "multi_partial", "cleaner", "single"]
 
 
 class MultiObject:
@@ -34,6 +34,8 @@ class MultiObject:
     * __getattr__()
     * __setattr__()
     * __call__()
+    * __getitem__()
+    * __setitem__()
     * All public methods
     * All private methods that starts with only one "_"
 
@@ -43,19 +45,23 @@ class MultiObject:
     Parameters
     ----------
     *args : Iterable if specified
-        An iterable of the items if specified (refering to what is needed for
+        An iterable of the items if specified (the same as what is needed for
         initializing a list). If no argument is given, the constructor creates
         a new empty MultiObject.
     call_reducer : Optional[Callable[[list], Any]], optional
         Specifies a reducer for the returns of `__call__()`. If specified,
         should be a callable that receives the list of original returns, and
-        gives back a new return value. If None, the return value of `__call__()`
-        will always be a new MultiObject. By default None.
+        gives back a new return. If None, the return will be a new MultiObject.
+        By default None.
     call_reflex : Optional[str], optional
         If str, the returns of a previous element's `__call__()` will be
         provided to the next element as a keyword argument named by it, by
         default None.
-
+    attr_reducer: Optional[Callable[[list, str], Any]] = None,
+        Specifies a reducer for the returns of `__getattr__()`. If specified,
+        should be a callable that receives 2 positional arguments: the list of
+        original returns and the attribute name, and gives back a new return. If
+        None, the return will be a new MultiObject. By default None.
     """
 
     @overload
@@ -63,6 +69,7 @@ class MultiObject:
         self,
         call_reducer: Optional[Callable[[list], Any]] = None,
         call_reflex: Optional[str] = None,
+        attr_reducer: Optional[Callable[[list, str], Any]] = None,
     ) -> None: ...
 
     @overload
@@ -72,6 +79,7 @@ class MultiObject:
         /,
         call_reducer: Optional[Callable[[list], Any]] = None,
         call_reflex: Optional[str] = None,
+        attr_reducer: Optional[Callable[[list, str], Any]] = None,
     ) -> None: ...
 
     def __init__(
@@ -79,17 +87,22 @@ class MultiObject:
         *args,
         call_reducer: Optional[Callable[[list], Any]] = None,
         call_reflex: Optional[str] = None,
+        attr_reducer: Optional[Callable[[list, str], Any]] = None,
     ) -> None:
         self.__call_reducer = call_reducer
         self.__call_reflex = call_reflex
+        self.__attr_reducer = attr_reducer
         self.__items = list(*args)
 
     def __getattr__(self, __name: str) -> "MultiObject":
-        return MultiObject(
-            (getattr(x, __name) for x in self.__items),
-            call_reducer=self.__call_reducer,
-            call_reflex=self.__call_reflex,
-        )
+        attrs = [getattr(x, __name) for x in self.__items]
+        if self.__attr_reducer:
+            reduced = self.__attr_reducer(attrs, __name)
+            if isinstance(reduced, MultiFlag) and reduced == REMAIN:
+                pass
+            else:
+                return reduced
+        return MultiObject(attrs)
 
     def __setattr__(self, __name: Any, __value: Any) -> None:
         if isinstance(__name, str) and __name.startswith("_"):
@@ -108,18 +121,26 @@ class MultiObject:
             returns.append(r := obj(*clean_args, **clean_kwargs))
         if self.__call_reducer:
             reduced = self.__call_reducer(returns)
-            if isinstance(reduced, MultiFlag) and reduced.flag == 0:
+            if isinstance(reduced, MultiFlag) and reduced == REMAIN:
                 pass
             else:
                 return reduced
         return self.__class__(returns, call_reflex=self.__call_reflex)
+
+    def __getitem__(self, __key: str) -> "MultiObject":
+        return MultiObject((x[__key] for x in self.__items))
+
+    def __setitem__(self, __key: str, __value: Any) -> "MultiObject":
+        for i, obj in enumerate(self.__items):
+            obj[single(__key, n=i)] = single(__value, n=i)
 
     def __repr__(self) -> str:
         items = ("\n- ").join(repr(x).replace("\n", "\n  ") for x in self.__items)
         call_reducer = self.__call_reducer.__name__ if self.__call_reducer else None
         signature = (
             self.__class__.__name__
-            + f"(call_reducer={call_reducer}, call_reflex={self.__call_reflex})"
+            + f"(call_reducer={call_reducer}, call_reflex={self.__call_reflex!r}, "
+            f"attr_reducer={self.__attr_reducer})"
         )
         return f"{signature}\n- {items}"
 
@@ -134,8 +155,42 @@ class MultiFlag(Generic[T]):
 
     flag: T
 
+    def __eq__(self, __value: "MultiFlag") -> bool:
+        return self.flag == __value.flag
+
 
 REMAIN: MultiFlag[Literal[0]] = MultiFlag(0)
+
+
+def multi(*args, **kwargs) -> MultiObject:
+    """
+    Same to `MultiObject()`.
+
+    Returns
+    -------
+    MultiObject
+        A MultiObject.
+
+    """
+    return MultiObject(*args, **kwargs)
+
+
+def multi_partial(*args, **kwargs) -> Callable[[list], MultiObject]:
+    """
+    Returns a MultiObject constructor with partial application of the
+    given arguments and keywords.
+
+    Returns
+    -------
+    Callable[[list], MultiObject]
+        A MultiObject constructor.
+
+    """
+
+    def multi_constructor(x, *_, **__):
+        return MultiObject(x, *args, **kwargs)
+
+    return multi_constructor
 
 
 def cleaner(x: list) -> Optional[list]:

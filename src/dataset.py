@@ -8,7 +8,7 @@ NOTE: this module is private. All functions and objects are available in the mai
 
 from abc import ABCMeta
 from functools import partial
-from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional, TypeVar
+from typing import TYPE_CHECKING, Any, List, Mapping, Optional, TypeVar
 
 import numpy as np
 import pandas as pd
@@ -17,8 +17,8 @@ from typing_extensions import Self
 
 from .histogram import Histogram
 from .linechart import LineChart
-from .setter import AxesWrapper, FigWrapper, PlotSetter, PlotSettings
-from .utils.multi import REMAIN, MultiObject, cleaner, single
+from .setter import AxesWrapper, FigWrapper, PlotSetter, PlotSettings, Plotter
+from .utils.multi import REMAIN, MultiObject, cleaner, multi, multi_partial, single
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
@@ -73,7 +73,7 @@ class PlotDataSet(PlotSetter, metaclass=ABCMeta):
 
     def set_label(self, mapper: Optional[Mapping[str, str]] = None) -> Self:
         """
-        Reset the labels according to the mapper.
+        Reset labels according to the mapper.
 
         Parameters
         ----------
@@ -88,19 +88,6 @@ class PlotDataSet(PlotSetter, metaclass=ABCMeta):
         """
         if self.label in mapper:
             self.label = mapper[self.label]
-        return self
-
-    def stage(self) -> Self:
-        """
-        Stage all the operations on the data while cleaning the records.
-
-        Returns
-        -------
-        Self
-            An instance of self.
-
-        """
-        self.fmt = "{0}"
         return self
 
     @property
@@ -223,13 +210,13 @@ class PlotDataSet(PlotSetter, metaclass=ABCMeta):
             A new instance of `PlotDataSet`.
 
         """
-        new_fmt = f"cumsum({self.fmt})"
+        new_fmt = f"csum({self.fmt})"
         new_fmtdata = np.cumsum(self.fmtdata)
         return self.__create(new_fmt, new_fmtdata)
 
     def reset(self) -> Self:
         """
-        Reset all the operations.
+        Reset all the operations performed on the data and clean the records.
 
         Returns
         -------
@@ -238,6 +225,21 @@ class PlotDataSet(PlotSetter, metaclass=ABCMeta):
         """
         self.fmt = "{0}"
         self.fmtdata = self.data
+        return self
+
+    def clean_records(self) -> Self:
+        """
+        Clean the records of operations performed on the data. Differences to
+        `reset()` that the original data will be removed.
+
+        Returns
+        -------
+        Self
+            An instance of self.
+
+        """
+        self.fmt = "{0}"
+        self.data = self.fmtdata
         return self
 
     # pylint: disable=unused-argument
@@ -276,20 +278,12 @@ class PlotDataSet(PlotSetter, metaclass=ABCMeta):
             figure. By default None.
 
         """
-        with single(self.customize)(FigWrapper, 1, 1) as fig:
-            on = fig.axes[0]
-            kwargs: Dict[str] = {}
-            for key in Histogram.__init__.__code__.co_varnames[1:]:
-                kwargs[key] = locals()[key]
-            self.customize(
-                Histogram, data=self.fmtdata, label=self.fmtlabel, **kwargs
-            ).perform()
+        self._use_plotter(Histogram, locals())
 
     def plot(
         self,
         ticks: Optional["NDArray"] = None,
         scatter: bool = False,
-        figsize_adjust: bool = True,
         *,
         on: Optional[AxesWrapper] = None,
     ) -> None:
@@ -304,22 +298,25 @@ class PlotDataSet(PlotSetter, metaclass=ABCMeta):
         scatter : bool, optional
             Determines whether to include scatter points in the line chart, by default
             False.
-        figsize_adjust : bool, optional
-            Determines whether the size of the figure should be adjusted automatically
-            based on the data being plotted, by default True.
         on : Optional[AxesWrapper], optional
             Specifies the axes wrapper on which the line chart should be plotted. If
             not specified, the histogram will be plotted on a new axes in a new
             figure. By default None.
 
         """
-        with single(self.customize)(FigWrapper, 1, 1) as fig:
-            on = fig.axes[0]
-            kwargs: Dict[str] = {}
-            for key in LineChart.__init__.__code__.co_varnames[1:]:
-                kwargs[key] = locals()[key]
+        self._use_plotter(LineChart, locals())
+
+    def _use_plotter(self, plotter: type[Plotter], local: dict[str, Any]) -> None:
+        params: dict[str, Any] = {}
+        for key in plotter.__init__.__code__.co_varnames[1:]:
+            params[key] = local[key]
+
+        on = local["on"]
+        with single(self.customize)(FigWrapper, 1, 1, on is None) as fig:
+            if on is None:
+                params["on"] = fig.axes[0]
             self.customize(
-                LineChart, data=self.fmtdata, label=self.fmtlabel, **kwargs
+                plotter, data=self.fmtdata, label=self.fmtlabel, **params
             ).perform()
 
     def batched(self, n: int = 1) -> Self:
@@ -357,16 +354,21 @@ class PlotDataSets:
                 self.children.append(a)
 
     def __getattr__(self, __name: str) -> Any:
+        if __name in {"hist", "plot", "join", "_use_plotter"}:
+            return partial(getattr(PlotDataSet, __name), self)
         if __name.startswith("_"):
             raise AttributeError(f"cannot reach attribute '{__name}' after joining")
-        if __name in {"hist", "plot", "join"}:
-            return partial(getattr(PlotDataSet, __name), self)
         attribs = (getattr(c, __name) for c in self.children)
         if __name in {"set_plot", "set_plot_default"}:
-            return MultiObject(attribs, call_reducer=lambda x: self)
+            return multi(attribs, call_reducer=lambda x: self)
         if __name == "customize":
-            return MultiObject(attribs, call_reflex="reflex")
-        return MultiObject(attribs, call_reducer=self._join_if_dataset)
+            return multi(
+                attribs,
+                call_reducer=multi_partial(
+                    attr_reducer=multi_partial(call_reflex="reflex")
+                ),
+            )
+        return multi(attribs, call_reducer=self._join_if_dataset)
 
     def __repr__(self) -> str:
         data_info = "\n- ".join([x._data_info() for x in self.children])
@@ -381,10 +383,10 @@ class PlotDataSets:
             raise ValueError(f"batch size <= 0: {n}")
         if n > len(self.children):
             return self
-        multi = MultiObject(call_reducer=cleaner)
+        m = multi(call_reducer=cleaner)
         for i in range(0, len(self.children), n):
-            multi.__multiobjects__.append(PlotDataSets(*self.children[i : i + n]))
-        return multi
+            m.__multiobjects__.append(PlotDataSets(*self.children[i : i + n]))
+        return m
 
     @classmethod
     def _join_if_dataset(cls, x: list) -> Any:
