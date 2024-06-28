@@ -13,10 +13,12 @@ from typing import (
     Dict,
     List,
     Literal,
+    NotRequired,
     Optional,
-    Tuple,
     Type,
+    TypedDict,
     TypeVar,
+    Unpack,
     get_args,
 )
 
@@ -83,6 +85,21 @@ LegendLocStr = Literal[
 __all__ = ["PlotSettings", "PlotSetter", "Plotter", "FigWrapper", "AxesWrapper"]
 
 
+class SettingKwargs(TypedDict):
+    """
+    TypedDict for the keyword-arguments of settings.
+
+    """
+
+    title: NotRequired[str]
+    xlabel: NotRequired[str]
+    ylabel: NotRequired[str]
+    alpha: NotRequired[float]
+    figsize: NotRequired[tuple[int, int]]
+    style: NotRequired[StyleStr]
+    legend_loc: NotRequired[str]
+
+
 @define
 class PlotSettings:
     """Stores and manages settings for plotting."""
@@ -91,7 +108,7 @@ class PlotSettings:
     xlabel: Optional[str] = None
     ylabel: Optional[str] = None
     alpha: Optional[float] = None
-    figsize: Optional[Tuple[int, int]] = None
+    figsize: Optional[tuple[int, int]] = None
     style: Optional[StyleStr] = None
     legend_loc: Optional[str] = None
 
@@ -160,38 +177,14 @@ class PlotSetter:
     settings: PlotSettings = field(default=Factory(PlotSettings), init=False)
 
     # pylint: disable=unused-argument
-    def set_plot(
-        self,
-        title: Optional[str] = None,
-        xlabel: Optional[str] = None,
-        ylabel: Optional[str] = None,
-        alpha: Optional[float] = None,
-        figsize: Optional[Tuple[int, int]] = None,
-        style: Optional[StyleStr] = None,
-        legend_loc: Optional[LegendLocStr] = None,
-    ) -> Self:
+    def _set(self, **kwargs: Unpack[SettingKwargs]) -> Self:
         """
-        Set the settings for plotting.
+        Set the settings.
 
         Parameters
         ----------
-        title : Union[str, None], optional
-            The title for the axes, by default None.
-        xlabel : Union[str, None], optional
-            The label for the x-axis, by default None.
-        ylabel : Union[str, None], optional
-            The label for the y-axis, by default None.
-        alpha : Union[float, None], optional
-            Controls the transparency of the plotted elements. It takes a float
-            value between 0 and 1, where 0 means completely transparent and 1
-            means completely opaque. By default None.
-        figsize : Optional[Tuple[int, int]], optional
-            Figure size, this takes a tuple of two integers that specifies the
-            width and height of the figure in inches, by default None.
-        style : Optional[StyleStr], optional
-            A style specification, by default None.
-        legend_loc : Optional[LegendLocStr], optional
-            Location of the legend, by default None.
+        **kwargs : Unpack[SettingKwargs]
+            Specifies the settings.
 
         Returns
         -------
@@ -199,43 +192,16 @@ class PlotSetter:
             An instance of self.
 
         """
-        for key in self.settings.keys():
-            if (value := locals()[key]) is not None:
-                self.set_plot_check(key, value)
-                self.settings[key] = value
+        keys = self.settings.keys()
+        for k, v in kwargs.items():
+            if k in keys and v is not None:
+                self.setting_check(k, v)
+                self.settings[k] = v
         return self
 
-    def set_plot_default(
-        self,
-        title: Optional[str] = None,
-        xlabel: Optional[str] = None,
-        ylabel: Optional[str] = None,
-        alpha: Optional[float] = None,
-        figsize: Optional[Tuple[int, int]] = None,
-        style: Optional[StyleStr] = None,
-        legend_loc: Optional[LegendLocStr] = None,
-    ) -> Self:
+    def setting_check(self, key: SettingKey, value: Any) -> None:
         """
-        Set the default settings for plotting.
-
-        Parameters
-        ----------
-        Same as set_plot().
-
-        Returns
-        -------
-        Self
-            An instance of self.
-
-        """
-        for key in self.settings.keys():
-            if self.settings[key] is None:
-                self.settings[key] = locals()[key]
-        return self
-
-    def set_plot_check(self, key: SettingKey, value: Any) -> None:
-        """
-        Checks if a new setting is illegal.
+        Checks if a new setting is legal.
 
         Parameters
         ----------
@@ -245,6 +211,27 @@ class PlotSetter:
             Value of the setting.
 
         """
+
+    def set_default(self, **kwargs: Unpack[SettingKwargs]) -> Self:
+        """
+        Set the default settings for plotting.
+
+        Parameters
+        ----------
+        **kwargs : Unpack[SettingKwargs]
+            Specifies the settings.
+
+        Returns
+        -------
+        Self
+            An instance of self.
+
+        """
+        keys = self.settings.keys()
+        for k, v in kwargs.items():
+            if k in keys and self.settings[k] is None:
+                self.settings[k] = v
+        return self
 
     # pylint: enable=unused-argument
     def loading(self, settings: PlotSettings) -> Self:
@@ -261,8 +248,7 @@ class PlotSetter:
         Self
             An instance of self.
         """
-        self.set_plot(**settings.asdict())
-        return self
+        return self._set(**settings.asdict())
 
     def get_setting(
         self,
@@ -385,12 +371,13 @@ class FigWrapper(PlotSetter):
 
         Returns
         -------
+        Self
             An instance of self.
 
         """
         if not self.active:
             return self
-        self.set_plot_default(style="seaborn-v0_8-darkgrid", figsize=(10, 5))
+        self.set_default(style="seaborn-v0_8-darkgrid", figsize=(10, 5))
         plt.style.use(self.settings.style)
         self.fig, axes = plt.subplots(
             self.nrows, self.ncols, figsize=self.settings.figsize
@@ -422,13 +409,35 @@ class FigWrapper(PlotSetter):
         plt.close(self.fig)
         plt.style.use("default")
 
-    def set_plot_check(self, key: SettingKey, value: Any) -> None:
-        if key in ["xlabel", "ylabel", "alpha", "legend_loc"]:
-            logging.warning(
-                "setting the '%s' of a figure has no effect, try on one of the "
-                "axes instead",
-                key,
-            )
+    def set_figure(
+        self,
+        title: Optional[str] = None,
+        figsize: Optional[tuple[int, int]] = None,
+        style: Optional[StyleStr] = None,
+    ) -> Self:
+        """
+        Sets the settings of figure.
+
+        Parameters
+        ----------
+        title : str, optional
+            The title for the figure, by default None.
+        figsize : tuple[int, int], optional
+            Figure size, this takes a tuple of two integers that specifies the
+            width and height of the figure in inches, by default None.
+        style : StyleStr, optional
+            A style specification, by default None.
+
+        Returns
+        -------
+        Self
+            An instance of self.
+
+        """
+
+        return self._set(title=title, figsize=figsize, style=style)
+
+    def setting_check(self, key: SettingKey, value: Any) -> None:
         if self.entered and key == "style":
             logging.warning(
                 "setting the '%s' of a figure has no effect unless it's done "
@@ -449,6 +458,46 @@ class AxesWrapper(PlotSetter):
 
     ax: "Axes"
 
+    def set_axes(
+        self,
+        title: Optional[str] = None,
+        xlabel: Optional[str] = None,
+        ylabel: Optional[str] = None,
+        alpha: Optional[float] = None,
+        legend_loc: Optional[LegendLocStr] = None,
+    ) -> Self:
+        """
+        Sets the settings of axes.
+
+        Parameters
+        ----------
+        title : str, optional
+            The title for the axes, by default None.
+        xlabel : str, optional
+            The label for the x-axis, by default None.
+        ylabel : str, optional
+            The label for the y-axis, by default None.
+        alpha : float, optional
+            Controls the transparency of the plotted elements. It takes a float
+            value between 0 and 1, where 0 means completely transparent and 1
+            means completely opaque, by default None.
+        legend_loc : LegendLocStr, optional
+            Location of the legend, by default None.
+
+        Returns
+        -------
+        Self
+            An instance of self.
+
+        """
+        return self._set(
+            title=title,
+            xlabel=xlabel,
+            ylabel=ylabel,
+            alpha=alpha,
+            legend_loc=legend_loc,
+        )
+
     def exit(self) -> None:
         """
         Sets various properties for the axes. This should be called only
@@ -462,14 +511,6 @@ class AxesWrapper(PlotSetter):
             alpha = 1.0
         self.ax.grid(alpha=alpha / 2)
         self.ax.set_title(self.settings.title)
-
-    def set_plot_check(self, key: SettingKey, value: Any) -> None:
-        if key == "figsize":
-            logging.warning(
-                "setting the '%s' of the axes has no effect, try on the main "
-                "figure instead",
-                key,
-            )
 
 
 class PlotterError(Exception):

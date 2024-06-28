@@ -17,7 +17,15 @@ from typing_extensions import Self
 
 from .histogram import Histogram
 from .linechart import LineChart
-from .plotter import AxesWrapper, FigWrapper, PlotSetter, PlotSettings, Plotter
+from .plotter import (
+    AxesWrapper,
+    FigWrapper,
+    LegendLocStr,
+    PlotSetter,
+    PlotSettings,
+    Plotter,
+    StyleStr,
+)
 from .utils.multi import REMAIN, MultiObject, cleaner, multi, multi_partial, single
 
 if TYPE_CHECKING:
@@ -241,6 +249,55 @@ class PlotDataSet(PlotSetter, metaclass=ABCMeta):
         self.fmt = "{0}"
         self.data = self.fmtdata
         return self
+
+    def set_plot(
+        self,
+        title: Optional[str] = None,
+        xlabel: Optional[str] = None,
+        ylabel: Optional[str] = None,
+        alpha: Optional[float] = None,
+        figsize: Optional[tuple[int, int]] = None,
+        style: Optional[StyleStr] = None,
+        legend_loc: Optional[LegendLocStr] = None,
+    ) -> Self:
+        """
+        Set the plot settings.
+
+        Parameters
+        ----------
+        title : str, optional
+            The title for the axes, by default None.
+        xlabel : str, optional
+            The label for the x-axis, by default None.
+        ylabel : str, optional
+            The label for the y-axis, by default None.
+        alpha : float, optional
+            Controls the transparency of the plotted elements. It takes a float
+            value between 0 and 1, where 0 means completely transparent and 1
+            means completely opaque. By default None.
+        figsize : tuple[int, int], optional
+            Figure size, this takes a tuple of two integers that specifies the
+            width and height of the figure in inches, by default None.
+        style : StyleStr, optional
+            A style specification, by default None.
+        legend_loc : LegendLocStr, optional
+            Location of the legend, by default None.
+
+        Returns
+        -------
+        Self
+            An instance of self.
+
+        """
+        return self._set(
+            title=title,
+            xlabel=xlabel,
+            ylabel=ylabel,
+            alpha=alpha,
+            figsize=figsize,
+            style=style,
+            legend_loc=legend_loc,
+        )
 
     # pylint: disable=unused-argument
     def hist(
