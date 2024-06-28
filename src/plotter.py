@@ -10,8 +10,6 @@ import logging
 from typing import (
     TYPE_CHECKING,
     Any,
-    Dict,
-    List,
     Literal,
     NotRequired,
     Optional,
@@ -82,8 +80,6 @@ LegendLocStr = Literal[
     "center",
 ]
 
-__all__ = ["PlotSettings", "PlotSetter", "Plotter", "FigWrapper", "AxesWrapper"]
-
 
 class SettingKwargs(TypedDict):
     """
@@ -98,6 +94,9 @@ class SettingKwargs(TypedDict):
     figsize: NotRequired[tuple[int, int]]
     style: NotRequired[StyleStr]
     legend_loc: NotRequired[str]
+
+
+__all__ = ["PlotSettings", "PlotSetter", "Plotter", "FigWrapper", "AxesWrapper"]
 
 
 @define
@@ -132,7 +131,7 @@ class PlotSettings:
         return ", ".join(diff)
 
     @classmethod
-    def keys(cls) -> List[SettingKey]:
+    def keys(cls) -> list[SettingKey]:
         """
         Keys of settings.
 
@@ -144,7 +143,7 @@ class PlotSettings:
         """
         return get_args(SettingKey)
 
-    def fromdict(self, d: Dict[SettingKey, Any]) -> None:
+    def fromdict(self, d: dict[SettingKey, Any]) -> None:
         """
         Reads settings from a dict.
 
@@ -157,7 +156,7 @@ class PlotSettings:
         for k, v in d.items():
             setattr(self, k, v)
 
-    def asdict(self) -> Dict[SettingKey, Any]:
+    def asdict(self) -> dict[SettingKey, Any]:
         """
         Returns a dict of the settings.
 
@@ -263,7 +262,7 @@ class PlotSetter:
         ----------
         key : SettingAvailable
             Key of the setting.
-        default : Optional[DefaultVar], optional
+        default : DefaultVar, optional
             Specifies the default value to be returned if the requested value
             is None, by default None.
 
@@ -300,8 +299,8 @@ class PlotSetter:
 
         """
         if issubclass(cls, PlotSetter):
-            matched: Dict[str, Any] = {}
-            unmatched: Dict[str, Any] = {}
+            matched: dict[str, Any] = {}
+            unmatched: dict[str, Any] = {}
             for k, v in kwargs.items():
                 if k in cls.__init__.__code__.co_varnames[1:]:
                     matched[k] = v
@@ -363,7 +362,7 @@ class FigWrapper(PlotSetter):
     active: bool = True
     entered: bool = field(init=False, default=False)
     fig: "Figure" = field(init=False)
-    axes: List["AxesWrapper"] = field(init=False)
+    axes: list["AxesWrapper"] = field(init=False)
 
     def __enter__(self) -> Self:
         """
@@ -382,7 +381,7 @@ class FigWrapper(PlotSetter):
         self.fig, axes = plt.subplots(
             self.nrows, self.ncols, figsize=self.settings.figsize
         )
-        self.axes: List["AxesWrapper"] = [
+        self.axes: list["AxesWrapper"] = [
             AxesWrapper(x) for x in np.array(axes).reshape(-1)
         ]
         self.entered = True
