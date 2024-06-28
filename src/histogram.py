@@ -12,7 +12,7 @@ import numpy as np
 from attrs import define
 from scipy import stats
 
-from .setter import AxesWrapper, Plotter
+from .plotter import AxesWrapper, Plotter
 
 __all__ = ["Histogram"]
 
@@ -45,17 +45,17 @@ class Histogram(Plotter):
             The bins of the histogram plot.
 
         """
-        with self.prepare() as ax:
-            ax.set_plot_default(
-                alpha=0.5 + 0.25 * (len(self.data) == 1),
-                xlabel="value",
-                ylabel="density" if self.density else "count",
-            ).loading(self.settings)
-            ds, b = self.__hist(
-                ax, bins=self.bins if (reflex is None or not self.same_bin) else reflex
-            )
-            if self.stats:
-                ax.set_plot(xlabel=ax.settings.xlabel + "\n" + ds)
+        ax = self.prepare()
+        ax.set_plot_default(
+            alpha=0.5 + 0.25 * (len(self.data) == 1),
+            xlabel="value",
+            ylabel="density" if self.density else "count",
+        ).loading(self.settings)
+        ds, b = self.__hist(
+            ax, bins=self.bins if (reflex is None or not self.same_bin) else reflex
+        )
+        if self.stats:
+            ax.set_plot(xlabel=ax.settings.xlabel + "\n" + ds)
         return b
 
     def __hist(

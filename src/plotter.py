@@ -355,7 +355,7 @@ class Plotter(PlotSetter):
         """
         for name in ["data", "label", "on"]:
             if getattr(self, name) is None:
-                raise DataSetterError(f"'{name}' not set yet.")
+                raise PlotterError(f"'{name}' not set yet.")
         return self.on
 
     def perform(self, reflex: None = None) -> None:
@@ -375,7 +375,7 @@ class FigWrapper(PlotSetter):
     nrows: int = 1
     ncols: int = 1
     active: bool = True
-    entered: bool = False
+    entered: bool = field(init=False, default=False)
     fig: "Figure" = field(init=False)
     axes: List["AxesWrapper"] = field(init=False)
 
@@ -408,9 +408,16 @@ class FigWrapper(PlotSetter):
         """
         if not self.active:
             return
-        self.axes[0].ax.set_title(self.settings.title)
+        if len(self.axes) > 1:
+            self.fig.suptitle(self.settings.title)
+        else:
+            self.axes[0].ax.set_title(self.settings.title)
         if self.settings.figsize is not None:
             self.fig.set_size_inches(*self.settings.figsize)
+
+        for ax in self.axes:
+            ax.exit()
+
         plt.show()
         plt.close(self.fig)
         plt.style.use("default")
@@ -418,13 +425,13 @@ class FigWrapper(PlotSetter):
     def set_plot_check(self, key: SettingKey, value: Any) -> None:
         if key in ["xlabel", "ylabel", "alpha", "legend_loc"]:
             logging.warning(
-                "setting the '%s' of a figure will have no effect, try on one of "
-                "the axes instead",
+                "setting the '%s' of a figure has no effect, try on one of the "
+                "axes instead",
                 key,
             )
         if self.entered and key == "style":
             logging.warning(
-                "setting the '%s' of a figure will have no effect unless it's done "
+                "setting the '%s' of a figure has no effect unless it's done "
                 "before invoking context manager",
                 key,
             )
@@ -433,28 +440,19 @@ class FigWrapper(PlotSetter):
 @define
 class AxesWrapper(PlotSetter):
     """
-    Serves as a wrapper for creating and customizing axes in matplotlib,
-    providing a context manager interface (`__enter__` and `__exit__`
-    methods) for setting various properties for the axes.
+    Serves as a wrapper for creating and customizing axes in matplotlib.
+
+    Note that this should NEVER be instantiated directly, but always
+    through the invoking of `FigWrapper.axes`.
 
     """
 
     ax: "Axes"
 
-    def __enter__(self) -> Self:
+    def exit(self) -> None:
         """
-        Enters the context manager.
-
-        Returns
-        -------
-            An instance of self.
-
-        """
-        return self
-
-    def __exit__(self, *args) -> None:
-        """
-        Sets various properties for the axes.
+        Sets various properties for the axes. This should be called only
+        by `FigWrapper.__exit__()`.
 
         """
         self.ax.set_xlabel(self.settings.xlabel)
@@ -465,6 +463,14 @@ class AxesWrapper(PlotSetter):
         self.ax.grid(alpha=alpha / 2)
         self.ax.set_title(self.settings.title)
 
+    def set_plot_check(self, key: SettingKey, value: Any) -> None:
+        if key == "figsize":
+            logging.warning(
+                "setting the '%s' of the axes has no effect, try on the main "
+                "figure instead",
+                key,
+            )
 
-class DataSetterError(Exception):
+
+class PlotterError(Exception):
     """Raised when data or labels are not set yet."""

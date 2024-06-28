@@ -17,7 +17,7 @@ from typing_extensions import Self
 
 from .histogram import Histogram
 from .linechart import LineChart
-from .setter import AxesWrapper, FigWrapper, PlotSetter, PlotSettings, Plotter
+from .plotter import AxesWrapper, FigWrapper, PlotSetter, PlotSettings, Plotter
 from .utils.multi import REMAIN, MultiObject, cleaner, multi, multi_partial, single
 
 if TYPE_CHECKING:

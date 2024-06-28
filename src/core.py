@@ -5,10 +5,11 @@ NOTE: this module is private. All functions and objects are available in the mai
 `dataplot` namespace - use that instead.
 
 """
+
 from typing import TYPE_CHECKING, List, Optional, Union, overload
 
 from .dataset import PlotDataSet, PlotDataSets
-from .setter import FigWrapper
+from .plotter import FigWrapper
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
@@ -41,13 +42,11 @@ def figure(nrows: int = 1, ncols: int = 1) -> FigWrapper:
 
 
 @overload
-def data(x: "NDArray", label: Optional[str] = None) -> PlotDataSet:
-    ...
+def data(x: "NDArray", label: Optional[str] = None) -> PlotDataSet: ...
 
 
 @overload
-def data(x: List["NDArray"], label: Optional[List[str]] = None) -> PlotDataSet:
-    ...
+def data(x: List["NDArray"], label: Optional[List[str]] = None) -> PlotDataSet: ...
 
 
 def data(

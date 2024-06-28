@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING, Optional
 import numpy as np
 from attrs import define
 
-from .setter import AxesWrapper, Plotter
+from .plotter import AxesWrapper, Plotter
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
@@ -30,8 +30,8 @@ class LineChart(Plotter):
     scatter: bool = False
 
     def perform(self, reflex: None = None) -> None:
-        with self.prepare() as ax:
-            self.__plot(ax.loading(self.settings))
+        ax = self.prepare()
+        self.__plot(ax.loading(self.settings))
         return reflex
 
     def __plot(self, ax: AxesWrapper) -> None:
