@@ -261,14 +261,14 @@ class PlotDataSet(PlotSetter, metaclass=ABCMeta):
         legend_loc: Optional[LegendLocStr] = None,
     ) -> Self:
         """
-        Set the plot settings.
+        Sets the settings of a plot (whether a figure or an axes).
 
         Parameters
         ----------
         title : str, optional
-            The title for the axes, by default None.
+            Title for the plot, by default None.
         xlabel : str, optional
-            The label for the x-axis, by default None.
+            Label for the x-axis, by default None.
         ylabel : str, optional
             The label for the y-axis, by default None.
         alpha : float, optional

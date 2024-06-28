@@ -214,7 +214,7 @@ class PlotSetter:
 
     def set_default(self, **kwargs: Unpack[SettingKwargs]) -> Self:
         """
-        Set the default settings for plotting.
+        Sets the default settings.
 
         Parameters
         ----------
@@ -421,7 +421,7 @@ class FigWrapper(PlotSetter):
         Parameters
         ----------
         title : str, optional
-            The title for the figure, by default None.
+            Title for the figure, by default None.
         figsize : tuple[int, int], optional
             Figure size, this takes a tuple of two integers that specifies the
             width and height of the figure in inches, by default None.
@@ -472,11 +472,11 @@ class AxesWrapper(PlotSetter):
         Parameters
         ----------
         title : str, optional
-            The title for the axes, by default None.
+            Title for the axes, by default None.
         xlabel : str, optional
-            The label for the x-axis, by default None.
+            Label for the x-axis, by default None.
         ylabel : str, optional
-            The label for the y-axis, by default None.
+            Label for the y-axis, by default None.
         alpha : float, optional
             Controls the transparency of the plotted elements. It takes a float
             value between 0 and 1, where 0 means completely transparent and 1
