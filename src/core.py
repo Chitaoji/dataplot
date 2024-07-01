@@ -8,8 +8,8 @@ NOTE: this module is private. All functions and objects are available in the mai
 
 from typing import TYPE_CHECKING, List, Optional, Union, overload
 
+from .container import FigWrapper
 from .dataset import PlotDataSet, PlotDataSets
-from .plotter import FigWrapper
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray

@@ -15,22 +15,17 @@ import pandas as pd
 from attrs import define, field
 from typing_extensions import Self
 
+from .artist import Artist, PlotSettings, Plotter
+from .container import FigWrapper
 from .histogram import Histogram
 from .linechart import LineChart
-from .plotter import (
-    AxesWrapper,
-    FigWrapper,
-    LegendLocStr,
-    PlotSetter,
-    PlotSettings,
-    Plotter,
-    StyleStr,
-)
 from .utils.multi import REMAIN, MultiObject, cleaner, multi, multi_partial, single
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
 
+    from .artist import LegendLocStr, StyleStr
+    from .container import AxesWrapper
 
 T = TypeVar("T")
 
@@ -38,7 +33,7 @@ __all__ = ["PlotDataSet"]
 
 
 @define
-class PlotDataSet(PlotSetter, metaclass=ABCMeta):
+class PlotDataSet(Plotter, metaclass=ABCMeta):
     """
     Provides methods for mathematical operations and plotting.
 
@@ -257,8 +252,8 @@ class PlotDataSet(PlotSetter, metaclass=ABCMeta):
         ylabel: Optional[str] = None,
         alpha: Optional[float] = None,
         figsize: Optional[tuple[int, int]] = None,
-        style: Optional[StyleStr] = None,
-        legend_loc: Optional[LegendLocStr] = None,
+        style: Optional["StyleStr"] = None,
+        legend_loc: Optional["LegendLocStr"] = None,
     ) -> Self:
         """
         Sets the settings of a plot (whether a figure or an axes).
@@ -308,7 +303,7 @@ class PlotDataSet(PlotSetter, metaclass=ABCMeta):
         same_bin: bool = True,
         stats: bool = True,
         *,
-        on: Optional[AxesWrapper] = None,
+        on: Optional["AxesWrapper"] = None,
     ) -> None:
         """
         Plot a histogram of the data.
@@ -342,7 +337,7 @@ class PlotDataSet(PlotSetter, metaclass=ABCMeta):
         ticks: Optional["NDArray"] = None,
         scatter: bool = False,
         *,
-        on: Optional[AxesWrapper] = None,
+        on: Optional["AxesWrapper"] = None,
     ) -> None:
         """
         Create a line chart for the data.
@@ -363,7 +358,7 @@ class PlotDataSet(PlotSetter, metaclass=ABCMeta):
         """
         self._use_plotter(LineChart, locals())
 
-    def _use_plotter(self, plotter: type[Plotter], local: dict[str, Any]) -> None:
+    def _use_plotter(self, plotter: type[Artist], local: dict[str, Any]) -> None:
         params: dict[str, Any] = {}
         for key in plotter.__init__.__code__.co_varnames[1:]:
             params[key] = local[key]
@@ -374,7 +369,7 @@ class PlotDataSet(PlotSetter, metaclass=ABCMeta):
                 params["on"] = fig.axes[0]
             self.customize(
                 plotter, data=self.fmtdata, label=self.fmtlabel, **params
-            ).perform()
+            ).paint()
 
     def batched(self, n: int = 1) -> Self:
         """

@@ -1,12 +1,11 @@
 """
-Contains dataclasses: PlotSettings, PlotSetter and subclasses of PlotSetter.
+Contains dataclasses: PlotSettings, Plotter and Artist.
 
 NOTE: this module is private. All functions and objects are available in the main
 `dataplot` namespace - use that instead.
 
 """
 
-import logging
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -20,22 +19,16 @@ from typing import (
     get_args,
 )
 
-import matplotlib.pyplot as plt
-import numpy as np
 from attrs import Factory, define, field
 from typing_extensions import Self
 
 if TYPE_CHECKING:
-    from matplotlib.figure import Figure
-    from matplotlib.pyplot import Axes
     from numpy.typing import NDArray
 
+    from .container import AxesWrapper
 
-PlotSetterVar = TypeVar("PlotSetterVar", bound="PlotSetter")
+PlotSetterVar = TypeVar("PlotSetterVar", bound="Plotter")
 DefaultVar = TypeVar("DefaultVar")
-SettingKey = Literal[
-    "title", "xlabel", "ylabel", "alpha", "figsize", "style", "legend_loc"
-]
 StyleStr = Literal[
     "Solarize_Light2",
     "_classic_test_patch",
@@ -80,10 +73,22 @@ LegendLocStr = Literal[
     "center",
 ]
 
+SettingKey = Literal[
+    "title",
+    "xlabel",
+    "ylabel",
+    "alpha",
+    "dpi",
+    "figsize",
+    "style",
+    "legend_loc",
+    "subplots_adjust",
+]
+
 
 class SettingKwargs(TypedDict):
     """
-    TypedDict for the keyword-arguments of settings.
+    TypedDict for the keyword-arguments of `PlotSetter._set()`.
 
     """
 
@@ -91,12 +96,52 @@ class SettingKwargs(TypedDict):
     xlabel: NotRequired[str]
     ylabel: NotRequired[str]
     alpha: NotRequired[float]
+    dpi: NotRequired[float]
     figsize: NotRequired[tuple[int, int]]
     style: NotRequired[StyleStr]
     legend_loc: NotRequired[str]
+    subplots_adjust: NotRequired["SubplotParams"]
 
 
-__all__ = ["PlotSettings", "PlotSetter", "Plotter", "FigWrapper", "AxesWrapper"]
+class SubplotParams(TypedDict):
+    """
+    Adjusts the subplot layout parameters.
+
+    Unset parameters are left unmodified; initial values are given in
+    `FigWrapper`.
+
+    Parameters
+    ----------
+    left : float, optional
+        The position of the left edge of the subplots, as a fraction of the
+        figure width.
+    bottom : float, optional
+        The position of the bottom edge of the subplots, as a fraction of the
+        figure height.
+    right : float, optional
+        The position of the right edge of the subplots, as a fraction of the
+        figure width.
+    top : float, optional
+        The position of the top edge of the subplots, as a fraction of the
+        figure height.
+    wspace : float, optional
+        The width of the padding between subplots, as a fraction of the average
+        Axes width.
+    hspace : float, optional
+        The height of the padding between subplots, as a fraction of the average
+        Axes height.
+
+    """
+
+    left: NotRequired[float]
+    bottom: NotRequired[float]
+    right: NotRequired[float]
+    top: NotRequired[float]
+    wspace: NotRequired[float]
+    hspace: NotRequired[float]
+
+
+__all__ = ["PlotSettings", "Plotter", "Artist"]
 
 
 @define
@@ -107,9 +152,11 @@ class PlotSettings:
     xlabel: Optional[str] = None
     ylabel: Optional[str] = None
     alpha: Optional[float] = None
+    dpi: Optional[float] = None
     figsize: Optional[tuple[int, int]] = None
     style: Optional[StyleStr] = None
     legend_loc: Optional[str] = None
+    subplots_adjust: Optional[SubplotParams] = None
 
     def __getitem__(self, __key: SettingKey) -> Any:
         return getattr(self, __key)
@@ -117,9 +164,12 @@ class PlotSettings:
     def __setitem__(self, __key: SettingKey, __value: Any) -> None:
         setattr(self, __key, __value)
 
+    def __repr__(self) -> str:
+        return self.__class__.__name__ + "(" + self.repr_not_none() + ")"
+
     def repr_not_none(self) -> str:
         """
-        Returns a string representation of attributes with non-None values.
+        Returns a string representation of attributes with not-None values.
 
         Returns
         -------
@@ -170,8 +220,11 @@ class PlotSettings:
 
 
 @define(init=False)
-class PlotSetter:
-    """Sets the settings for plotting."""
+class Plotter:
+    """Contains an attribute of plot settings, and provides methods for
+    handling these settings.
+
+    """
 
     settings: PlotSettings = field(default=Factory(PlotSettings), init=False)
 
@@ -195,7 +248,10 @@ class PlotSetter:
         for k, v in kwargs.items():
             if k in keys and v is not None:
                 self.setting_check(k, v)
-                self.settings[k] = v
+                if isinstance(v, dict):
+                    self.settings[k] = {**self.settings[k], **v}
+                else:
+                    self.settings[k] = v
         return self
 
     def setting_check(self, key: SettingKey, value: Any) -> None:
@@ -298,7 +354,7 @@ class PlotSetter:
             Raised when `cls` cannot be customized.
 
         """
-        if issubclass(cls, PlotSetter):
+        if issubclass(cls, Plotter):
             matched: dict[str, Any] = {}
             unmatched: dict[str, Any] = {}
             for k, v in kwargs.items():
@@ -315,8 +371,8 @@ class PlotSetter:
 
 
 @define(init=False, slots=False)
-class Plotter(PlotSetter):
-    """Plots the data and the label."""
+class Artist(Plotter):
+    """Paints images on an axes, based on the data, labels, and other settings."""
 
     data: Optional["NDArray"] = field(default=None, init=False)
     label: Optional[str] = field(default=None, init=False)
@@ -340,177 +396,12 @@ class Plotter(PlotSetter):
         """
         for name in ["data", "label", "on"]:
             if getattr(self, name) is None:
-                raise PlotterError(f"'{name}' not set yet.")
+                raise ArtistPrepareError(f"'{name}' not set yet.")
         return self.on
 
-    def perform(self, reflex: None = None) -> None:
-        """Do the plotting."""
+    def paint(self, reflex: None = None) -> None:
+        """Paint on the axes."""
 
 
-@define
-class FigWrapper(PlotSetter):
-    """
-    A wrapper of figure.
-
-    Note that this should NEVER be instantiated directly, but always through the
-    module-level function `dataplot.figure()`.
-
-    """
-
-    nrows: int = 1
-    ncols: int = 1
-    active: bool = True
-    entered: bool = field(init=False, default=False)
-    fig: "Figure" = field(init=False)
-    axes: list["AxesWrapper"] = field(init=False)
-
-    def __enter__(self) -> Self:
-        """
-        Creates subplots and sets the style.
-
-        Returns
-        -------
-        Self
-            An instance of self.
-
-        """
-        if not self.active:
-            return self
-        self.set_default(style="seaborn-v0_8-darkgrid", figsize=(10, 5))
-        plt.style.use(self.settings.style)
-        self.fig, axes = plt.subplots(
-            self.nrows, self.ncols, figsize=self.settings.figsize
-        )
-        self.axes: list["AxesWrapper"] = [
-            AxesWrapper(x) for x in np.array(axes).reshape(-1)
-        ]
-        self.entered = True
-        return self
-
-    def __exit__(self, *args) -> None:
-        """
-        Sets various properties for the figure and displays it.
-
-        """
-        if not self.active:
-            return
-        if len(self.axes) > 1:
-            self.fig.suptitle(self.settings.title)
-        else:
-            self.axes[0].ax.set_title(self.settings.title)
-        if self.settings.figsize is not None:
-            self.fig.set_size_inches(*self.settings.figsize)
-
-        for ax in self.axes:
-            ax.exit()
-
-        plt.show()
-        plt.close(self.fig)
-        plt.style.use("default")
-
-    def set_figure(
-        self,
-        title: Optional[str] = None,
-        figsize: Optional[tuple[int, int]] = None,
-        style: Optional[StyleStr] = None,
-    ) -> Self:
-        """
-        Sets the settings of figure.
-
-        Parameters
-        ----------
-        title : str, optional
-            Title for the figure, by default None.
-        figsize : tuple[int, int], optional
-            Figure size, this takes a tuple of two integers that specifies the
-            width and height of the figure in inches, by default None.
-        style : StyleStr, optional
-            A style specification, by default None.
-
-        Returns
-        -------
-        Self
-            An instance of self.
-
-        """
-
-        return self._set(title=title, figsize=figsize, style=style)
-
-    def setting_check(self, key: SettingKey, value: Any) -> None:
-        if self.entered and key == "style":
-            logging.warning(
-                "setting the '%s' of a figure has no effect unless it's done "
-                "before invoking context manager",
-                key,
-            )
-
-
-@define
-class AxesWrapper(PlotSetter):
-    """
-    Serves as a wrapper for creating and customizing axes in matplotlib.
-
-    Note that this should NEVER be instantiated directly, but always
-    through the invoking of `FigWrapper.axes`.
-
-    """
-
-    ax: "Axes"
-
-    def set_axes(
-        self,
-        title: Optional[str] = None,
-        xlabel: Optional[str] = None,
-        ylabel: Optional[str] = None,
-        alpha: Optional[float] = None,
-        legend_loc: Optional[LegendLocStr] = None,
-    ) -> Self:
-        """
-        Sets the settings of axes.
-
-        Parameters
-        ----------
-        title : str, optional
-            Title for the axes, by default None.
-        xlabel : str, optional
-            Label for the x-axis, by default None.
-        ylabel : str, optional
-            Label for the y-axis, by default None.
-        alpha : float, optional
-            Controls the transparency of the plotted elements. It takes a float
-            value between 0 and 1, where 0 means completely transparent and 1
-            means completely opaque, by default None.
-        legend_loc : LegendLocStr, optional
-            Location of the legend, by default None.
-
-        Returns
-        -------
-        Self
-            An instance of self.
-
-        """
-        return self._set(
-            title=title,
-            xlabel=xlabel,
-            ylabel=ylabel,
-            alpha=alpha,
-            legend_loc=legend_loc,
-        )
-
-    def exit(self) -> None:
-        """
-        Sets various properties for the axes. This should be called only
-        by `FigWrapper.__exit__()`.
-
-        """
-        self.ax.set_xlabel(self.settings.xlabel)
-        self.ax.set_ylabel(self.settings.ylabel)
-        self.ax.legend(loc=self.settings.legend_loc)
-        if (alpha := self.settings.alpha) is None:
-            alpha = 1.0
-        self.ax.grid(alpha=alpha / 2)
-        self.ax.set_title(self.settings.title)
-
-
-class PlotterError(Exception):
+class ArtistPrepareError(Exception):
     """Raised when data or labels are not set yet."""

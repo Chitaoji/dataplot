@@ -1,5 +1,5 @@
 """
-Contains a tool class for plotting: Histogram.
+Contains an artist class: Histogram.
 
 NOTE: this module is private. All functions and objects are available in the main
 `dataplot` namespace - use that instead.
@@ -12,15 +12,16 @@ import numpy as np
 from attrs import define
 from scipy import stats
 
-from .plotter import AxesWrapper, Plotter
+from .artist import Artist
+from .container import AxesWrapper
 
 __all__ = ["Histogram"]
 
 
 @define
-class Histogram(Plotter):
+class Histogram(Artist):
     """
-    A plotting class that creates a histogram.
+    An artist class that creates a histogram.
 
     """
 
@@ -30,8 +31,8 @@ class Histogram(Plotter):
     same_bin: bool = True
     stats: bool = True
 
-    def perform(self, reflex: Optional[List[float]] = None) -> List[float]:
-        """Do the plotting.
+    def paint(self, reflex: Optional[List[float]] = None) -> List[float]:
+        """Paint on the axes.
 
         Parameters
         ----------
