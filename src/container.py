@@ -43,7 +43,7 @@ class FigWrapper(Plotter):
 
     def __enter__(self) -> Self:
         """
-        Creates subplots and sets the style.
+        Create subplots and set the style.
 
         Returns
         -------
@@ -56,14 +56,8 @@ class FigWrapper(Plotter):
         self.set_default(
             style="seaborn-v0_8-darkgrid",
             figsize=(10, 5),
-            subplots_adjust={
-                "left": 0.125,
-                "bottom": 0.11,
-                "right": 0.9,
-                "top": 0.88,
-                "wspace": 0.2,
-                "hspace": 0.5,
-            },
+            subplots_adjust={"hspace": 0.5},
+            fontdict={"fontsize": "x-large"},
         )
         plt.style.use(self.settings.style)
         self.fig, axes = plt.subplots(
@@ -77,16 +71,16 @@ class FigWrapper(Plotter):
 
     def __exit__(self, *args) -> None:
         """
-        Sets various properties for the figure and displays it.
+        Set various properties for the figure and paint it.
 
         """
         if not self.active:
             return
 
         if len(self.axes) > 1:
-            self.fig.suptitle(self.settings.title)
+            self.fig.suptitle(self.settings.title, **self.settings.fontdict)
         else:
-            self.axes[0].ax.set_title(self.settings.title)
+            self.axes[0].ax.set_title(self.settings.title, **self.settings.fontdict)
 
         self.fig.set_size_inches(*self.settings.figsize)
         self.fig.subplots_adjust(**self.settings.subplots_adjust)
@@ -110,7 +104,7 @@ class FigWrapper(Plotter):
         subplots_adjust: Optional["SubplotDict"] = None,
     ) -> Self:
         """
-        Sets the settings of figure.
+        Set the settings of figure.
 
         Parameters
         ----------
@@ -178,7 +172,7 @@ class AxesWrapper(Plotter):
         legend_loc: Optional["LegendLocStr"] = None,
     ) -> Self:
         """
-        Sets the settings of axes.
+        Set the settings of axes.
 
         Parameters
         ----------
@@ -215,10 +209,12 @@ class AxesWrapper(Plotter):
 
     def exit(self) -> None:
         """
-        Sets various properties for the axes. This should be called only
+        Set various properties for the axes. This should be called only
         by `FigWrapper.__exit__()`.
 
         """
+        self.set_default(fontdict={})
+
         self.ax.set_xlabel(self.settings.xlabel)
         self.ax.set_ylabel(self.settings.ylabel)
         if len(self.ax.get_legend_handles_labels()[0]):
@@ -226,7 +222,7 @@ class AxesWrapper(Plotter):
         if (alpha := self.settings.alpha) is None:
             alpha = 1.0
         self.ax.grid(alpha=alpha / 2)
-        self.ax.set_title(self.settings.title)
+        self.ax.set_title(self.settings.title, **self.settings.fontdict)
 
 
 class PlotterError(Exception):

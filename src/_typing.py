@@ -81,6 +81,10 @@ FontWeightStr = Literal[
     "extra bold",
     "black",
 ]
+FontStyleStr = Literal["normal", "italic", "oblique"]
+ColorStr = Literal["b", "g", "r", "c", "m", "y", "k", "w"]
+VerticalAlignmentStr = Literal["baseline", "bottom", "center", "center_baseline", "top"]
+HorizontalAlignmentStr = Literal["left", "center", "right"]
 SettingKey = Literal[
     "title",
     "xlabel",
@@ -117,41 +121,50 @@ class FontDict(TypedDict):
     A dictionary controlling the appearance of the title text.
 
     Unset parameters are left unmodified; initial values are given by
-    `matplotlib`.
+    `matplotlib.rcParams`.
+
+    Parameters
+    ----------
+    fontsize : float | FontSizeStr, optional
+        The font size.
+    fontweight : float | FontWeightStr, optional
+        The font weight. If a float, should be in range 0-1000.
+    fontstyle : FontStyleStr, optional
+        The font style.
+    color : ColorStr, optional
+        The font color.
+    verticalalignment : VerticalAlignmentStr, optional
+        The vertical alignment relative to the anchor point.
+    horizontalalignment : HorizontalAlignmentStr, optional
+        The horizontal alignment relative to the anchor point.
 
     """
 
     fontsize: NotRequired[float | FontSizeStr]
     fontweight: NotRequired[float | FontWeightStr]
+    fontstyle: NotRequired[FontStyleStr]
+    color: NotRequired[ColorStr]
+    verticalalignment: NotRequired[VerticalAlignmentStr]
+    horizontalalignment: NotRequired[HorizontalAlignmentStr]
 
 
 class SubplotDict(TypedDict):
     """
     A dictionary controlling the subplot layout parameters.
 
-    Unset parameters are left unmodified; initial values are given in
-    `FigWrapper`.
+    Unset parameters are left unmodified; initial values are given by
+    `matplotlib.rcParams`, whose recommended values are {"left": 0.125,
+    "bottom": 0.11, "right": 0.9, "top": 0.88, "wspace": 0.2, "hspace":
+    0.2}.
 
     Parameters
     ----------
-    left : float, optional
-        The position of the left edge of the subplots, as a fraction of the
-        figure width.
-    bottom : float, optional
-        The position of the bottom edge of the subplots, as a fraction of the
-        figure height.
-    right : float, optional
-        The position of the right edge of the subplots, as a fraction of the
-        figure width.
-    top : float, optional
-        The position of the top edge of the subplots, as a fraction of the
-        figure height.
-    wspace : float, optional
-        The width of the padding between subplots, as a fraction of the average
-        Axes width.
-    hspace : float, optional
-        The height of the padding between subplots, as a fraction of the average
-        Axes height.
+    left / right / bottom / top : float, optional
+        The position of the left / right / bottom / top edge of the
+        subplots, as a fraction of the figure width.
+    wspace / hspace : float, optional
+        The width / height of the padding between subplots, as a fraction
+        of the average Axes width / height.
 
     """
 

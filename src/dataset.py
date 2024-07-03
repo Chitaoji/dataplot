@@ -382,7 +382,7 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
         legend_loc: Optional["LegendLocStr"] = None,
     ) -> Self:
         """
-        Sets the settings of a plot (whether a figure or an axes).
+        Set the settings of a plot (whether a figure or an axes).
 
         Parameters
         ----------
