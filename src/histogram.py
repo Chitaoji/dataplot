@@ -77,7 +77,7 @@ class Histogram(Artist):
                 bin_list,
                 stats.norm.pdf(bin_list, mean, std),
                 alpha=ax.settings.alpha,
-                label=f"{self.label} - fit",
+                label=f"{self.label} · fit",
             )
         return (
             f"{self.label}: mean={mean:.3f}, std={std:.3f}, skew={skew:.3f}, kurt={kurt:.3f}",

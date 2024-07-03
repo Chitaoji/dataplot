@@ -1,144 +1,27 @@
-"""
-Contains dataclasses: PlotSettings, Plotter and Artist.
+"""Contains dataclasses: PlotSettings, Plotter and Artist.
 
 NOTE: this module is private. All functions and objects are available in the main
 `dataplot` namespace - use that instead.
 
 """
 
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Literal,
-    NotRequired,
-    Optional,
-    Type,
-    TypedDict,
-    TypeVar,
-    Unpack,
-    get_args,
-)
+from typing import TYPE_CHECKING, Any, Optional, Self, Type, Unpack
 
 from attrs import Factory, define, field
-from typing_extensions import Self
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
 
+    from ._typing import (
+        DefaultVar,
+        FontDict,
+        PlotSetterVar,
+        SettingDict,
+        SettingKey,
+        StyleStr,
+        SubplotDict,
+    )
     from .container import AxesWrapper
-
-PlotSetterVar = TypeVar("PlotSetterVar", bound="Plotter")
-DefaultVar = TypeVar("DefaultVar")
-StyleStr = Literal[
-    "Solarize_Light2",
-    "_classic_test_patch",
-    "_mpl-gallery",
-    "_mpl-gallery-nogrid",
-    "bmh",
-    "classic",
-    "dark_background",
-    "fast",
-    "fivethirtyeight",
-    "ggplot",
-    "grayscale",
-    "seaborn-v0_8",
-    "seaborn-v0_8-bright",
-    "seaborn-v0_8-colorblind",
-    "seaborn-v0_8-dark",
-    "seaborn-v0_8-dark-palette",
-    "seaborn-v0_8-darkgrid",
-    "seaborn-v0_8-deep",
-    "seaborn-v0_8-muted",
-    "seaborn-v0_8-notebook",
-    "seaborn-v0_8-paper",
-    "seaborn-v0_8-pastel",
-    "seaborn-v0_8-poster",
-    "seaborn-v0_8-talk",
-    "seaborn-v0_8-ticks",
-    "seaborn-v0_8-white",
-    "seaborn-v0_8-whitegrid",
-    "tableau-colorblind10",
-]
-LegendLocStr = Literal[
-    "best",
-    "upper right",
-    "upper left",
-    "lower left",
-    "lower right",
-    "right",
-    "center left",
-    "center right",
-    "lower center",
-    "upper center",
-    "center",
-]
-
-SettingKey = Literal[
-    "title",
-    "xlabel",
-    "ylabel",
-    "alpha",
-    "dpi",
-    "figsize",
-    "style",
-    "legend_loc",
-    "subplots_adjust",
-]
-
-
-class SettingKwargs(TypedDict):
-    """
-    TypedDict for the keyword-arguments of `PlotSetter._set()`.
-
-    """
-
-    title: NotRequired[str]
-    xlabel: NotRequired[str]
-    ylabel: NotRequired[str]
-    alpha: NotRequired[float]
-    dpi: NotRequired[float]
-    figsize: NotRequired[tuple[int, int]]
-    style: NotRequired[StyleStr]
-    legend_loc: NotRequired[str]
-    subplots_adjust: NotRequired["SubplotParams"]
-
-
-class SubplotParams(TypedDict):
-    """
-    Adjusts the subplot layout parameters.
-
-    Unset parameters are left unmodified; initial values are given in
-    `FigWrapper`.
-
-    Parameters
-    ----------
-    left : float, optional
-        The position of the left edge of the subplots, as a fraction of the
-        figure width.
-    bottom : float, optional
-        The position of the bottom edge of the subplots, as a fraction of the
-        figure height.
-    right : float, optional
-        The position of the right edge of the subplots, as a fraction of the
-        figure width.
-    top : float, optional
-        The position of the top edge of the subplots, as a fraction of the
-        figure height.
-    wspace : float, optional
-        The width of the padding between subplots, as a fraction of the average
-        Axes width.
-    hspace : float, optional
-        The height of the padding between subplots, as a fraction of the average
-        Axes height.
-
-    """
-
-    left: NotRequired[float]
-    bottom: NotRequired[float]
-    right: NotRequired[float]
-    top: NotRequired[float]
-    wspace: NotRequired[float]
-    hspace: NotRequired[float]
 
 
 __all__ = ["PlotSettings", "Plotter", "Artist"]
@@ -154,14 +37,15 @@ class PlotSettings:
     alpha: Optional[float] = None
     dpi: Optional[float] = None
     figsize: Optional[tuple[int, int]] = None
-    style: Optional[StyleStr] = None
+    style: Optional["StyleStr"] = None
+    fontdict: Optional["FontDict"] = None
     legend_loc: Optional[str] = None
-    subplots_adjust: Optional[SubplotParams] = None
+    subplots_adjust: Optional["SubplotDict"] = None
 
-    def __getitem__(self, __key: SettingKey) -> Any:
+    def __getitem__(self, __key: "SettingKey") -> Any:
         return getattr(self, __key)
 
-    def __setitem__(self, __key: SettingKey, __value: Any) -> None:
+    def __setitem__(self, __key: "SettingKey", __value: Any) -> None:
         setattr(self, __key, __value)
 
     def __repr__(self) -> str:
@@ -180,8 +64,7 @@ class PlotSettings:
         diff = [f"{k}={repr(v)}" for k, v in self.asdict().items() if v is not None]
         return ", ".join(diff)
 
-    @classmethod
-    def keys(cls) -> list[SettingKey]:
+    def keys(self) -> list["SettingKey"]:
         """
         Keys of settings.
 
@@ -191,9 +74,9 @@ class PlotSettings:
             Names of the settings.
 
         """
-        return get_args(SettingKey)
+        return getattr(self, "__match_args__")
 
-    def fromdict(self, d: dict[SettingKey, Any]) -> None:
+    def fromdict(self, d: dict["SettingKey", Any]) -> None:
         """
         Reads settings from a dict.
 
@@ -206,7 +89,7 @@ class PlotSettings:
         for k, v in d.items():
             setattr(self, k, v)
 
-    def asdict(self) -> dict[SettingKey, Any]:
+    def asdict(self) -> dict["SettingKey", Any]:
         """
         Returns a dict of the settings.
 
@@ -229,13 +112,13 @@ class Plotter:
     settings: PlotSettings = field(default=Factory(PlotSettings), init=False)
 
     # pylint: disable=unused-argument
-    def _set(self, **kwargs: Unpack[SettingKwargs]) -> Self:
+    def _set(self, **kwargs: Unpack["SettingDict"]) -> Self:
         """
         Set the settings.
 
         Parameters
         ----------
-        **kwargs : Unpack[SettingKwargs]
+        **kwargs : Unpack[SettingDict]
             Specifies the settings.
 
         Returns
@@ -254,7 +137,7 @@ class Plotter:
                     self.settings[k] = v
         return self
 
-    def setting_check(self, key: SettingKey, value: Any) -> None:
+    def setting_check(self, key: "SettingKey", value: Any) -> None:
         """
         Checks if a new setting is legal.
 
@@ -267,13 +150,13 @@ class Plotter:
 
         """
 
-    def set_default(self, **kwargs: Unpack[SettingKwargs]) -> Self:
+    def set_default(self, **kwargs: Unpack["SettingDict"]) -> Self:
         """
         Sets the default settings.
 
         Parameters
         ----------
-        **kwargs : Unpack[SettingKwargs]
+        **kwargs : Unpack[SettingDict]
             Specifies the settings.
 
         Returns
@@ -307,9 +190,9 @@ class Plotter:
 
     def get_setting(
         self,
-        key: SettingKey,
-        default: Optional[DefaultVar] = None,
-    ) -> DefaultVar:
+        key: "SettingKey",
+        default: Optional["DefaultVar"] = None,
+    ) -> "DefaultVar":
         """
         Returns the value of a setting if it is not None, otherwise returns the
         default value.
@@ -330,7 +213,7 @@ class Plotter:
         """
         return default if (value := self.settings[key]) is None else value
 
-    def customize(self, cls: Type[PlotSetterVar], *args, **kwargs) -> PlotSetterVar:
+    def customize(self, cls: Type["PlotSetterVar"], *args, **kwargs) -> "PlotSetterVar":
         """
         Initialize another instance with the same settings as `self`.
 

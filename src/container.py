@@ -7,12 +7,11 @@ NOTE: this module is private. All functions and objects are available in the mai
 """
 
 import logging
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any, Optional, Self
 
 import matplotlib.pyplot as plt
 import numpy as np
 from attrs import define, field
-from typing_extensions import Self
 
 from .artist import Plotter
 
@@ -20,7 +19,7 @@ if TYPE_CHECKING:
     from matplotlib.figure import Figure
     from matplotlib.pyplot import Axes
 
-    from .artist import LegendLocStr, SettingKey, StyleStr, SubplotParams
+    from ._typing import FontDict, LegendLocStr, SettingKey, StyleStr, SubplotDict
 
 __all__ = ["FigWrapper", "AxesWrapper"]
 
@@ -107,7 +106,8 @@ class FigWrapper(Plotter):
         dpi: Optional[float] = None,
         figsize: Optional[tuple[int, int]] = None,
         style: Optional["StyleStr"] = None,
-        subplots_adjust: Optional["SubplotParams"] = None,
+        fontdict: Optional["FontDict"] = None,
+        subplots_adjust: Optional["SubplotDict"] = None,
     ) -> Self:
         """
         Sets the settings of figure.
@@ -123,6 +123,9 @@ class FigWrapper(Plotter):
             width and height of the figure in inches, by default None.
         style : StyleStr, optional
             A style specification, by default None.
+        fontdict : FontDict, optional
+            A dictionary controlling the appearance of the title text, by default
+            None.
         subplots_adjust : SubplotsParams, optional
             Adjusts the subplot layout parameters including: left, right,
             bottom, top, wspace, and hspace, by default None. See `SubplotsParams`
@@ -140,6 +143,7 @@ class FigWrapper(Plotter):
             dpi=dpi,
             figsize=figsize,
             style=style,
+            fontdict=fontdict,
             subplots_adjust=subplots_adjust,
         )
 
@@ -170,6 +174,7 @@ class AxesWrapper(Plotter):
         xlabel: Optional[str] = None,
         ylabel: Optional[str] = None,
         alpha: Optional[float] = None,
+        fontdict: Optional["FontDict"] = None,
         legend_loc: Optional["LegendLocStr"] = None,
     ) -> Self:
         """
@@ -187,6 +192,9 @@ class AxesWrapper(Plotter):
             Controls the transparency of the plotted elements. It takes a float
             value between 0 and 1, where 0 means completely transparent and 1
             means completely opaque, by default None.
+        fontdict : FontDict, optional
+            A dictionary controlling the appearance of the title text, by default
+            None.
         legend_loc : LegendLocStr, optional
             Location of the legend, by default None.
 
@@ -201,6 +209,7 @@ class AxesWrapper(Plotter):
             xlabel=xlabel,
             ylabel=ylabel,
             alpha=alpha,
+            fontdict=fontdict,
             legend_loc=legend_loc,
         )
 
