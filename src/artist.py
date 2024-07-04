@@ -131,7 +131,7 @@ class Plotter:
         for k, v in kwargs.items():
             if k in keys and v is not None:
                 self.setting_check(k, v)
-                if isinstance(v, dict):
+                if isinstance(v, dict) and isinstance(self.settings, dict):
                     self.settings[k] = {**self.settings[k], **v}
                 else:
                     self.settings[k] = v

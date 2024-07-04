@@ -8,7 +8,7 @@ NOTE: this module is private. All functions and objects are available in the mai
 
 from abc import ABCMeta
 from functools import partial
-from typing import TYPE_CHECKING, Any, Callable, Optional, Self, TypeVar, overload
+from typing import TYPE_CHECKING, Any, Callable, Optional, Self, TypeVar
 
 import numpy as np
 import pandas as pd
@@ -23,7 +23,7 @@ from .utils.multi import REMAIN, MultiObject, cleaner, multi, multi_partial, sin
 if TYPE_CHECKING:
     from numpy.typing import NDArray
 
-    from ._typing import LegendLocStr, StyleStr
+    from ._typing import FontDict, LegendLocStr, StyleStr
     from .container import AxesWrapper
 
 T = TypeVar("T")
@@ -352,20 +352,14 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
         self.data = self.fmtdata
         return self
 
-    @overload
-    def set_label(self, __label: str) -> Self: ...
-
-    @overload
-    def set_label(self, **kwargs: str) -> Self: ...
-
-    def set_label(self, *args: str, **kwargs: str) -> Self:
+    def set_label(self, __label: Optional[str] = None, **kwargs: str) -> Self:
         """
         Set the labels.
 
         Parameters
         ----------
-        __label : str
-            The new label (if specified).
+        __label : str, optional
+            The new label (if specified), by default None.
         **kwargs : str
             Works as a mapper to find the new label. If `self.label` is in
             `kwargs`, the label will be set to `kwargs[self.label]`.
@@ -376,8 +370,8 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
             An instance of self.
 
         """
-        if len(args) > 0:
-            self.label = args[0]
+        if isinstance(__label, str):
+            self.label = __label
         elif self.label in kwargs:
             self.label = kwargs[self.label]
         return self
@@ -390,6 +384,7 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
         alpha: Optional[float] = None,
         figsize: Optional[tuple[int, int]] = None,
         style: Optional["StyleStr"] = None,
+        fontdict: Optional["FontDict"] = None,
         legend_loc: Optional["LegendLocStr"] = None,
     ) -> Self:
         """
@@ -412,6 +407,9 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
             width and height of the figure in inches, by default None.
         style : StyleStr, optional
             A style specification, by default None.
+        fontdict : FontDict, optional
+            A dictionary controlling the appearance of the title text, by default
+            None.
         legend_loc : LegendLocStr, optional
             Location of the legend, by default None.
 
@@ -428,6 +426,7 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
             alpha=alpha,
             figsize=figsize,
             style=style,
+            fontdict=fontdict,
             legend_loc=legend_loc,
         )
 

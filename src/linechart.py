@@ -41,16 +41,9 @@ class LineChart(Artist):
         elif (len_t := len(self.ticks)) == (len_d := len(self.data)):
             ax.ax.plot(self.ticks, self.data, label=self.label)
         else:
-            raise TicksLenError(
-                "Data and ticks must have the same length, but have "
-                f"lengths {len_d} and {len_t}"
+            raise ValueError(
+                "Ticks and data must have the same length, but have "
+                f"lengths {len_t} and {len_d}"
             )
         if self.scatter:
             ax.ax.scatter(self.data)
-
-
-class TicksLenError(Exception):
-    """Raised when the length of ticks is shorter or Longer than
-    he data length.
-
-    """
