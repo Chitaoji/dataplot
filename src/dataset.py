@@ -8,7 +8,7 @@ NOTE: this module is private. All functions and objects are available in the mai
 
 from abc import ABCMeta
 from functools import partial
-from typing import TYPE_CHECKING, Any, Callable, Mapping, Optional, Self, TypeVar
+from typing import TYPE_CHECKING, Any, Callable, Optional, Self, TypeVar, overload
 
 import numpy as np
 import pandas as pd
@@ -213,25 +213,6 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
             self.fmt_.format(self.label), priority=priority
         )
 
-    def set_label(self, mapper: Optional[Mapping[str, str]] = None) -> Self:
-        """
-        Reset labels according to the mapper.
-
-        Parameters
-        ----------
-        mapper : Optional[Mapping], optional
-            Mapper to apply to the labels, by default None.
-
-        Returns
-        -------
-        Self
-            An instance of self.
-
-        """
-        if self.label in mapper:
-            self.label = mapper[self.label]
-        return self
-
     def join(self, *others: "PlotDataSet") -> "PlotDataSet":
         """
         Merge two or more `PlotDataSet` instances.
@@ -371,6 +352,36 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
         self.data = self.fmtdata
         return self
 
+    @overload
+    def set_label(self, __label: str) -> Self: ...
+
+    @overload
+    def set_label(self, **kwargs: str) -> Self: ...
+
+    def set_label(self, *args: str, **kwargs: str) -> Self:
+        """
+        Set the labels.
+
+        Parameters
+        ----------
+        __label : str
+            The new label (if specified).
+        **kwargs : str
+            Works as a mapper to find the new label. If `self.label` is in
+            `kwargs`, the label will be set to `kwargs[self.label]`.
+
+        Returns
+        -------
+        Self
+            An instance of self.
+
+        """
+        if len(args) > 0:
+            self.label = args[0]
+        elif self.label in kwargs:
+            self.label = kwargs[self.label]
+        return self
+
     def set_plot(
         self,
         title: Optional[str] = None,
@@ -466,7 +477,8 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
         on: Optional["AxesWrapper"] = None,
     ) -> None:
         """
-        Create a line chart for the data.
+        Create a line chart for the data. If there are more than one datasets, all of
+        them should have the same length.
 
         Parameters
         ----------
