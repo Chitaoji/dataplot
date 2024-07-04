@@ -8,6 +8,8 @@ NOTE: this module is private. All functions and objects are available in the mai
 
 from typing import TYPE_CHECKING, Optional, Union, overload
 
+import numpy as np
+
 from .container import FigWrapper
 from .dataset import PlotDataSet, PlotDataSets
 
@@ -73,9 +75,9 @@ def data(
         Provides methods for mathematical operations and plotting.
 
     """
-    if isinstance(x, list):
+    if isinstance(x, list) and any(isinstance(i, (np.ndarray, list)) for i in x):
         if label is None:
             label = [f"x{i}" for i in range(1, 1 + len(x))]
-        datas = [PlotDataSet(d, lb) for d, lb in zip(x, label)]
+        datas = [PlotDataSet(np.array(d), lb) for d, lb in zip(x, label)]
         return PlotDataSets(*datas)
-    return PlotDataSet(x, label=label)
+    return PlotDataSet(np.array(x), label=label)
