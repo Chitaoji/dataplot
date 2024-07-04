@@ -5,10 +5,11 @@ NOTE: this module is private. All functions and objects are available in the mai
 `dataplot` namespace - use that instead.
 
 """
-from typing import TYPE_CHECKING, List, Optional, Union, overload
 
+from typing import TYPE_CHECKING, Optional, Union, overload
+
+from .container import FigWrapper
 from .dataset import PlotDataSet, PlotDataSets
-from .setter import FigWrapper
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
@@ -41,17 +42,15 @@ def figure(nrows: int = 1, ncols: int = 1) -> FigWrapper:
 
 
 @overload
-def data(x: "NDArray", label: Optional[str] = None) -> PlotDataSet:
-    ...
+def data(x: "NDArray", label: Optional[str] = None) -> PlotDataSet: ...
 
 
 @overload
-def data(x: List["NDArray"], label: Optional[List[str]] = None) -> PlotDataSet:
-    ...
+def data(x: list["NDArray"], label: Optional[list[str]] = None) -> PlotDataSet: ...
 
 
 def data(
-    x: Union["NDArray", List["NDArray"]], label: Union[str, List[str], None] = None
+    x: Union["NDArray", list["NDArray"]], label: Union[str, list[str], None] = None
 ) -> PlotDataSet:
     """
     Initializes a dataset interface which provides methods for mathematical
@@ -59,13 +58,14 @@ def data(
 
     Parameters
     ----------
-    x : Union[NDArray, List[NDArray]]
-        Input values, this takes either a single array or a list of arrays, each
-        representing a set of data.
-    label : Union[str, List[str], None], optional
-        Labels of the data, this takes either a single string or a list of strings.
+    x : Union[NDArray, list[NDArray]]
+        Input values, this takes either a single array or a list of arrays, with
+        each array representing a dataset.
+    label : Union[str, list[str], None], optional
+        Label(s) of the data, this takes either a single string or a list of strings.
         If a list, should be the same length as `x`, with each element corresponding
-        to a specific array in `x`. By default None.
+        to a specific array in `x`. If set to None, use "x{i}" (i = 1, 2. 3, ...) as
+        the label(s). By default None.
 
     Returns
     -------

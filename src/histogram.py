@@ -1,25 +1,27 @@
 """
-Contains a tool class for plotting: Histogram.
+Contains an artist class: Histogram.
 
 NOTE: this module is private. All functions and objects are available in the main
 `dataplot` namespace - use that instead.
 
 """
+
 from typing import List, Optional, Tuple, Union
 
 import numpy as np
 from attrs import define
 from scipy import stats
 
-from .setter import AxesWrapper, DataSetter
+from .artist import Artist
+from .container import AxesWrapper
 
 __all__ = ["Histogram"]
 
 
 @define
-class Histogram(DataSetter):
+class Histogram(Artist):
     """
-    A plotting class that creates a histogram.
+    An artist class that creates a histogram.
 
     """
 
@@ -29,8 +31,8 @@ class Histogram(DataSetter):
     same_bin: bool = True
     stats: bool = True
 
-    def perform(self, reflex: Optional[List[float]] = None) -> List[float]:
-        """Do the plotting job.
+    def paint(self, reflex: Optional[List[float]] = None) -> List[float]:
+        """Paint on the axes.
 
         Parameters
         ----------
@@ -44,15 +46,17 @@ class Histogram(DataSetter):
             The bins of the histogram plot.
 
         """
-        with self.prepare() as ax:
-            ax.set_plot_default(
-                alpha=0.5 + 0.25 * (len(self.data) == 1),
-                xlabel="value",
-                ylabel="density" if self.density else "count",
-            ).loading(self.settings)
-            ds, b = self.__hist(ax, bins=self.bins if reflex is None else reflex)
-            if self.stats:
-                ax.set_plot(xlabel=ax.settings.xlabel + "\n" + ds)
+        ax = self.prepare()
+        ax.set_default(
+            alpha=0.5 + 0.25 * (len(self.data) == 1),
+            xlabel="value",
+            ylabel="density" if self.density else "count",
+        ).loading(self.settings)
+        ds, b = self.__hist(
+            ax, bins=self.bins if (reflex is None or not self.same_bin) else reflex
+        )
+        if self.stats:
+            ax.set_axes(xlabel=ax.settings.xlabel + "\n" + ds)
         return b
 
     def __hist(
@@ -73,7 +77,7 @@ class Histogram(DataSetter):
                 bin_list,
                 stats.norm.pdf(bin_list, mean, std),
                 alpha=ax.settings.alpha,
-                label=f"{self.label} - fit",
+                label=f"{self.label} · fit",
             )
         return (
             f"{self.label}: mean={mean:.3f}, std={std:.3f}, skew={skew:.3f}, kurt={kurt:.3f}",
