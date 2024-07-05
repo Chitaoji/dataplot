@@ -7,7 +7,7 @@ NOTE: this module is private. All functions and objects are available in the mai
 
 from typing import TYPE_CHECKING, Any, Optional, Self, Type, Unpack
 
-from attrs import Factory, define, field
+from attrs import Factory, asdict, define, field
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
@@ -36,8 +36,10 @@ class PlotSettings:
     ylabel: Optional[str] = None
     alpha: Optional[float] = None
     dpi: Optional[float] = None
-    figsize: Optional[tuple[int, int]] = None
+    grid: Optional[bool] = None
+    grid_alpha: Optional[float] = None
     style: Optional["StyleStr"] = None
+    figsize: Optional[tuple[int, int]] = None
     fontdict: Optional["FontDict"] = None
     legend_loc: Optional[str] = None
     subplots_adjust: Optional["SubplotDict"] = None
@@ -61,7 +63,7 @@ class PlotSettings:
             String representation.
 
         """
-        diff = [f"{k}={repr(v)}" for k, v in self.asdict().items() if v is not None]
+        diff = [f"{k}={repr(v)}" for k, v in asdict(self).items() if v is not None]
         return ", ".join(diff)
 
     def keys(self) -> list["SettingKey"]:
@@ -70,36 +72,11 @@ class PlotSettings:
 
         Returns
         -------
-        List[SettingAvailable]
-            Names of the settings.
+        list[SettingKey]
+            Keys of the settings.
 
         """
         return getattr(self, "__match_args__")
-
-    def fromdict(self, d: dict["SettingKey", Any]) -> None:
-        """
-        Reads settings from a dict.
-
-        Parameters
-        ----------
-        d : Dict[SettingAvailable, Any]
-            A dict of plot settings.
-
-        """
-        for k, v in d.items():
-            setattr(self, k, v)
-
-    def asdict(self) -> dict["SettingKey", Any]:
-        """
-        Returns a dict of the settings.
-
-        Returns
-        -------
-        Dict[SettingAvailable]
-            A dict of plot settings.
-
-        """
-        return {x: getattr(self, x) for x in self.keys()}
 
 
 @define(init=False)
@@ -131,7 +108,7 @@ class Plotter:
         for k, v in kwargs.items():
             if k in keys and v is not None:
                 self.setting_check(k, v)
-                if isinstance(v, dict) and isinstance(self.settings, dict):
+                if isinstance(v, dict) and isinstance(self.settings[k], dict):
                     self.settings[k] = {**self.settings[k], **v}
                 else:
                     self.settings[k] = v
@@ -143,7 +120,7 @@ class Plotter:
 
         Parameters
         ----------
-        key : SettingAvailable
+        key : SettingKey
             Key of the setting.
         value : Any
             Value of the setting.
@@ -186,7 +163,7 @@ class Plotter:
         Self
             An instance of self.
         """
-        return self._set(**settings.asdict())
+        return self._set(**asdict(settings))
 
     def get_setting(
         self,
@@ -199,7 +176,7 @@ class Plotter:
 
         Parameters
         ----------
-        key : SettingAvailable
+        key : SettingKey
             Key of the setting.
         default : DefaultVar, optional
             Specifies the default value to be returned if the requested value
@@ -246,7 +223,7 @@ class Plotter:
                 else:
                     unmatched[k] = v
             obj = cls(*args, **matched)
-            obj.settings = PlotSettings(**self.settings.asdict())
+            obj.settings = PlotSettings(**asdict(self.settings))
             for k, v in unmatched.items():
                 setattr(obj, k, v)
             return obj

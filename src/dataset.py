@@ -49,13 +49,13 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
     Properties
     ----------
     fmt : str
-        A string recording the oprations done on the data.
+        A string recording the mathmatical operations done on the data.
     fmtdata : NDArray
         Data after mathematical operations.
     settings : PlotSettings
         Settings for plot (whether a figure or an axes).
     last_op_prior : int
-        Priority of the last operation, where:
+        Priority of the last mathmatical operation, where:
         0 : Refers to highest priority, including unary operations;
         10 : Refers to binary operation that is prior to / (e.g., **);
         19 : Particularly refers to /;
@@ -382,8 +382,10 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
         xlabel: Optional[str] = None,
         ylabel: Optional[str] = None,
         alpha: Optional[float] = None,
-        figsize: Optional[tuple[int, int]] = None,
+        grid: Optional[bool] = None,
+        grid_alpha: Optional[float] = None,
         style: Optional["StyleStr"] = None,
+        figsize: Optional[tuple[int, int]] = None,
         fontdict: Optional["FontDict"] = None,
         legend_loc: Optional["LegendLocStr"] = None,
     ) -> Self:
@@ -402,11 +404,15 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
             Controls the transparency of the plotted elements. It takes a float
             value between 0 and 1, where 0 means completely transparent and 1
             means completely opaque. By default None.
+        grid : bool, optional
+            Determines whether to show the grids or not, by default None.
+        grid_alpha : float, optional
+            Controls the transparency of the grid, by default None.
+        style : StyleStr, optional
+            A style specification, by default None.
         figsize : tuple[int, int], optional
             Figure size, this takes a tuple of two integers that specifies the
             width and height of the figure in inches, by default None.
-        style : StyleStr, optional
-            A style specification, by default None.
         fontdict : FontDict, optional
             A dictionary controlling the appearance of the title text, by default
             None.
@@ -424,6 +430,8 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
             xlabel=xlabel,
             ylabel=ylabel,
             alpha=alpha,
+            grid=grid,
+            grid_alpha=grid_alpha,
             figsize=figsize,
             style=style,
             fontdict=fontdict,

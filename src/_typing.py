@@ -91,8 +91,10 @@ SettingKey = Literal[
     "ylabel",
     "alpha",
     "dpi",
-    "figsize",
+    "grid",
+    "grid_alpha",
     "style",
+    "figsize",
     "legend_loc",
     "subplots_adjust",
 ]
@@ -109,8 +111,10 @@ class SettingDict(TypedDict):
     ylabel: NotRequired[str]
     alpha: NotRequired[float]
     dpi: NotRequired[float]
-    figsize: NotRequired[tuple[int, int]]
+    grid: NotRequired[bool]
+    grid_alpha: NotRequired[float]
     style: NotRequired[StyleStr]
+    figsize: NotRequired[tuple[int, int]]
     fontdict: NotRequired["FontDict"]
     legend_loc: NotRequired[str]
     subplots_adjust: NotRequired["SubplotDict"]

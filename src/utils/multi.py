@@ -48,20 +48,21 @@ class MultiObject:
         An iterable of the items if specified (the same as what is needed for
         initializing a list). If no argument is given, the constructor creates
         a new empty MultiObject.
-    call_reducer : Optional[Callable[[list], Any]], optional
+    call_reducer : Callable[[list], Any], optional
         Specifies a reducer for the returns of `__call__()`. If specified,
         should be a callable that receives the list of original returns, and
         gives back a new return. If None, the return will be a new MultiObject.
         By default None.
-    call_reflex : Optional[str], optional
+    call_reflex : str, optional
         If str, the returns of a previous element's `__call__()` will be
         provided to the next element as a keyword argument named by it, by
         default None.
-    attr_reducer: Optional[Callable[[list, str], Any]] = None,
+    attr_reducer: Callable[[list, str], Any],  optional
         Specifies a reducer for the returns of `__getattr__()`. If specified,
         should be a callable that receives 2 positional arguments: the list of
         original returns and the attribute name, and gives back a new return. If
         None, the return will be a new MultiObject. By default None.
+
     """
 
     @overload

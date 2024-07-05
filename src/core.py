@@ -6,7 +6,7 @@ NOTE: this module is private. All functions and objects are available in the mai
 
 """
 
-from typing import TYPE_CHECKING, Optional, Union, overload
+from typing import TYPE_CHECKING, Optional, overload
 
 import numpy as np
 
@@ -52,7 +52,7 @@ def data(x: list["NDArray"], label: Optional[list[str]] = None) -> PlotDataSet: 
 
 
 def data(
-    x: Union["NDArray", list["NDArray"]], label: Union[str, list[str], None] = None
+    x: "NDArray" | list["NDArray"], label: Optional[str | list[str]] = None
 ) -> PlotDataSet:
     """
     Initializes a dataset interface which provides methods for mathematical
@@ -60,10 +60,10 @@ def data(
 
     Parameters
     ----------
-    x : Union[NDArray, list[NDArray]]
+    x : NDArray | list[NDArray]
         Input values, this takes either a single array or a list of arrays, with
         each array representing a dataset.
-    label : Union[str, list[str], None], optional
+    label : str | list[str], optional
         Label(s) of the data, this takes either a single string or a list of strings.
         If a list, should be the same length as `x`, with each element corresponding
         to a specific array in `x`. If set to None, use "x{i}" (i = 1, 2. 3, ...) as

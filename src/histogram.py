@@ -6,7 +6,7 @@ NOTE: this module is private. All functions and objects are available in the mai
 
 """
 
-from typing import List, Optional, Tuple, Union
+from typing import Optional
 
 import numpy as np
 from attrs import define
@@ -31,18 +31,18 @@ class Histogram(Artist):
     same_bin: bool = True
     stats: bool = True
 
-    def paint(self, reflex: Optional[List[float]] = None) -> List[float]:
+    def paint(self, reflex: Optional[list[float]] = None) -> list[float]:
         """Paint on the axes.
 
         Parameters
         ----------
-        reflex : Optional[List[float]], optional
-            If list of float, specifies the bins to divide the data into for
-            the histogram plot, by default None.
+        reflex : list[float], optional
+            Specifies the bins to divide the data into for the histogram plot,
+            by default None.
 
         Returns
         -------
-        List[float]
+        list[float]
             The bins of the histogram plot.
 
         """
@@ -60,8 +60,8 @@ class Histogram(Artist):
         return b
 
     def __hist(
-        self, ax: AxesWrapper, bins: Union[int, List[float]] = 100
-    ) -> Tuple[str, List[float]]:
+        self, ax: AxesWrapper, bins: int | list[float] = 100
+    ) -> tuple[str, list[float]]:
         _, bin_list, _ = ax.ax.hist(
             self.data,
             bins=bins,
