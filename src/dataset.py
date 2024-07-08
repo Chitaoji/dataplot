@@ -589,9 +589,8 @@ class PlotDataSets:
 
     @classmethod
     def __join_if_dataset(cls, x: list) -> Any:
-        if x:
-            if isinstance(x[0], PlotDataSet):
-                return cls(*x)
+        if x and isinstance(x[0], PlotDataSet):
+            return cls(*x)
         return REMAIN
 
     def __getattrs(self, __name: str) -> Iterable[Any]:

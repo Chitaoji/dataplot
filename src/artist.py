@@ -215,20 +215,20 @@ class Plotter:
             Raised when `cls` cannot be customized.
 
         """
-        if issubclass(cls, Plotter):
-            matched: dict[str, Any] = {}
-            unmatched: dict[str, Any] = {}
-            for k, v in kwargs.items():
-                if k in cls.__init__.__code__.co_varnames[1:]:
-                    matched[k] = v
-                else:
-                    unmatched[k] = v
-            obj = cls(*args, **matched)
-            obj.settings = PlotSettings(**asdict(self.settings))
-            for k, v in unmatched.items():
-                setattr(obj, k, v)
-            return obj
-        raise ValueError(f"type {cls} cannot be customized")
+        if not issubclass(cls, Plotter):
+            raise ValueError(f"type {cls} cannot be customized")
+        matched: dict[str, Any] = {}
+        unmatched: dict[str, Any] = {}
+        for k, v in kwargs.items():
+            if k in cls.__init__.__code__.co_varnames[1:]:
+                matched[k] = v
+            else:
+                unmatched[k] = v
+        obj = cls(*args, **matched)
+        obj.settings = PlotSettings(**asdict(self.settings))
+        for k, v in unmatched.items():
+            setattr(obj, k, v)
+        return obj
 
 
 @define(init=False, slots=False)
