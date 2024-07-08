@@ -8,7 +8,7 @@ NOTE: this module is private. All functions and objects are available in the mai
 
 from abc import ABCMeta
 from functools import partial
-from typing import TYPE_CHECKING, Any, Callable, Optional, Self, TypeVar
+from typing import TYPE_CHECKING, Any, Callable, Iterable, Optional, Self, TypeVar
 
 import numpy as np
 import pandas as pd
@@ -100,7 +100,7 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
         not_none = self.settings.repr_not_none()
         return f"{self.formatted_label()}{': 'if not_none else ''}{not_none}"
 
-    def __getitem__(self, __key: str) -> Self:
+    def __getitem__(self, __key: int) -> Self:
         return self
 
     def __add__(self, __other: "float | int | PlotDataSet") -> "PlotDataSet":
@@ -552,27 +552,28 @@ class PlotDataSets:
                 self.children.append(a)
 
     def __getattr__(self, __name: str) -> Any:
-        if __name in {"hist", "plot", "join", "_use_plotter"}:
-            return partial(getattr(PlotDataSet, __name), self)
-        if __name.startswith("_"):
-            raise AttributeError(f"cannot reach attribute '{__name}' after joining")
-        attribs = (getattr(c, __name) for c in self.children)
-        if __name in {"set_plot", "set_plot_default"}:
-            return multi(attribs, call_reducer=lambda x: self)
-        if __name == "customize":
-            return multi(
-                attribs,
-                call_reducer=multi_partial(
-                    attr_reducer=multi_partial(call_reflex="reflex")
-                ),
-            )
-        return multi(attribs, call_reducer=self._join_if_dataset)
+        match n := __name:
+            case "hist" | "plot" | "join" | "_use_plotter":
+                return partial(getattr(PlotDataSet, n), self)
+            case "set_plot" | "set_plot_default":
+                return multi(self.__getattrs(n), call_reducer=lambda _: self)
+            case "customize":
+                return multi(
+                    self.__getattrs(n),
+                    call_reducer=multi_partial(
+                        attr_reducer=multi_partial(call_reflex="reflex")
+                    ),
+                )
+            case _ if n.startswith("_"):
+                raise AttributeError(f"cannot reach attribute '{n}' after joining")
+            case _:
+                return multi(self.__getattrs(n), call_reducer=self.__join_if_dataset)
 
     def __repr__(self) -> str:
         data_info = "\n- ".join([x._data_info() for x in self.children])
         return f"{PlotDataSet.__name__}\n- {data_info}"
 
-    def __getitem__(self, __key: str) -> PlotDataSet:
+    def __getitem__(self, __key: int) -> PlotDataSet:
         return self.children[__key]
 
     def batched(self, n: int = 1) -> "MultiObject":
@@ -587,8 +588,11 @@ class PlotDataSets:
         return m
 
     @classmethod
-    def _join_if_dataset(cls, x: list) -> Any:
+    def __join_if_dataset(cls, x: list) -> Any:
         if x:
             if isinstance(x[0], PlotDataSet):
                 return cls(*x)
         return REMAIN
+
+    def __getattrs(self, __name: str) -> Iterable[Any]:
+        return (getattr(c, __name) for c in self.children)
