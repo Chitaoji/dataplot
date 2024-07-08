@@ -8,13 +8,13 @@ NOTE: this module is private. All functions and objects are available in the mai
 
 from typing import TYPE_CHECKING, Optional
 
-import numpy as np
 from attrs import define
 
 from .artist import Artist
 from .container import AxesWrapper
 
 if TYPE_CHECKING:
+    from numpy import float64
     from numpy.typing import NDArray
 
 __all__ = ["LineChart"]
@@ -27,7 +27,7 @@ class LineChart(Artist):
 
     """
 
-    ticks: Optional["NDArray[np.float64]"] = None
+    ticks: Optional["NDArray[float64]"] = None
     scatter: bool = False
 
     def paint(self, reflex: None = None) -> None:
@@ -42,7 +42,7 @@ class LineChart(Artist):
             ax.ax.plot(self.ticks, self.data, label=self.label)
         else:
             raise ValueError(
-                "Ticks and data must have the same length, but have "
+                "ticks and data must have the same length, but have "
                 f"lengths {len_t} and {len_d}"
             )
         if self.scatter:

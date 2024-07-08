@@ -378,6 +378,7 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
 
     def set_plot(
         self,
+        *,
         title: Optional[str] = None,
         xlabel: Optional[str] = None,
         ylabel: Optional[str] = None,

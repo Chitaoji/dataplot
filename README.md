@@ -28,6 +28,10 @@ This project falls under the BSD 3-Clause License.
 
 ## History
 
+### v0.1.1
+* New plot settings: `grid` and `grid_alpha`.
+* Parameters for `FigWrapper.set_figure()`, `AxesWrapper.set_axes()` and `PlotDataSet.set_plot()` are keyword-only now.
+
 ### v0.1.0
 * `PlotDataSet` now supports binary operations including +, -, *, /, and **.
 * Added `FigWrapper.set_figure()` and `AxesWrapper.set_axes()` - now use them instead of `.set_plot()`. `PlotDataSet.set_plot()` remains however.

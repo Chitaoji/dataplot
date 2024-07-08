@@ -5,7 +5,7 @@ NOTE: this module is private. All functions and objects are available in the mai
 
 """
 
-from typing import TYPE_CHECKING, Any, Optional, Self, Type, Unpack
+from typing import TYPE_CHECKING, Any, Optional, Self, Unpack
 
 from attrs import Factory, asdict, define, field
 
@@ -190,13 +190,13 @@ class Plotter:
         """
         return default if (value := self.settings[key]) is None else value
 
-    def customize(self, cls: Type["PlotSetterVar"], *args, **kwargs) -> "PlotSetterVar":
+    def customize(self, cls: type["PlotSetterVar"], *args, **kwargs) -> "PlotSetterVar":
         """
         Initialize another instance with the same settings as `self`.
 
         Parameters
         ----------
-        cls : Type[PlotSetableVar]
+        cls : type[PlotSetableVar]
             Type of the new instance.
         *args :
             Positional arguments.

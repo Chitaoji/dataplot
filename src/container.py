@@ -69,9 +69,7 @@ class FigWrapper(Plotter):
         self.fig, axes = plt.subplots(
             self.nrows, self.ncols, figsize=self.settings.figsize
         )
-        self.axes: list["AxesWrapper"] = [
-            AxesWrapper(x) for x in np.array(axes).reshape(-1)
-        ]
+        self.axes: list["AxesWrapper"] = [AxesWrapper(x) for x in np.reshape(axes, -1)]
         self.entered = True
         return self
 
@@ -100,6 +98,7 @@ class FigWrapper(Plotter):
 
     def set_figure(
         self,
+        *,
         title: Optional[str] = None,
         dpi: Optional[float] = None,
         style: Optional["StyleStr"] = None,
@@ -168,6 +167,7 @@ class AxesWrapper(Plotter):
 
     def set_axes(
         self,
+        *,
         title: Optional[str] = None,
         xlabel: Optional[str] = None,
         ylabel: Optional[str] = None,
