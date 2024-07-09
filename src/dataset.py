@@ -589,7 +589,7 @@ class PlotDataSets:
         """Overrides `PlotDataSet.batched()`."""
         if n <= 0:
             raise ValueError(f"batch size <= 0: {n}")
-        m = multi(call_reducer=cleaner)
+        m = multi(attr_reducer=cleaner)
         for i in range(0, len(self.children), n):
             m.__multiobjects__.append(PlotDataSets(*self.children[i : i + n]))
         return m

@@ -167,9 +167,7 @@ class Plotter:
         return self._set(**asdict(settings))
 
     def get_setting(
-        self,
-        key: "SettingKey",
-        default: Optional["DefaultVar"] = None,
+        self, key: "SettingKey", default: Optional["DefaultVar"] = None
     ) -> "DefaultVar | Any":
         """
         Returns the value of a setting if it is not None, otherwise returns the
