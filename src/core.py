@@ -80,4 +80,9 @@ def data(
             label = [f"x{i}" for i in range(1, 1 + len(x))]
         datas = [PlotDataSet(np.array(d), lb) for d, lb in zip(x, label)]
         return PlotDataSets(*datas)
+    if isinstance(label, list):
+        raise ValueError(
+            "it seems not necessary to provide a list of labels, since "
+            "the data has only one dimension"
+        )
     return PlotDataSet(np.array(x), label=label)

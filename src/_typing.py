@@ -7,7 +7,7 @@ NOTE: this module is private. All functions and objects are available in the mai
 """
 
 import logging
-from typing import TYPE_CHECKING, Literal, NotRequired, TypedDict, TypeVar
+from typing import TYPE_CHECKING, Literal, NotRequired, Optional, TypedDict, TypeVar
 
 if TYPE_CHECKING:
     from .artist import Plotter
@@ -95,6 +95,7 @@ SettingKey = Literal[
     "grid_alpha",
     "style",
     "figsize",
+    "fontdict",
     "legend_loc",
     "subplots_adjust",
 ]
@@ -106,18 +107,18 @@ class SettingDict(TypedDict):
 
     """
 
-    title: NotRequired[str]
-    xlabel: NotRequired[str]
-    ylabel: NotRequired[str]
-    alpha: NotRequired[float]
-    dpi: NotRequired[float]
-    grid: NotRequired[bool]
-    grid_alpha: NotRequired[float]
-    style: NotRequired[StyleStr]
-    figsize: NotRequired[tuple[int, int]]
-    fontdict: NotRequired["FontDict"]
-    legend_loc: NotRequired[str]
-    subplots_adjust: NotRequired["SubplotDict"]
+    title: NotRequired[Optional[str]]
+    xlabel: NotRequired[Optional[str]]
+    ylabel: NotRequired[Optional[str]]
+    alpha: NotRequired[Optional[float]]
+    dpi: NotRequired[Optional[float]]
+    grid: NotRequired[Optional[bool]]
+    grid_alpha: NotRequired[Optional[float]]
+    style: NotRequired[Optional[StyleStr]]
+    figsize: NotRequired[Optional[tuple[int, int]]]
+    fontdict: NotRequired[Optional["FontDict"]]
+    legend_loc: NotRequired[Optional[str]]
+    subplots_adjust: NotRequired[Optional["SubplotDict"]]
 
 
 class FontDict(TypedDict):

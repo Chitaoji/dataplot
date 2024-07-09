@@ -94,9 +94,18 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
         return obj
 
     def __repr__(self) -> str:
-        return self.__class__.__name__ + "\n- " + self._data_info()
+        return self.__class__.__name__ + "\n- " + self.data_info()
 
-    def _data_info(self) -> str:
+    def data_info(self) -> str:
+        """
+        Information of dataset.
+
+        Returns
+        -------
+        str
+            A string indicating the data label and the plot settings.
+
+        """
         not_none = self.settings.repr_not_none()
         return f"{self.formatted_label()}{': 'if not_none else ''}{not_none}"
 
@@ -479,7 +488,7 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
 
     def plot(
         self,
-        ticks: Optional["NDArray"] = None,
+        ticks: Optional["NDArray | PlotDataSet"] = None,
         scatter: bool = False,
         *,
         on: Optional["AxesWrapper"] = None,
@@ -490,13 +499,13 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
 
         Parameters
         ----------
-        ticks : Optional[NDArray], optional
+        ticks : NDArray | PlotDataSet, optional
             Specifies the x-ticks for the line chart. If not provided, the x-ticks will
             be set to `range(len(data))`. By default None.
         scatter : bool, optional
             Determines whether to include scatter points in the line chart, by default
             False.
-        on : Optional[AxesWrapper], optional
+        on : AxesWrapper, optional
             Specifies the axes wrapper on which the line chart should be plotted. If
             not specified, the histogram will be plotted on a new axes in a new
             figure. By default None.
@@ -570,7 +579,7 @@ class PlotDataSets:
                 return multi(self.__getattrs(n), call_reducer=self.__join_if_dataset)
 
     def __repr__(self) -> str:
-        data_info = "\n- ".join([x._data_info() for x in self.children])
+        data_info = "\n- ".join([x.data_info() for x in self.children])
         return f"{PlotDataSet.__name__}\n- {data_info}"
 
     def __getitem__(self, __key: int) -> PlotDataSet:
@@ -580,8 +589,6 @@ class PlotDataSets:
         """Overrides `PlotDataSet.batched()`."""
         if n <= 0:
             raise ValueError(f"batch size <= 0: {n}")
-        if n > len(self.children):
-            return self
         m = multi(call_reducer=cleaner)
         for i in range(0, len(self.children), n):
             m.__multiobjects__.append(PlotDataSets(*self.children[i : i + n]))

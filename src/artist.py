@@ -170,7 +170,7 @@ class Plotter:
         self,
         key: "SettingKey",
         default: Optional["DefaultVar"] = None,
-    ) -> "DefaultVar":
+    ) -> "DefaultVar | Any":
         """
         Returns the value of a setting if it is not None, otherwise returns the
         default value.
@@ -185,7 +185,7 @@ class Plotter:
 
         Returns
         -------
-        DefaultVar
+        DefaultVar | Any
             Value of the setting.
 
         """

@@ -65,6 +65,7 @@ class MultiObject:
         should be a callable that receives 2 positional arguments: the list of
         original returns and the attribute name, and gives back a new return. If
         None, the return will be a new MultiObject. By default None.
+    clean : bool, optional
 
     """
 
@@ -101,11 +102,11 @@ class MultiObject:
     def __call__(self, *args: Any, **kwargs: Any) -> Any:
         returns = []
         for i, obj in enumerate(self.__items):
-            clean_args = [single(a, n=i) for a in args]
-            clean_kwargs = {k: single(v, n=i) for k, v in kwargs.items()}
+            a = [single(x, n=i) for x in args]
+            kwd = {k: single(v, n=i) for k, v in kwargs.items()}
             if self.__call_reflex and i > 0:
-                clean_kwargs[self.__call_reflex] = r
-            returns.append(r := obj(*clean_args, **clean_kwargs))
+                kwd[self.__call_reflex] = r
+            returns.append(r := obj(*a, **kwd))
         if self.__call_reducer:
             reduced = self.__call_reducer(returns)
             if reduced == REMAIN:
@@ -182,7 +183,7 @@ def multi_partial(*args, **kwargs) -> Callable[[list], MultiObject]:
     return multi_constructor
 
 
-def cleaner(x: list) -> list | None:
+def cleaner(x: list, *_) -> list | None:
     """
     If the list is consist of None's only, return None, otherwise return
     a MultiObject instantiated by the list.
@@ -200,7 +201,7 @@ def cleaner(x: list) -> list | None:
     """
     if all(i is None for i in x):
         return None
-    return MultiObject(x, call_reducer=cleaner)
+    return MultiObject(x, call_reducer=cleaner, attr_reducer=cleaner)
 
 
 def single(x: T, n: int = -1) -> T:
