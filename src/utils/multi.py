@@ -124,12 +124,7 @@ class MultiObject:
 
     def __repr__(self) -> str:
         items = ("\n- ").join(repr(x).replace("\n", "\n  ") for x in self.__items)
-        call_reducer = self.__call_reducer.__name__ if self.__call_reducer else None
-        signature = (
-            self.__class__.__name__
-            + f"(call_reducer={call_reducer}, call_reflex={self.__call_reflex!r}, "
-            f"attr_reducer={self.__attr_reducer})"
-        )
+        signature = self.__class__.__name__ + "(" + repr_not_none(self) + ")"
         return f"{signature}\n- {items}"
 
     @property
@@ -224,3 +219,28 @@ def single(x: T, n: int = -1) -> T:
 
     """
     return x.__multiobjects__[n] if isinstance(x, MultiObject) else x
+
+
+def repr_not_none(x: MultiObject) -> str:
+    """
+    Returns a string representation of the MultiObject's attributes with
+    not-None values. Attributes with values of None are ignored.
+
+    Parameters
+    ----------
+    x : MultiObject
+        Any object.
+
+    Returns
+    -------
+    str
+        String representation.
+
+    """
+    namelist = [n for n in dir(x) if not n.startswith("__") and not n.endswith("items")]
+    not_nones: list[str] = []
+    for n in namelist:
+        if (v := getattr(x, n)) is None:
+            continue
+        not_nones.append(n.replace("_MultiObject__", "") + "=" + v.__name__)
+    return ", ".join(not_nones)
