@@ -18,12 +18,13 @@ from .artist import Artist, PlotSettings, Plotter
 from .container import FigWrapper
 from .histogram import Histogram
 from .linechart import LineChart
+from .qqplot import QQPlot
 from .utils.multi import REMAIN, MultiObject, cleaner, multi, multi_partial, single
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
 
-    from ._typing import FontDict, LegendLocStr, StyleStr
+    from ._typing import DistStr, FontDict, LegendLocStr, StyleStr
     from .container import AxesWrapper
 
 T = TypeVar("T")
@@ -448,10 +449,30 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
             legend_loc=legend_loc,
         )
 
+    def batched(self, n: int = 1) -> Self:
+        """
+        If this instance is joined by multiple `PlotDataSet` objects, batch the objects
+        into tuples of length n, otherwise return self.
+
+        Parameters
+        ----------
+        n : int, optional
+            Specifies the batch size, by default 1.
+
+        Returns
+        -------
+        PlotDataSet
+            An instance of `PlotDataSet`.
+
+        """
+        if n <= 0:
+            raise ValueError(f"batch size should be greater than 0, but got {n}")
+        return self
+
     # pylint: disable=unused-argument
     def hist(
         self,
-        bins: int = 100,
+        bins: int | list[float] = 100,
         fit: bool = True,
         density: bool = True,
         same_bin: bool = True,
@@ -464,9 +485,9 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
 
         Parameters
         ----------
-        bins : int, optional
-            Specifies the number of bins to divide the data into for the histogram
-            plot, by default 100.
+        bins : int | list[float], optional
+            Specifies the bins to divide the data into. If int, should be the number
+            of bins. By default 100.
         fit : bool, optional
             Fit a curve to the histogram or not, by default True.
         density : bool, optional
@@ -484,6 +505,7 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
             figure. By default None.
 
         """
+        locals().update(only=self.__class__ is PlotDataSet)
         self._use_plotter(Histogram, locals())
 
     def plot(
@@ -513,36 +535,31 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
         """
         self._use_plotter(LineChart, locals())
 
+    def qqplot(
+        self,
+        dist: "DistStr | NDArray | PlotDataSet" = "normal",
+        quantiles: int = 30,
+        *,
+        on: Optional["AxesWrapper"] = None,
+    ) -> None:
+        """
+        Create a qqplot.
+
+        """
+        self._use_plotter(QQPlot, locals())
+
     def _use_plotter(self, plotter: type[Artist], local: dict[str, Any]) -> None:
         params: dict[str, Any] = {}
         for key in plotter.__init__.__code__.co_varnames[1:]:
             params[key] = local[key]
 
-        on = local["on"]
-        with single(self.customize)(FigWrapper, 1, 1, on is None) as fig:
-            if on is None:
+        active = local["on"] is None
+        with single(self.customize)(FigWrapper, 1, 1, active) as fig:
+            if active:
                 params["on"] = fig.axes[0]
             self.customize(
                 plotter, data=self.fmtdata, label=self.formatted_label(), **params
             ).paint()
-
-    def batched(self, n: int = 1) -> Self:
-        """
-        If this instance is joined by multiple `PlotDataSet` objects, batch the objects
-        into tuples of length n, otherwise return self.
-
-        Parameters
-        ----------
-        n : int, optional
-            Specifies the batch size, by default 1.
-
-        Returns
-        -------
-        PlotDataSet
-            An instance of `PlotDataSet`.
-
-        """
-        return self
 
     # pylint: enable=unused-argument
 
@@ -587,8 +604,7 @@ class PlotDataSets:
 
     def batched(self, n: int = 1) -> "MultiObject":
         """Overrides `PlotDataSet.batched()`."""
-        if n <= 0:
-            raise ValueError(f"batch size <= 0: {n}")
+        PlotDataSet.batched(self, n)
         m = multi(attr_reducer=cleaner)
         for i in range(0, len(self.children), n):
             m.__multiobjects__.append(PlotDataSets(*self.children[i : i + n]))

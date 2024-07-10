@@ -14,8 +14,9 @@ from .artist import Artist
 from .container import AxesWrapper
 
 if TYPE_CHECKING:
-    from numpy import float64
     from numpy.typing import NDArray
+
+    from .dataset import PlotDataSet
 
 __all__ = ["LineChart"]
 
@@ -27,19 +28,24 @@ class LineChart(Artist):
 
     """
 
-    ticks: Optional["NDArray[float64]"] = None
+    ticks: Optional["NDArray | PlotDataSet"] = None
     scatter: bool = False
 
     def paint(self, reflex: None = None) -> None:
         ax = self.prepare()
+        ax.set_default(title="Line Chart")
         self.__plot(ax.loading(self.settings))
         return reflex
 
     def __plot(self, ax: AxesWrapper) -> None:
-        if self.ticks is None:
+        if self.ticks.__class__.__name__ == "PlotDataSet":
+            ticks = self.ticks.data
+        else:
+            ticks = self.ticks
+        if ticks is None:
             ax.ax.plot(self.data, label=self.label)
-        elif (len_t := len(self.ticks)) == (len_d := len(self.data)):
-            ax.ax.plot(self.ticks, self.data, label=self.label)
+        elif (len_t := len(ticks)) == (len_d := len(self.data)):
+            ax.ax.plot(ticks, self.data, label=self.label)
         else:
             raise ValueError(
                 "ticks and data must have the same length, but have "

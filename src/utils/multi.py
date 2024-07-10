@@ -1,5 +1,5 @@
 """
-The core of multis: MultiObject, etc.
+The core of multi: MultiObject, etc.
 
 """
 
@@ -83,6 +83,8 @@ class MultiObject:
         self.__items = [] if __iterable is None else list(__iterable)
 
     def __getattr__(self, __name: str) -> "MultiObject":
+        if __name.startswith("__"):
+            raise AttributeError(f"cannot reach attribute '{__name}'")
         attrs = [getattr(x, __name) for x in self.__items]
         if self.__attr_reducer:
             reduced = self.__attr_reducer(attrs, __name)

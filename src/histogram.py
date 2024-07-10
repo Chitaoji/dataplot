@@ -25,11 +25,12 @@ class Histogram(Artist):
 
     """
 
-    bins: int = 100
+    bins: int | list[float] = 100
     fit: bool = True
     density: bool = True
     same_bin: bool = True
     stats: bool = True
+    only: bool = True
 
     def paint(self, reflex: Optional[list[float]] = None) -> list[float]:
         """Paint on the axes.
@@ -48,7 +49,8 @@ class Histogram(Artist):
         """
         ax = self.prepare()
         ax.set_default(
-            alpha=0.5 + 0.25 * (len(self.data) == 1),
+            title="Histogram",
+            alpha=0.5 + 0.5 * self.only,
             xlabel="value",
             ylabel="density" if self.density else "count",
         ).loading(self.settings)
@@ -80,6 +82,7 @@ class Histogram(Artist):
                 label=f"{self.label} · fit",
             )
         return (
-            f"{self.label}: mean={mean:.3f}, std={std:.3f}, skew={skew:.3f}, kurt={kurt:.3f}",
+            f"{self.label}: mean={mean:.3f}, std={std:.3f}, skew={skew:.3f}, "
+            f"kurt={kurt:.3f}",
             bin_list,
         )

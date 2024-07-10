@@ -99,6 +99,7 @@ SettingKey = Literal[
     "legend_loc",
     "subplots_adjust",
 ]
+DistStr = Literal["normal", "exponential"]
 
 
 class SettingDict(TypedDict):
