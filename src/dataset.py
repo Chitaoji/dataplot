@@ -51,8 +51,8 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
     ----------
     fmt : str
         A string recording the mathmatical operations done on the data.
-    fmtdata : NDArray
-        Data after mathematical operations.
+    original_data : NDArray
+        Original input data.
     settings : PlotSettings
         Settings for plot (whether a figure or an axes).
     last_op_prior : int
@@ -61,17 +61,18 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
         10 : Refers to binary operation that is prior to / (e.g., **);
         19 : Particularly refers to /;
         20 : Particularly refers to *;
-        29 : Particularly refers to -;
-        30 : Particularly refers to +.
-            Note that / and - are distinguish from * or + because the former ones
-        disobey the associative law.
+        29 : Particularly refers to binary -;
+        30 : Particularly refers to +;
+        40 : Particularly refers to unary -.
+            Note that / and binary - are distinguished from * or + because the
+            former ones disobey the associative law.
 
     """
 
     data: "NDArray"
     label: Optional[str] = field(default=None)
     fmt_: str = field(init=False, default="{0}")
-    fmtdata: "NDArray" = field(init=False)
+    original_data: "NDArray" = field(init=False)
     settings: PlotSettings = field(init=False, factory=PlotSettings)
     last_op_prior: int = field(init=False, default=0)
 
@@ -83,14 +84,12 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
 
     def __attrs_post_init__(self) -> None:
         self.label = "x1" if self.label is None else self.label
-        self.fmtdata = self.data
+        self.original_data = self.data
 
-    def __create(
-        self, fmt: str, fmtdata: "NDArray", priority: int = 0
-    ) -> "PlotDataSet":
-        obj = self.customize(self.__class__, self.data, self.label)
+    def __create(self, fmt: str, data: "NDArray", priority: int = 0) -> "PlotDataSet":
+        obj = self.customize(self.__class__, self.original_data, self.label)
         obj.fmt_ = fmt
-        obj.fmtdata = fmtdata
+        obj.data = data
         obj.last_op_prior = priority
         return obj
 
@@ -112,6 +111,11 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
 
     def __getitem__(self, __key: int) -> Self:
         return self
+
+    def __neg__(self) -> "PlotDataSet":
+        new_fmt = f"(-{self.__auto_remove_brackets(self.fmt_, priority=28)})"
+        new_data = -self.data
+        return self.__create(new_fmt, new_data, priority=40)
 
     def __add__(self, __other: "float | int | PlotDataSet") -> "PlotDataSet":
         return self.__binary_operation(__other, "+", np.add, priority=30)
@@ -160,23 +164,23 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
         if reverse:
             this_fmt = self.__auto_remove_brackets(self.fmt_, priority=priority)
             new_fmt = f"({other}{sign}{this_fmt})"
-            new_fmtdata = func(other, self.fmtdata)
-            return self.__create(new_fmt, new_fmtdata, priority=priority)
+            new_data = func(other, self.data)
+            return self.__create(new_fmt, new_data, priority=priority)
 
         this_fmt = self.__auto_remove_brackets(self.fmt_, priority=priority + 1)
         if isinstance(other, (float, int)):
             new_fmt = f"({this_fmt}{sign}{other})"
-            new_fmtdata = func(self.fmtdata, other)
+            new_data = func(self.data, other)
         elif isinstance(other, PlotDataSet):
             other_label = other.formatted_label(priority=priority)
             new_fmt = f"({this_fmt}{sign}{other_label})"
-            new_fmtdata = func(self.fmtdata, other.fmtdata)
+            new_data = func(self.data, other.data)
         else:
             raise ValueError(
                 f"binary operation between PlotDataSet and {type(other)} is not "
                 "supoorted, try float, int, or PlotDataSet"
             )
-        return self.__create(new_fmt, new_fmtdata, priority=priority)
+        return self.__create(new_fmt, new_data, priority=priority)
 
     def __auto_remove_brackets(self, string: str, priority: int = 0):
         if priority == 0 or self.last_op_prior <= priority:
@@ -219,6 +223,8 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
             Formatted label.
 
         """
+        if priority == self.last_op_prior and priority in (19, 29):
+            priority -= 1
         return self.__auto_remove_brackets(
             self.fmt_.format(self.label), priority=priority
         )
@@ -251,8 +257,8 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
 
         """
         new_fmt = f"log({self.fmt})"
-        new_fmtdata = np.log(self.fmtdata)
-        return self.__create(new_fmt, new_fmtdata)
+        new_data = np.log(self.data)
+        return self.__create(new_fmt, new_data)
 
     def rolling(self, n: int) -> "PlotDataSet":
         """
@@ -271,8 +277,8 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
 
         """
         new_fmt = f"rolling({self.fmt}, {n})"
-        new_fmtdata = pd.Series(self.fmtdata).rolling(n).mean().values
-        return self.__create(new_fmt, new_fmtdata)
+        new_data = pd.Series(self.data).rolling(n).mean().values
+        return self.__create(new_fmt, new_data)
 
     def exp(self) -> "PlotDataSet":
         """
@@ -285,8 +291,8 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
 
         """
         new_fmt = f"exp({self.fmt})"
-        new_fmtdata = np.exp(self.fmtdata)
-        return self.__create(new_fmt, new_fmtdata)
+        new_data = np.exp(self.data)
+        return self.__create(new_fmt, new_data)
 
     def demean(self) -> "PlotDataSet":
         """
@@ -299,8 +305,8 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
 
         """
         new_fmt = f"{self.fmt}-mean({self.fmt})"
-        new_fmtdata = self.fmtdata - np.nanmean(self.fmtdata)
-        return self.__create(new_fmt, new_fmtdata)
+        new_data = self.data - np.nanmean(self.data)
+        return self.__create(new_fmt, new_data)
 
     def zscore(self) -> "PlotDataSet":
         """
@@ -314,10 +320,8 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
 
         """
         new_fmt = f"({self.fmt}-mean({self.fmt}))/std({self.fmt})"
-        new_fmtdata = (self.fmtdata - np.nanmean(self.fmtdata)) / np.nanstd(
-            self.fmtdata
-        )
-        return self.__create(new_fmt, new_fmtdata)
+        new_data = (self.data - np.nanmean(self.data)) / np.nanstd(self.data)
+        return self.__create(new_fmt, new_data)
 
     def cumsum(self) -> "PlotDataSet":
         """
@@ -331,12 +335,12 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
 
         """
         new_fmt = f"csum({self.fmt})"
-        new_fmtdata = np.cumsum(self.fmtdata)
-        return self.__create(new_fmt, new_fmtdata)
+        new_data = np.cumsum(self.data)
+        return self.__create(new_fmt, new_data)
 
-    def reset(self) -> Self:
+    def opclear(self) -> Self:
         """
-        Reset all the operations performed on the data and clean the records.
+        Undo all the operations performed on the data and clean the records.
 
         Returns
         -------
@@ -344,13 +348,14 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
             An instance of self.
         """
         self.fmt_ = "{0}"
-        self.fmtdata = self.data
+        self.data = self.original_data
         return self
 
-    def clean_records(self) -> Self:
+    def opclear_records_only(self) -> Self:
         """
-        Clean the records of operations performed on the data. Differences to
-        `reset()` that the original data will be removed.
+        Clear the records of operations performed on the data. Differences to
+        `opclear()` that the operations are not undone and the original data
+        will be removed.
 
         Returns
         -------
@@ -359,7 +364,7 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
 
         """
         self.fmt_ = "{0}"
-        self.data = self.fmtdata
+        self.original_data = self.data
         return self
 
     def set_label(self, __label: Optional[str] = None, **kwargs: str) -> Self:
@@ -558,7 +563,7 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
             if active:
                 params["on"] = fig.axes[0]
             self.customize(
-                plotter, data=self.fmtdata, label=self.formatted_label(), **params
+                plotter, data=self.data, label=self.formatted_label(), **params
             ).paint()
 
     # pylint: enable=unused-argument

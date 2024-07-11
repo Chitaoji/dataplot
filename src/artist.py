@@ -228,6 +228,20 @@ class Plotter:
             setattr(obj, k, v)
         return obj
 
+    def reset(self) -> Self:
+        """
+        Reset all the settings to None.
+
+        Returns
+        -------
+        Self
+            An instance of self.
+
+        """
+        for k in self.settings.keys():
+            self.settings[k] = None
+        return self
+
 
 @define(init=False, slots=False)
 class Artist(Plotter):

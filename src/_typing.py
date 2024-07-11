@@ -82,7 +82,10 @@ FontWeightStr = Literal[
     "black",
 ]
 FontStyleStr = Literal["normal", "italic", "oblique"]
-ColorStr = Literal["b", "g", "r", "c", "m", "y", "k", "w"]
+ColorStr = (
+    Literal["b", "g", "r", "c", "m", "y", "k", "w"]
+    | Literal["C0", "C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9"]
+)
 VerticalAlignmentStr = Literal["baseline", "bottom", "center", "center_baseline", "top"]
 HorizontalAlignmentStr = Literal["left", "center", "right"]
 SettingKey = Literal[

@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING, Optional
 
 from attrs import define
 
-from .artist import Artist
+from .artist import Artist, Plotter
 from .container import AxesWrapper
 
 if TYPE_CHECKING:
@@ -38,7 +38,7 @@ class LineChart(Artist):
         return reflex
 
     def __plot(self, ax: AxesWrapper) -> None:
-        if self.ticks.__class__.__name__ == "PlotDataSet":
+        if isinstance(self.ticks, Plotter):
             ticks = self.ticks.data
         else:
             ticks = self.ticks
