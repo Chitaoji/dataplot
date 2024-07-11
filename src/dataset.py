@@ -530,10 +530,12 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
             Specifies the bins to divide the data into. If int, should be the number
             of bins. By default 100.
         fit : bool, optional
-            Fit a curve to the histogram or not, by default True.
+            Determines whether to fit a curve to the histogram, only available when
+            `density=True`, by default True.
         density : bool, optional
-            Draw a probability density or not. If True, the histogram will be
-            normalized such that the area under it equals to 1. By default True.
+            Determines whether to draw a probability density. If True, the histogram
+            will be normalized such that the area under it equals to 1. By default
+            True.
         same_bin : bool, optional
             Determines whether the bins should be the same for all sets of data, by
             default True.
@@ -578,13 +580,25 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
 
     def qqplot(
         self,
-        dist: "DistStr | NDArray | PlotDataSet" = "normal",
+        dist_or_sample: "DistStr | NDArray | PlotDataSet" = "normal",
         num: int = 30,
         *,
         on: Optional["AxesWrapper"] = None,
     ) -> None:
         """
-        Create a qqplot.
+        Create a quantile-quantile plot.
+
+        Parameters
+        ----------
+        dist_or_sample : DistStr | NDArray | PlotDataSet, optional
+            If str, specifies a theoretical distribution to compare with; if NDArray
+            or PlotDataSet, specifies another sample, by default "normal".
+        num : int, optional
+            Number of quantiles, by default 30.
+        on : AxesWrapper, optional
+            Specifies the axes wrapper on which the line chart should be plotted. If
+            not specified, the histogram will be plotted on a new axes in a new
+            figure. By default None.
 
         """
         self._use_plotter(QQPlot, locals())

@@ -32,7 +32,7 @@ class QQPlot(Artist):
 
     """
 
-    dist: "DistStr | NDArray | PlotDataSet" = "normal"
+    dist_or_sample: "DistStr | NDArray | PlotDataSet" = "normal"
     num: int = 30
 
     def paint(self, reflex: None = None) -> None:
@@ -46,7 +46,7 @@ class QQPlot(Artist):
         return reflex
 
     def __plot(self, ax: AxesWrapper) -> None:
-        if isinstance(x := self.dist, str):
+        if isinstance(x := self.dist_or_sample, str):
             xlabel = x
             match x:
                 case "normal":
@@ -60,7 +60,7 @@ class QQPlot(Artist):
             p = np.linspace(0, 1, self.num)
             q1 = self.__get_quantile(x.data, p)
         elif isinstance(x, (list, np.ndarray)):
-            xlabel = "input"
+            xlabel = "sample"
             p = np.linspace(0, 1, self.num)
             q1 = self.__get_quantile(x, p)
         else:

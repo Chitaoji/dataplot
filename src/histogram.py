@@ -74,7 +74,7 @@ class Histogram(Artist):
         mean, std = np.nanmean(self.data), np.nanstd(self.data)
         skew: float = stats.skew(self.data, bias=False, nan_policy="omit")
         kurt: float = stats.kurtosis(self.data, bias=False, nan_policy="omit")
-        if self.fit:
+        if self.fit and self.density:
             ax.ax.plot(
                 bin_list,
                 stats.norm.pdf(bin_list, mean, std),
