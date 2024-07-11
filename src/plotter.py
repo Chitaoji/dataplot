@@ -1,5 +1,5 @@
 """
-Contains dataclasses: PlotSettings, Plotter and Artist.
+Contains dataclasses: PlotSettings, Plotter.
 
 NOTE: this module is private. All functions and objects are available in the main
 `dataplot` namespace - use that instead.
@@ -11,8 +11,6 @@ from typing import TYPE_CHECKING, Any, Optional, Self, TypeVar, Unpack
 from attrs import Factory, asdict, define, field
 
 if TYPE_CHECKING:
-    from numpy.typing import NDArray
-
     from ._typing import (
         DefaultVar,
         FontDict,
@@ -22,7 +20,6 @@ if TYPE_CHECKING:
         StyleStr,
         SubplotDict,
     )
-    from .container import AxesWrapper
 
 
 __all__ = ["PlotSettings", "Plotter"]

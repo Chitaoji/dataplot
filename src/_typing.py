@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 logging.warning(
     "importing from '._typing'. This module is not aimed to be imported directly, "
-    "so unexpected behaviors may be discoverd"
+    "therefore unexpected behaviors may be discovered"
 )
 
 PlotSetterVar = TypeVar("PlotSetterVar", bound="Plotter")
