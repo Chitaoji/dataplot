@@ -100,25 +100,8 @@ class Plotter:
     settings: PlotSettings = field(default=Factory(PlotSettings), init=False)
 
     def _set(
-        self, inplace: bool = False, **kwargs: Unpack["SettingDict"]
+        self, *, inplace: bool = False, **kwargs: Unpack["SettingDict"]
     ) -> Self | None:
-        """
-        Set the settings.
-
-        Parameters
-        ----------
-        inplace : bool, optional
-            Determines whether to inplace `self.settings` or to create a new
-            instance, by default False.
-        **kwargs : Unpack[SettingDict]
-            Specifies the settings.
-
-        Returns
-        -------
-        Self | None
-            An instance of self or None.
-
-        """
         obj = self if inplace else self.copy()
         keys = obj.settings.keys()
         for k, v in kwargs.items():

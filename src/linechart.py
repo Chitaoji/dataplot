@@ -28,8 +28,8 @@ class LineChart(Artist):
 
     """
 
-    ticks: Optional["NDArray | PlotDataSet"] = None
-    scatter: bool = False
+    ticks: Optional["NDArray | PlotDataSet"]
+    scatter: bool
 
     def paint(self, reflex: None = None) -> None:
         ax = self.prepare()

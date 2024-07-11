@@ -8,7 +8,18 @@ NOTE: this module is private. All functions and objects are available in the mai
 
 from abc import ABCMeta
 from functools import partial
-from typing import TYPE_CHECKING, Any, Callable, Iterable, Optional, Self, TypeVar
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Iterable,
+    Literal,
+    Optional,
+    Self,
+    TypeVar,
+    Unpack,
+    overload,
+)
 
 import numpy as np
 import pandas as pd
@@ -17,6 +28,7 @@ from attrs import define, field
 from .artist import Artist, PlotSettings, Plotter
 from .container import FigWrapper
 from .histogram import Histogram
+from .ksplot import KSPlot
 from .linechart import LineChart
 from .qqplot import QQPlot
 from .utils.multi import REMAIN, MultiObject, cleaner, multi, multi_partial, single
@@ -24,7 +36,7 @@ from .utils.multi import REMAIN, MultiObject, cleaner, multi, multi_partial, sin
 if TYPE_CHECKING:
     from numpy.typing import NDArray
 
-    from ._typing import DistStr, FontDict, LegendLocStr, StyleStr
+    from ._typing import DistStr, SettingDict
     from .container import AxesWrapper
 
 T = TypeVar("T")
@@ -298,6 +310,20 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
         new_data = np.exp(self.data)
         return self.__create(new_fmt, new_data)
 
+    def abs(self) -> Self:
+        """
+        Perform an abs operation on the data.
+
+        Returns
+        -------
+        PlotData
+            A new instance of `PlotData`.
+
+        """
+        new_fmt = f"abs({self.fmt})"
+        new_data = np.abs(self.data)
+        return self.__create(new_fmt, new_data)
+
     def demean(self) -> Self:
         """
         Perform a demean operation on the data by subtracting its mean.
@@ -308,7 +334,7 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
             A new instance of self.
 
         """
-        new_fmt = f"{self.fmt}-mean({self.fmt})"
+        new_fmt = f"({self.fmt}-mean({self.fmt}))"
         new_data = self.data - np.nanmean(self.data)
         return self.__create(new_fmt, new_data)
 
@@ -323,7 +349,7 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
             A new instance of `PlotDataSet`.
 
         """
-        new_fmt = f"({self.fmt}-mean({self.fmt}))/std({self.fmt})"
+        new_fmt = f"(({self.fmt}-mean({self.fmt}))/std({self.fmt}))"
         new_data = (self.data - np.nanmean(self.data)) / np.nanstd(self.data)
         return self.__create(new_fmt, new_data)
 
@@ -397,26 +423,25 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
         elif self.label in kwargs:
             self.label = kwargs[self.label]
 
+    @overload
     def set_plot(
-        self,
-        *,
-        title: Optional[str] = None,
-        xlabel: Optional[str] = None,
-        ylabel: Optional[str] = None,
-        alpha: Optional[float] = None,
-        grid: Optional[bool] = None,
-        grid_alpha: Optional[float] = None,
-        style: Optional["StyleStr"] = None,
-        figsize: Optional[tuple[int, int]] = None,
-        fontdict: Optional["FontDict"] = None,
-        legend_loc: Optional["LegendLocStr"] = None,
-        inplace: bool = False,
+        self, *, inplace: Literal[False] = False, **kwargs: Unpack["SettingDict"]
+    ) -> Self: ...
+    @overload
+    def set_plot(
+        self, *, inplace: Literal[True] = True, **kwargs: Unpack["SettingDict"]
+    ) -> None: ...
+    def set_plot(
+        self, *, inplace: bool = False, **kwargs: Unpack["SettingDict"]
     ) -> Self | None:
         """
         Set the settings of a plot (whether a figure or an axes).
 
         Parameters
         ----------
+        inplace : bool, optional
+            Determines whether the changes of settings will happen in self or
+            in a new copy of self, by default False.
         title : str, optional
             Title for the plot, by default None.
         xlabel : str, optional
@@ -441,9 +466,6 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
             None.
         legend_loc : LegendLocStr, optional
             Location of the legend, by default None.
-        inplace : bool, optional
-            Determines whether to inplace `self.settings` or to create a new
-            instance, by default False.
 
         Returns
         -------
@@ -451,24 +473,14 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
             An instance of self or None.
 
         """
-        return self._set(
-            inplace=inplace,
-            title=title,
-            xlabel=xlabel,
-            ylabel=ylabel,
-            alpha=alpha,
-            grid=grid,
-            grid_alpha=grid_alpha,
-            figsize=figsize,
-            style=style,
-            fontdict=fontdict,
-            legend_loc=legend_loc,
-        )
+        return self._set(inplace=inplace, **kwargs)
 
     def batched(self, n: int = 1) -> Self:
         """
         If this instance is joined by multiple `PlotDataSet` objects, batch the
         objects into tuples of length n, otherwise return self.
+
+        Use this together with `.plot()`, `.hist()`, etc.
 
         Parameters
         ----------
@@ -497,7 +509,7 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
         on: Optional["AxesWrapper"] = None,
     ) -> None:
         """
-        Plot a histogram of the data.
+        Create a histogram of the data.
 
         Parameters
         ----------
@@ -566,10 +578,11 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
         Parameters
         ----------
         dist_or_sample : DistStr | NDArray | PlotDataSet, optional
-            If str, specifies a theoretical distribution to compare with; if NDArray
-            or PlotDataSet, specifies another sample, by default "normal".
-        num : int, optional
-            Number of quantiles, by default 30.
+            Specifies the distribution to compare with. If str, specifies a
+            theoretical distribution; if NDArray or PlotDataSet, specifies
+            another real sample. By default "normal".
+        dots : int, optional
+            Number of dots, by default 30.
         on : AxesWrapper, optional
             Specifies the axes wrapper on which the line chart should be plotted. If
             not specified, the histogram will be plotted on a new axes in a new
@@ -577,6 +590,33 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
 
         """
         self._use_plotter(QQPlot, locals())
+
+    def ksplot(
+        self,
+        dist_or_sample: "DistStr | NDArray | PlotDataSet" = "normal",
+        dots: int = 1000,
+        edge_precision: float = 1e-6,
+        *,
+        on: Optional["AxesWrapper"] = None,
+    ) -> None:
+        """
+        Create a kolmogorov-smirnov plot.
+
+        Parameters
+        ----------
+        dist_or_sample : DistStr | NDArray | PlotDataSet, optional
+            Specifies the distribution to compare with. If str, specifies a
+            theoretical distribution; if NDArray or PlotDataSet, specifies
+            another real sample. By default "normal".
+        dots : int, optional
+            Number of dots, by default 1000.
+        on : AxesWrapper, optional
+            Specifies the axes wrapper on which the line chart should be plotted. If
+            not specified, the histogram will be plotted on a new axes in a new
+            figure. By default None.
+
+        """
+        self._use_plotter(KSPlot, locals())
 
     def _use_plotter(self, plotter: type[Artist], local: dict[str, Any]) -> None:
         params: dict[str, Any] = {}

@@ -25,12 +25,12 @@ class Histogram(Artist):
 
     """
 
-    bins: int | list[float] = 100
-    fit: bool = True
-    density: bool = True
-    same_bin: bool = True
-    stats: bool = True
-    only: bool = True
+    bins: int | list[float]
+    fit: bool
+    density: bool
+    same_bin: bool
+    stats: bool
+    only: bool
 
     def paint(self, reflex: Optional[list[float]] = None) -> list[float]:
         """Paint on the axes.

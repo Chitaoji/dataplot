@@ -45,12 +45,8 @@ def figure(nrows: int = 1, ncols: int = 1) -> FigWrapper:
 
 @overload
 def data(x: "NDArray", label: Optional[str] = None) -> PlotDataSet: ...
-
-
 @overload
 def data(x: list["NDArray"], label: Optional[list[str]] = None) -> PlotDataSet: ...
-
-
 def data(
     x: "NDArray | list[NDArray]", label: Optional[str | list[str]] = None
 ) -> PlotDataSet:
