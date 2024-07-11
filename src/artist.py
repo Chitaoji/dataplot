@@ -79,6 +79,14 @@ class PlotSettings:
         """
         return getattr(self, "__match_args__")
 
+    def reset(self) -> None:
+        """
+        Reset all the settings to None.
+
+        """
+        for k in self.keys():
+            self[k] = None
+
 
 @define(init=False)
 class Plotter:
@@ -227,20 +235,6 @@ class Plotter:
         for k, v in unmatched.items():
             setattr(obj, k, v)
         return obj
-
-    def reset(self) -> Self:
-        """
-        Reset all the settings to None.
-
-        Returns
-        -------
-        Self
-            An instance of self.
-
-        """
-        for k in self.settings.keys():
-            self.settings[k] = None
-        return self
 
 
 @define(init=False, slots=False)

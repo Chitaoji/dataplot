@@ -33,48 +33,46 @@ class QQPlot(Artist):
     """
 
     dist: "DistStr | NDArray | PlotDataSet" = "normal"
-    quantiles: int = 30
+    num: int = 30
 
     def paint(self, reflex: None = None) -> None:
         ax = self.prepare()
         ax.set_default(
             title="Quantile-Quantile Plot",
-            ylabel=self.label + " quantiles",
+            xlabel="quantiles",
+            ylabel="quantiles",
         )
         self.__plot(ax.loading(self.settings))
         return reflex
 
     def __plot(self, ax: AxesWrapper) -> None:
         if isinstance(x := self.dist, str):
-            ax.set_default(xlabel=x + " theoretical quantiles")
+            xlabel = x
             match x:
                 case "normal":
-                    q = np.linspace(0, 1, self.quantiles + 2)[1:-1]
-                    p1 = stats.norm.ppf(q)
+                    p = np.linspace(0, 1, self.num + 2)[1:-1]
+                    q1 = stats.norm.ppf(p)
                 case "exponential":
-                    q = np.linspace(0, 1, self.quantiles + 1)[0:-1]
-                    p1 = stats.expon.ppf(q)
+                    p = np.linspace(0, 1, self.num + 1)[0:-1]
+                    q1 = stats.expon.ppf(p)
         elif isinstance(x, Plotter):
-            ax.set_default(xlabel=x.label + " theoretical quantiles")
-            q = np.linspace(0, 1, self.quantiles)
-            p1 = self.__get_percentile(x.data, q)
+            xlabel = x.formatted_label()
+            p = np.linspace(0, 1, self.num)
+            q1 = self.__get_quantile(x.data, p)
         elif isinstance(x, (list, np.ndarray)):
-            ax.set_default(xlabel="sample theoretical quantiles")
-            q = np.linspace(0, 1, self.quantiles)
-            p1 = self.__get_percentile(x, q)
+            xlabel = "input"
+            p = np.linspace(0, 1, self.num)
+            q1 = self.__get_quantile(x, p)
         else:
             raise ValueError()
-
-        p2 = self.__get_percentile(self.data, q)
-        ax.ax.scatter(p1, p2, zorder=2.1)
-        a, b = linear_regression_1d(p2, p1)
-        l, r = p1.min(), p1.max()
+        q2 = self.__get_quantile(self.data, p)
+        ax.ax.plot(q1, q2, "o", zorder=2.1, label=f"{self.label} & {xlabel}")
+        a, b = linear_regression_1d(q2, q1)
+        l, r = q1.min(), q1.max()
         ax.ax.plot(
-            [l, r], [a + l * b, a + r * b], "C1--", label=f"y = {a:.3f} + {b:.3f}x"
+            [l, r], [a + l * b, a + r * b], "--", label=f"y = {a:.3f} + {b:.3f}x"
         )
 
     @staticmethod
-    def __get_percentile(data, q):
-        return np.nanpercentile(
-            np.nan_to_num(data, posinf=np.nan, neginf=np.nan), q * 100
-        )
+    def __get_quantile(data, q):
+        return np.nanquantile(np.nan_to_num(data, posinf=np.nan, neginf=np.nan), q)

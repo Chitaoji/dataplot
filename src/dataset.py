@@ -57,8 +57,8 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
         Settings for plot (whether a figure or an axes).
     last_op_prior : int
         Priority of the last mathmatical operation, where:
-        0 : Refers to highest priority, including unary operations;
-        10 : Refers to binary operation that is prior to / (e.g., **);
+        0 : Highest priority, refering to `repr()` and some of unary operations;
+        10 : Refers to binary operations that are prior to / (e.g., **);
         19 : Particularly refers to /;
         20 : Particularly refers to *;
         29 : Particularly refers to binary -;
@@ -87,10 +87,14 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
         self.original_data = self.data
 
     def __create(self, fmt: str, data: "NDArray", priority: int = 0) -> "PlotDataSet":
-        obj = self.customize(self.__class__, self.original_data, self.label)
-        obj.fmt_ = fmt
+        obj = self.customize(
+            self.__class__,
+            self.original_data,
+            self.label,
+            fmt_=fmt,
+            last_op_prior=priority,
+        )
         obj.data = data
-        obj.last_op_prior = priority
         return obj
 
     def __repr__(self) -> str:
@@ -456,8 +460,8 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
 
     def batched(self, n: int = 1) -> Self:
         """
-        If this instance is joined by multiple `PlotDataSet` objects, batch the objects
-        into tuples of length n, otherwise return self.
+        If this instance is joined by multiple `PlotDataSet` objects, batch the
+        objects into tuples of length n, otherwise return self.
 
         Parameters
         ----------
@@ -473,6 +477,38 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
         if n <= 0:
             raise ValueError(f"batch size should be greater than 0, but got {n}")
         return self
+
+    def copy(self, reset: bool = False) -> "PlotDataSet":
+        """
+        Copy the instance of self (not deepcopy).
+
+        Parameters
+        ----------
+        reset : bool, optional
+            Whether to reset the plot settings while copying, by default False.
+
+        Returns
+        -------
+        PlotDataSet
+            An instance of `PlotDataSet`.
+
+        """
+        obj = self.__create(self.fmt_, self.data, priority=self.last_op_prior)
+        if reset:
+            obj.settings.reset()
+        return obj
+
+    def reset(self) -> "PlotDataSet":
+        """
+        An alternative to `.copy(reset=True)`.
+
+        Returns
+        -------
+        PlotDataSet
+            An instance of `PlotDataSet`.
+
+        """
+        return self.copy(reset=True)
 
     # pylint: disable=unused-argument
     def hist(
@@ -543,7 +579,7 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
     def qqplot(
         self,
         dist: "DistStr | NDArray | PlotDataSet" = "normal",
-        quantiles: int = 30,
+        num: int = 30,
         *,
         on: Optional["AxesWrapper"] = None,
     ) -> None:
@@ -584,7 +620,7 @@ class PlotDataSets:
 
     def __getattr__(self, __name: str) -> Any:
         match n := __name:
-            case "hist" | "plot" | "join" | "_use_plotter":
+            case "hist" | "plot" | "qqplot" | "join" | "_use_plotter":
                 return partial(getattr(PlotDataSet, n), self)
             case "set_plot" | "set_plot_default":
                 return multi(self.__getattrs(n), call_reducer=lambda _: self)
