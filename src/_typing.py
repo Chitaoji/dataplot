@@ -10,7 +10,7 @@ import logging
 from typing import TYPE_CHECKING, Literal, NotRequired, Optional, TypedDict, TypeVar
 
 if TYPE_CHECKING:
-    from .artist import Plotter
+    from .plotter import Plotter
 
 logging.warning(
     "importing from '._typing'. This module is not aimed to be imported directly, "
@@ -102,7 +102,7 @@ SettingKey = Literal[
     "legend_loc",
     "subplots_adjust",
 ]
-DistStr = Literal["normal", "exponential"]
+DistStr = Literal["normal", "expon"]
 
 
 class SettingDict(TypedDict):

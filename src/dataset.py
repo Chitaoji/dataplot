@@ -25,20 +25,17 @@ import numpy as np
 import pandas as pd
 from attrs import define, field
 
-from .artist import Artist, PlotSettings, Plotter
+from .artist import Histogram, KSPlot, LineChart, QQPlot
 from .container import FigWrapper
-from .histogram import Histogram
-from .ksplot import KSPlot
-from .linechart import LineChart
-from .qqplot import QQPlot
+from .plotter import PlotSettings, Plotter
 from .utils.multi import REMAIN, MultiObject, cleaner, multi, multi_partial, single
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
 
     from ._typing import DistStr, SettingDict
+    from .artist import Artist
     from .container import AxesWrapper
-
 T = TypeVar("T")
 
 __all__ = ["PlotDataSet"]
@@ -349,7 +346,7 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
             A new instance of `PlotDataSet`.
 
         """
-        new_fmt = f"(({self.fmt}-mean({self.fmt}))/std({self.fmt}))"
+        new_fmt = f"zscore({self.fmt})"
         new_data = (self.data - np.nanmean(self.data)) / np.nanstd(self.data)
         return self.__create(new_fmt, new_data)
 
@@ -618,7 +615,7 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
         """
         self._use_plotter(KSPlot, locals())
 
-    def _use_plotter(self, plotter: type[Artist], local: dict[str, Any]) -> None:
+    def _use_plotter(self, plotter: type["Artist"], local: dict[str, Any]) -> None:
         params: dict[str, Any] = {}
         for key in plotter.__init__.__code__.co_varnames[1:]:
             params[key] = local[key]

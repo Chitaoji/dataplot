@@ -12,15 +12,16 @@ import numpy as np
 from attrs import define
 from scipy import stats
 
-from .artist import Artist, Plotter
-from .container import AxesWrapper
-from .utils.math import linear_regression_1d
+from ..plotter import Plotter
+from ..utils.math import linear_regression_1d
+from .base import Artist
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
 
-    from ._typing import DistStr
-    from .dataset import PlotDataSet
+    from .._typing import DistStr
+    from ..container import AxesWrapper
+    from ..dataset import PlotDataSet
 
 __all__ = ["QQPlot"]
 
@@ -46,14 +47,14 @@ class QQPlot(Artist):
         self.__plot(ax)
         return reflex
 
-    def __plot(self, ax: AxesWrapper) -> None:
+    def __plot(self, ax: "AxesWrapper") -> None:
         if isinstance(x := self.dist_or_sample, str):
-            xlabel = x
+            xlabel = x + "-distribution"
             match x:
                 case "normal":
                     p = np.linspace(0, 1, self.num + 2)[1:-1]
                     q1 = stats.norm.ppf(p)
-                case "exponential":
+                case "expon":
                     p = np.linspace(0, 1, self.num + 1)[0:-1]
                     q1 = stats.expon.ppf(p)
         elif isinstance(x, Plotter):

@@ -10,13 +10,14 @@ from typing import TYPE_CHECKING, Optional
 
 from attrs import define
 
-from .artist import Artist, Plotter
-from .container import AxesWrapper
+from ..plotter import Plotter
+from .base import Artist
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
 
-    from .dataset import PlotDataSet
+    from ..container import AxesWrapper
+    from ..dataset import PlotDataSet
 
 __all__ = ["LineChart"]
 
@@ -38,7 +39,7 @@ class LineChart(Artist):
         self.__plot(ax)
         return reflex
 
-    def __plot(self, ax: AxesWrapper) -> None:
+    def __plot(self, ax: "AxesWrapper") -> None:
         if isinstance(self.ticks, Plotter):
             ticks = self.ticks.data
         else:

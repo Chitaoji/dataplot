@@ -25,19 +25,15 @@ lazyr.register("matplotlib.pyplot", verbose=VERBOSE)
 
 
 # pylint: disable=wrong-import-position
-from . import artist, container, core, dataset, histogram, linechart
+from . import container, core, dataset, plotter
 from .__version__ import __version__
-from .artist import *
 from .container import *
 from .core import *
 from .dataset import *
-from .histogram import *
-from .linechart import *
+from .plotter import *
 
 __all__: list[str] = []
 __all__.extend(core.__all__)
-__all__.extend(artist.__all__)
+__all__.extend(plotter.__all__)
 __all__.extend(container.__all__)
 __all__.extend(dataset.__all__)
-__all__.extend(histogram.__all__)
-__all__.extend(linechart.__all__)

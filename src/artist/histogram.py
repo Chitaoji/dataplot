@@ -6,14 +6,16 @@ NOTE: this module is private. All functions and objects are available in the mai
 
 """
 
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 import numpy as np
 from attrs import define
 from scipy import stats
 
-from .artist import Artist
-from .container import AxesWrapper
+from .base import Artist
+
+if TYPE_CHECKING:
+    from ..container import AxesWrapper
 
 __all__ = ["Histogram"]
 
@@ -63,7 +65,7 @@ class Histogram(Artist):
         return b
 
     def __hist(
-        self, ax: AxesWrapper, bins: int | list[float] = 100
+        self, ax: "AxesWrapper", bins: int | list[float] = 100
     ) -> tuple[str, list[float]]:
         _, bin_list, _ = ax.ax.hist(
             self.data,

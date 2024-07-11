@@ -25,7 +25,7 @@ if TYPE_CHECKING:
     from .container import AxesWrapper
 
 
-__all__ = ["PlotSettings", "Plotter", "Artist"]
+__all__ = ["PlotSettings", "Plotter"]
 
 T = TypeVar("T")
 
@@ -90,7 +90,7 @@ class PlotSettings:
             self[k] = None
 
 
-@define
+@define(init=False)
 class Plotter:
     """Contains an attribute of plot settings, and provides methods for
     handling these settings.
@@ -227,40 +227,3 @@ class Plotter:
 
         """
         raise TypeError(f"cannot copy instance of {self.__class__}")
-
-
-@define(init=False, slots=False)
-class Artist(Plotter):
-    """Paints images on an axes, based on the data, labels, and other settings."""
-
-    data: Optional["NDArray"] = field(default=None, init=False)
-    label: Optional[str] = field(default=None, init=False)
-    on: Optional["AxesWrapper"] = field(default=None, kw_only=True)
-
-    def prepare(self) -> "AxesWrapper":
-        """
-        Prepares the data and the label. Raises an error if they are not
-        passed in correctly.
-
-        Returns
-        -------
-        AxesWrapper
-            An instance of `AxesWrapper`.
-
-        Raises
-        ------
-        DataSetterError
-            Raised when the data or the label is not set yet.
-
-        """
-        for name in ["data", "label", "on"]:
-            if getattr(self, name) is None:
-                raise ArtistPrepareError(f"'{name}' not set yet.")
-        return self.on
-
-    def paint(self, reflex: None = None) -> None:
-        """Paint on the axes."""
-
-
-class ArtistPrepareError(Exception):
-    """Raised when data or labels are not set yet."""

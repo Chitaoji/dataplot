@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from attrs import define, field
 
-from .artist import Plotter
+from .plotter import Plotter
 
 if TYPE_CHECKING:
     from matplotlib.figure import Figure

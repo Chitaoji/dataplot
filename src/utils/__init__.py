@@ -1,5 +1,5 @@
 """
-Utils for dataplot.
+Contains utils for dataplot.
 
 """
 

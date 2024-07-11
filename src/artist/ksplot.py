@@ -12,14 +12,15 @@ import numpy as np
 from attrs import define
 from scipy import stats
 
-from .artist import Artist, Plotter
-from .container import AxesWrapper
+from ..plotter import Plotter
+from .base import Artist
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
 
-    from ._typing import DistStr
-    from .dataset import PlotDataSet
+    from .._typing import DistStr
+    from ..container import AxesWrapper
+    from ..dataset import PlotDataSet
 
 __all__ = ["KSPlot"]
 
@@ -46,14 +47,14 @@ class KSPlot(Artist):
         self.__plot(ax)
         return reflex
 
-    def __plot(self, ax: AxesWrapper) -> None:
+    def __plot(self, ax: "AxesWrapper") -> None:
         p = np.linspace(self.edge_precision, 1 - self.edge_precision, self.dots)
         if isinstance(x := self.dist_or_sample, str):
-            xlabel = x
+            xlabel = x + "-distribution"
             match x:
                 case "normal":
                     q1 = stats.norm.ppf(p)
-                case "exponential":
+                case "expon":
                     q1 = stats.expon.ppf(p)
         elif isinstance(x, Plotter):
             xlabel = x.formatted_label()
@@ -67,8 +68,8 @@ class KSPlot(Artist):
                 f"or PlotDataSet, got {type(x)}"
             )
         q2 = self.__get_quantile(self.data, p)
-        ax.ax.plot(q2, p, label=self.label)
         ax.ax.plot(q1, p, label=xlabel)
+        ax.ax.plot(q2, p, label=self.label)
 
     @staticmethod
     def __get_quantile(data, q):
