@@ -65,7 +65,7 @@ class QQPlot(Artist):
             p = np.linspace(0, 1, self.num)
             q1 = self.__get_quantile(x, p)
         else:
-            raise ValueError(
+            raise TypeError(
                 "argument 'dist_or_sample' expected to be str, NDArray, "
                 f"or PlotDataSet, got {type(x)}"
             )

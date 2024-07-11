@@ -62,7 +62,7 @@ class KSPlot(Artist):
             xlabel = "sample"
             q1 = self.__get_quantile(x, p)
         else:
-            raise ValueError(
+            raise TypeError(
                 "argument 'dist_or_sample' expected to be str, NDArray, "
                 f"or PlotDataSet, got {type(x)}"
             )
