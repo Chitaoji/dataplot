@@ -42,7 +42,8 @@ class QQPlot(Artist):
             xlabel="quantiles",
             ylabel="quantiles",
         )
-        self.__plot(ax.loading(self.settings))
+        ax.loading(self.settings)
+        self.__plot(ax)
         return reflex
 
     def __plot(self, ax: AxesWrapper) -> None:

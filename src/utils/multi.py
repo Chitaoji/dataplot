@@ -126,7 +126,7 @@ class MultiObject:
 
     def __repr__(self) -> str:
         items = ("\n- ").join(repr(x).replace("\n", "\n  ") for x in self.__items)
-        signature = self.__class__.__name__ + "(" + repr_not_none(self) + ")"
+        signature = self.__class__.__name__ + "(" + repr_not_none(self) + "):"
         return f"{signature}\n- {items}"
 
     @property

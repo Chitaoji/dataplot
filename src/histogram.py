@@ -53,7 +53,8 @@ class Histogram(Artist):
             alpha=0.5 + 0.5 * self.only,
             xlabel="value",
             ylabel="density" if self.density else "count",
-        ).loading(self.settings)
+        )
+        ax.loading(self.settings)
         ds, b = self.__hist(
             ax, bins=self.bins if (reflex is None or not self.same_bin) else reflex
         )

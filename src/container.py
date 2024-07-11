@@ -105,7 +105,7 @@ class FigWrapper(Plotter):
         figsize: Optional[tuple[int, int]] = None,
         fontdict: Optional["FontDict"] = None,
         subplots_adjust: Optional["SubplotDict"] = None,
-    ) -> Self:
+    ) -> None:
         """
         Set the settings of figure.
 
@@ -128,14 +128,9 @@ class FigWrapper(Plotter):
             bottom, top, wspace, and hspace, by default None. See `SubplotsParams`
             for more details.
 
-        Returns
-        -------
-        Self
-            An instance of self.
-
         """
-
-        return self._set(
+        self._set(
+            inplace=True,
             title=title,
             dpi=dpi,
             figsize=figsize,
@@ -176,7 +171,7 @@ class AxesWrapper(Plotter):
         grid_alpha: Optional[float] = None,
         fontdict: Optional["FontDict"] = None,
         legend_loc: Optional["LegendLocStr"] = None,
-    ) -> Self:
+    ) -> None:
         """
         Set the settings of axes.
 
@@ -202,13 +197,9 @@ class AxesWrapper(Plotter):
         legend_loc : LegendLocStr, optional
             Location of the legend, by default None.
 
-        Returns
-        -------
-        Self
-            An instance of self.
-
         """
-        return self._set(
+        self._set(
+            inplace=True,
             title=title,
             xlabel=xlabel,
             ylabel=ylabel,

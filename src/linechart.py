@@ -34,7 +34,8 @@ class LineChart(Artist):
     def paint(self, reflex: None = None) -> None:
         ax = self.prepare()
         ax.set_default(title="Line Chart")
-        self.__plot(ax.loading(self.settings))
+        ax.loading(self.settings)
+        self.__plot(ax)
         return reflex
 
     def __plot(self, ax: AxesWrapper) -> None:

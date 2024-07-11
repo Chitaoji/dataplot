@@ -55,8 +55,8 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
         Original input data.
     settings : PlotSettings
         Settings for plot (whether a figure or an axes).
-    last_op_prior : int
-        Priority of the last mathmatical operation, where:
+    priority : int
+        Priority of the latest mathmatical operation, where:
         0 : Highest priority, refering to `repr()` and some of unary operations;
         10 : Refers to binary operations that are prior to / (e.g., **);
         19 : Particularly refers to /;
@@ -74,7 +74,7 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
     fmt_: str = field(init=False, default="{0}")
     original_data: "NDArray" = field(init=False)
     settings: PlotSettings = field(init=False, factory=PlotSettings)
-    last_op_prior: int = field(init=False, default=0)
+    priority: int = field(init=False, default=0)
 
     @classmethod
     def __subclasshook__(cls, __subclass: type) -> bool:
@@ -86,13 +86,13 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
         self.label = "x1" if self.label is None else self.label
         self.original_data = self.data
 
-    def __create(self, fmt: str, data: "NDArray", priority: int = 0) -> "PlotDataSet":
+    def __create(self, fmt: str, data: "NDArray", priority: int = 0) -> Self:
         obj = self.customize(
             self.__class__,
             self.original_data,
             self.label,
             fmt_=fmt,
-            last_op_prior=priority,
+            priority=priority,
         )
         obj.data = data
         return obj
@@ -116,45 +116,45 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
     def __getitem__(self, __key: int) -> Self:
         return self
 
-    def __neg__(self) -> "PlotDataSet":
+    def __neg__(self) -> Self:
         new_fmt = f"(-{self.__auto_remove_brackets(self.fmt_, priority=28)})"
         new_data = -self.data
         return self.__create(new_fmt, new_data, priority=40)
 
-    def __add__(self, __other: "float | int | PlotDataSet") -> "PlotDataSet":
+    def __add__(self, __other: "float | int | PlotDataSet") -> Self:
         return self.__binary_operation(__other, "+", np.add, priority=30)
 
-    def __radd__(self, __other: "float | int | PlotDataSet") -> "PlotDataSet":
+    def __radd__(self, __other: "float | int | PlotDataSet") -> Self:
         return self.__binary_operation(__other, "+", np.add, reverse=True, priority=30)
 
-    def __sub__(self, __other: "float | int | PlotDataSet") -> "PlotDataSet":
+    def __sub__(self, __other: "float | int | PlotDataSet") -> Self:
         return self.__binary_operation(__other, "-", np.subtract, priority=29)
 
-    def __rsub__(self, __other: "float | int | PlotDataSet") -> "PlotDataSet":
+    def __rsub__(self, __other: "float | int | PlotDataSet") -> Self:
         return self.__binary_operation(
             __other, "-", np.subtract, reverse=True, priority=29
         )
 
-    def __mul__(self, __other: "float | int | PlotDataSet") -> "PlotDataSet":
+    def __mul__(self, __other: "float | int | PlotDataSet") -> Self:
         return self.__binary_operation(__other, "*", np.multiply, priority=20)
 
-    def __rmul__(self, __other: "float | int | PlotDataSet") -> "PlotDataSet":
+    def __rmul__(self, __other: "float | int | PlotDataSet") -> Self:
         return self.__binary_operation(
             __other, "*", np.multiply, reverse=True, priority=20
         )
 
-    def __truediv__(self, __other: "float | int | PlotDataSet") -> "PlotDataSet":
+    def __truediv__(self, __other: "float | int | PlotDataSet") -> Self:
         return self.__binary_operation(__other, "/", np.true_divide, priority=19)
 
-    def __rtruediv__(self, __other: "float | int | PlotDataSet") -> "PlotDataSet":
+    def __rtruediv__(self, __other: "float | int | PlotDataSet") -> Self:
         return self.__binary_operation(
             __other, "/", np.true_divide, reverse=True, priority=19
         )
 
-    def __pow__(self, __other: "float | int | PlotDataSet") -> "PlotDataSet":
+    def __pow__(self, __other: "float | int | PlotDataSet") -> Self:
         return self.__binary_operation(__other, "**", np.power)
 
-    def __rpow__(self, __other: "float | int | PlotDataSet") -> "PlotDataSet":
+    def __rpow__(self, __other: "float | int | PlotDataSet") -> Self:
         return self.__binary_operation(__other, "**", np.power, reverse=True)
 
     def __binary_operation(
@@ -164,7 +164,7 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
         func: Callable[[Any, Any], "NDArray"],
         reverse: bool = False,
         priority: int = 10,
-    ) -> "PlotDataSet":
+    ) -> Self:
         if reverse:
             this_fmt = self.__auto_remove_brackets(self.fmt_, priority=priority)
             new_fmt = f"({other}{sign}{this_fmt})"
@@ -187,7 +187,7 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
         return self.__create(new_fmt, new_data, priority=priority)
 
     def __auto_remove_brackets(self, string: str, priority: int = 0):
-        if priority == 0 or self.last_op_prior <= priority:
+        if priority == 0 or self.priority <= priority:
             return self.__remove_brackets(string)
         return string
 
@@ -227,13 +227,13 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
             Formatted label.
 
         """
-        if priority == self.last_op_prior and priority in (19, 29):
+        if priority == self.priority and priority in (19, 29):
             priority -= 1
         return self.__auto_remove_brackets(
             self.fmt_.format(self.label), priority=priority
         )
 
-    def join(self, *others: "PlotDataSet") -> "PlotDataSet":
+    def join(self, *others: "PlotDataSet") -> Self:
         """
         Merge two or more `PlotDataSet` instances.
 
@@ -244,27 +244,27 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
 
         Returns
         -------
-        PlotDataSet
-            A new instance of `PlotDataSet`.
+        Self
+            A new instance of self.
 
         """
         return PlotDataSets(self, *others)
 
-    def log(self) -> "PlotDataSet":
+    def log(self) -> Self:
         """
         Perform a log operation on the data.
 
         Returns
         -------
-        PlotDataSet
-            A new instance of `PlotDataSet`.
+        Self
+            A new instance of self.
 
         """
         new_fmt = f"log({self.fmt})"
         new_data = np.log(self.data)
         return self.__create(new_fmt, new_data)
 
-    def rolling(self, n: int) -> "PlotDataSet":
+    def rolling(self, n: int) -> Self:
         """
         Perform a rolling-mean operation on the data.
 
@@ -276,15 +276,15 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
 
         Returns
         -------
-        PlotDataSet
-            A new instance of `PlotDataSet`.
+        Self
+            A new instance of self.
 
         """
         new_fmt = f"rolling({self.fmt}, {n})"
         new_data = pd.Series(self.data).rolling(n).mean().values
         return self.__create(new_fmt, new_data)
 
-    def exp(self) -> "PlotDataSet":
+    def exp(self) -> Self:
         """
         Perform an exp operation on the data.
 
@@ -298,21 +298,21 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
         new_data = np.exp(self.data)
         return self.__create(new_fmt, new_data)
 
-    def demean(self) -> "PlotDataSet":
+    def demean(self) -> Self:
         """
         Perform a demean operation on the data by subtracting its mean.
 
         Returns
         -------
-        PlotDataSet
-            A new instance of `PlotDataSet`.
+        Self
+            A new instance of self.
 
         """
         new_fmt = f"{self.fmt}-mean({self.fmt})"
         new_data = self.data - np.nanmean(self.data)
         return self.__create(new_fmt, new_data)
 
-    def zscore(self) -> "PlotDataSet":
+    def zscore(self) -> Self:
         """
         Perform a zscore operation on the data by subtracting its mean and then
         dividing by its standard deviation.
@@ -327,51 +327,59 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
         new_data = (self.data - np.nanmean(self.data)) / np.nanstd(self.data)
         return self.__create(new_fmt, new_data)
 
-    def cumsum(self) -> "PlotDataSet":
+    def cumsum(self) -> Self:
         """
         Perform a cumsum operation on the data by calculating its cummulative
         sums.
 
         Returns
         -------
-        PlotDataSet
-            A new instance of `PlotDataSet`.
+        Self
+            A new instance of self.
 
         """
         new_fmt = f"csum({self.fmt})"
         new_data = np.cumsum(self.data)
         return self.__create(new_fmt, new_data)
 
-    def opclear(self) -> Self:
+    def copy(self) -> Self:
+        return self.__create(self.fmt_, self.data, priority=self.priority)
+
+    def reset(self) -> Self:
         """
-        Undo all the operations performed on the data and clean the records.
+        Copy and reset the plot settings.
 
         Returns
         -------
         Self
-            An instance of self.
+            A new instance of self.
+
+        """
+        obj = self.copy()
+        obj.settings.reset()
+        return obj
+
+    def opclear(self):
+        """
+        Undo all the operations performed on the data and clean the records.
+
         """
         self.fmt_ = "{0}"
         self.data = self.original_data
         return self
 
-    def opclear_records_only(self) -> Self:
+    def opclear_records_only(self):
         """
         Clear the records of operations performed on the data. Differences to
         `opclear()` that the operations are not undone and the original data
         will be removed.
-
-        Returns
-        -------
-        Self
-            An instance of self.
 
         """
         self.fmt_ = "{0}"
         self.original_data = self.data
         return self
 
-    def set_label(self, __label: Optional[str] = None, **kwargs: str) -> Self:
+    def set_label(self, __label: Optional[str] = None, **kwargs: str):
         """
         Set the labels.
 
@@ -383,17 +391,11 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
             Works as a mapper to find the new label. If `self.label` is in
             `kwargs`, the label will be set to `kwargs[self.label]`.
 
-        Returns
-        -------
-        Self
-            An instance of self.
-
         """
         if isinstance(__label, str):
             self.label = __label
         elif self.label in kwargs:
             self.label = kwargs[self.label]
-        return self
 
     def set_plot(
         self,
@@ -408,7 +410,8 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
         figsize: Optional[tuple[int, int]] = None,
         fontdict: Optional["FontDict"] = None,
         legend_loc: Optional["LegendLocStr"] = None,
-    ) -> Self:
+        inplace: bool = False,
+    ) -> Self | None:
         """
         Set the settings of a plot (whether a figure or an axes).
 
@@ -438,14 +441,18 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
             None.
         legend_loc : LegendLocStr, optional
             Location of the legend, by default None.
+        inplace : bool, optional
+            Determines whether to inplace `self.settings` or to create a new
+            instance, by default False.
 
         Returns
         -------
         Self
-            An instance of self.
+            An instance of self or None.
 
         """
         return self._set(
+            inplace=inplace,
             title=title,
             xlabel=xlabel,
             ylabel=ylabel,
@@ -470,45 +477,13 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
 
         Returns
         -------
-        PlotDataSet
-            An instance of `PlotDataSet`.
+        Self
+            An instance of self.
 
         """
         if n <= 0:
             raise ValueError(f"batch size should be greater than 0, but got {n}")
-        return self
-
-    def copy(self, reset: bool = False) -> "PlotDataSet":
-        """
-        Copy the instance of self (not deepcopy).
-
-        Parameters
-        ----------
-        reset : bool, optional
-            Whether to reset the plot settings while copying, by default False.
-
-        Returns
-        -------
-        PlotDataSet
-            An instance of `PlotDataSet`.
-
-        """
-        obj = self.__create(self.fmt_, self.data, priority=self.last_op_prior)
-        if reset:
-            obj.settings.reset()
-        return obj
-
-    def reset(self) -> "PlotDataSet":
-        """
-        An alternative to `.copy(reset=True)`.
-
-        Returns
-        -------
-        PlotDataSet
-            An instance of `PlotDataSet`.
-
-        """
-        return self.copy(reset=True)
+        return MultiObject([self])
 
     # pylint: disable=unused-argument
     def hist(
@@ -636,8 +611,6 @@ class PlotDataSets:
         match n := __name:
             case "hist" | "plot" | "qqplot" | "join" | "_use_plotter":
                 return partial(getattr(PlotDataSet, n), self)
-            case "set_plot" | "set_plot_default":
-                return multi(self.__getattrs(n), call_reducer=lambda _: self)
             case "customize":
                 return multi(
                     self.__getattrs(n),

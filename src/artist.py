@@ -6,7 +6,7 @@ NOTE: this module is private. All functions and objects are available in the mai
 
 """
 
-from typing import TYPE_CHECKING, Any, Optional, Self, Unpack
+from typing import TYPE_CHECKING, Any, Optional, Self, TypeVar, Unpack
 
 from attrs import Factory, asdict, define, field
 
@@ -26,6 +26,8 @@ if TYPE_CHECKING:
 
 
 __all__ = ["PlotSettings", "Plotter", "Artist"]
+
+T = TypeVar("T")
 
 
 @define
@@ -88,7 +90,7 @@ class PlotSettings:
             self[k] = None
 
 
-@define(init=False)
+@define
 class Plotter:
     """Contains an attribute of plot settings, and provides methods for
     handling these settings.
@@ -97,31 +99,37 @@ class Plotter:
 
     settings: PlotSettings = field(default=Factory(PlotSettings), init=False)
 
-    # pylint: disable=unused-argument
-    def _set(self, **kwargs: Unpack["SettingDict"]) -> Self:
+    def _set(
+        self, inplace: bool = False, **kwargs: Unpack["SettingDict"]
+    ) -> Self | None:
         """
         Set the settings.
 
         Parameters
         ----------
+        inplace : bool, optional
+            Determines whether to inplace `self.settings` or to create a new
+            instance, by default False.
         **kwargs : Unpack[SettingDict]
             Specifies the settings.
 
         Returns
         -------
-        Self
-            An instance of self.
+        Self | None
+            An instance of self or None.
 
         """
-        keys = self.settings.keys()
+        obj = self if inplace else self.copy()
+        keys = obj.settings.keys()
         for k, v in kwargs.items():
             if k in keys and v is not None:
-                self.setting_check(k, v)
-                if isinstance(v, dict) and isinstance(self.settings[k], dict):
-                    self.settings[k] = {**self.settings[k], **v}
+                obj.setting_check(k, v)
+                if isinstance(v, dict) and isinstance(obj.settings[k], dict):
+                    obj.settings[k] = {**obj.settings[k], **v}
                 else:
-                    self.settings[k] = v
-        return self
+                    obj.settings[k] = v
+        if not inplace:
+            return obj
 
     def setting_check(self, key: "SettingKey", value: Any) -> None:
         """
@@ -136,7 +144,7 @@ class Plotter:
 
         """
 
-    def set_default(self, **kwargs: Unpack["SettingDict"]) -> Self:
+    def set_default(self, **kwargs: Unpack["SettingDict"]) -> None:
         """
         Sets the default settings.
 
@@ -145,20 +153,13 @@ class Plotter:
         **kwargs : Unpack[SettingDict]
             Specifies the settings.
 
-        Returns
-        -------
-        Self
-            An instance of self.
-
         """
         keys = self.settings.keys()
         for k, v in kwargs.items():
             if k in keys and self.settings[k] is None:
                 self.settings[k] = v
-        return self
 
-    # pylint: enable=unused-argument
-    def loading(self, settings: PlotSettings) -> Self:
+    def loading(self, settings: PlotSettings) -> None:
         """
         Load in the settings.
 
@@ -167,12 +168,8 @@ class Plotter:
         settings : PlotSettings
             An instance of `PlotSettings`.
 
-        Returns
-        -------
-        Self
-            An instance of self.
         """
-        return self._set(**asdict(settings))
+        self._set(inplace=True, **asdict(settings))
 
     def get_setting(
         self, key: "SettingKey", default: Optional["DefaultVar"] = None
@@ -235,6 +232,18 @@ class Plotter:
         for k, v in unmatched.items():
             setattr(obj, k, v)
         return obj
+
+    def copy(self) -> Self:
+        """
+        Copy the instance of self (but not deepcopy).
+
+        Returns
+        -------
+        Self
+            A new instance of self.
+
+        """
+        raise TypeError(f"cannot copy instance of {self.__class__}")
 
 
 @define(init=False, slots=False)
