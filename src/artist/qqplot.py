@@ -1,5 +1,5 @@
 """
-Contains an artist class: QQPlot.
+Contains a plotter class: QQPlot.
 
 NOTE: this module is private. All functions and objects are available in the main
 `dataplot` namespace - use that instead.
@@ -12,9 +12,9 @@ import numpy as np
 from attrs import define
 from scipy import stats
 
-from ..plotter import Plotter
+from ..plotter import PlotSettable
 from ..utils.math import linear_regression_1d
-from .base import Artist
+from .base import Plotter
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
@@ -27,17 +27,16 @@ __all__ = ["QQPlot"]
 
 
 @define
-class QQPlot(Artist):
+class QQPlot(Plotter):
     """
-    An artist class that creates a qqplot.
+    A plotter class that creates a qqplot.
 
     """
 
     dist_or_sample: "DistStr | NDArray | PlotDataSet" = "normal"
     num: int = 30
 
-    def paint(self, reflex: None = None) -> None:
-        ax = self.prepare()
+    def paint(self, ax: "AxesWrapper", reflex: None = None) -> None:
         ax.set_default(
             title="Quantile-Quantile Plot",
             xlabel="quantiles",
@@ -57,7 +56,7 @@ class QQPlot(Artist):
                 case "expon":
                     p = np.linspace(0, 1, self.num + 1)[0:-1]
                     q1 = stats.expon.ppf(p)
-        elif isinstance(x, Plotter):
+        elif isinstance(x, PlotSettable):
             xlabel = x.formatted_label()
             p = np.linspace(0, 1, self.num)
             q1 = self.__get_quantile(x.data, p)

@@ -10,14 +10,14 @@ import logging
 from typing import TYPE_CHECKING, Literal, NotRequired, Optional, TypedDict, TypeVar
 
 if TYPE_CHECKING:
-    from .plotter import Plotter
+    from .plotter import PlotSettable
 
 logging.warning(
     "importing from '._typing'. This module is not aimed to be imported directly, "
     "therefore unexpected behaviors may be discovered"
 )
 
-PlotSetterVar = TypeVar("PlotSetterVar", bound="Plotter")
+PlotSettableVar = TypeVar("PlotSettableVar", bound="PlotSettable")
 DefaultVar = TypeVar("DefaultVar")
 StyleStr = Literal[
     "Solarize_Light2",
@@ -107,7 +107,7 @@ DistStr = Literal["normal", "expon"]
 
 class SettingDict(TypedDict):
     """
-    Dict for the keyword-arguments of `PlotSetter._set()`.
+    Dict of keyword-arguments for `._set()`.
 
     """
 
@@ -123,6 +123,36 @@ class SettingDict(TypedDict):
     fontdict: NotRequired[Optional["FontDict"]]
     legend_loc: NotRequired[Optional[str]]
     subplots_adjust: NotRequired[Optional["SubplotDict"]]
+
+
+class FigureSettingDict(TypedDict):
+    """
+    Dict of keyword-arguments for `.set_figure()`.
+
+    """
+
+    title: NotRequired[Optional[str]]
+    dpi: NotRequired[Optional[float]]
+    style: NotRequired[Optional[StyleStr]]
+    figsize: NotRequired[Optional[tuple[int, int]]]
+    fontdict: NotRequired[Optional["FontDict"]]
+    subplots_adjust: NotRequired[Optional["SubplotDict"]]
+
+
+class AxesSettingDict(TypedDict):
+    """
+    Dict of keyword-arguments for `.set_axes()`.
+
+    """
+
+    title: NotRequired[Optional[str]]
+    xlabel: NotRequired[Optional[str]]
+    ylabel: NotRequired[Optional[str]]
+    alpha: NotRequired[Optional[float]]
+    grid: NotRequired[Optional[bool]]
+    grid_alpha: NotRequired[Optional[float]]
+    fontdict: NotRequired[Optional["FontDict"]]
+    legend_loc: NotRequired[Optional[str]]
 
 
 class FontDict(TypedDict):

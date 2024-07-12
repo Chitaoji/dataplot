@@ -1,5 +1,5 @@
 """
-Contains an artist class: KSPlot.
+Contains a plotter class: KSPlot.
 
 NOTE: this module is private. All functions and objects are available in the main
 `dataplot` namespace - use that instead.
@@ -12,8 +12,8 @@ import numpy as np
 from attrs import define
 from scipy import stats
 
-from ..plotter import Plotter
-from .base import Artist
+from ..plotter import PlotSettable
+from .base import Plotter
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
@@ -26,9 +26,9 @@ __all__ = ["KSPlot"]
 
 
 @define
-class KSPlot(Artist):
+class KSPlot(Plotter):
     """
-    An artist class that creates a KS plot.
+    A plotter class that creates a KS plot.
 
     """
 
@@ -36,8 +36,7 @@ class KSPlot(Artist):
     dots: int
     edge_precision: float
 
-    def paint(self, reflex: None = None) -> None:
-        ax = self.prepare()
+    def paint(self, ax: "AxesWrapper", reflex: None = None) -> None:
         ax.set_default(
             title="Kolmogorov-Smirnov Plot",
             xlabel="value",
@@ -56,7 +55,7 @@ class KSPlot(Artist):
                     q1 = stats.norm.ppf(p)
                 case "expon":
                     q1 = stats.expon.ppf(p)
-        elif isinstance(x, Plotter):
+        elif isinstance(x, PlotSettable):
             xlabel = x.formatted_label()
             q1 = self.__get_quantile(x.data, p)
         elif isinstance(x, (list, np.ndarray)):

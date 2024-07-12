@@ -25,16 +25,15 @@ import numpy as np
 import pandas as pd
 from attrs import define, field
 
-from .artist import Histogram, KSPlot, LineChart, QQPlot
-from .container import FigWrapper
-from .plotter import PlotSettings, Plotter
+from .artist import Artist, Histogram, KSPlot, LineChart, QQPlot
+from .plotter import PlotSettable, PlotSettings
 from .utils.multi import REMAIN, MultiObject, cleaner, multi, multi_partial, single
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
 
     from ._typing import DistStr, SettingDict
-    from .artist import Artist
+    from .artist import Plotter
     from .container import AxesWrapper
 T = TypeVar("T")
 
@@ -42,7 +41,7 @@ __all__ = ["PlotDataSet"]
 
 
 @define
-class PlotDataSet(Plotter, metaclass=ABCMeta):
+class PlotDataSet(PlotSettable, metaclass=ABCMeta):
     """
     A dataset class providing methods for mathematical operations and plotting.
 
@@ -440,29 +439,30 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
             Determines whether the changes of settings will happen in self or
             in a new copy of self, by default False.
         title : str, optional
-            Title for the plot, by default None.
+            Title of plot.
         xlabel : str, optional
-            Label for the x-axis, by default None.
+            Label for the x-axis.
         ylabel : str, optional
-            The label for the y-axis, by default None.
+            Label for the y-axis.
         alpha : float, optional
             Controls the transparency of the plotted elements. It takes a float
             value between 0 and 1, where 0 means completely transparent and 1
-            means completely opaque. By default None.
+            means completely opaque.
+        dpi : float, optional
+            Sets the resolution of figure in dots-per-inch.
         grid : bool, optional
-            Determines whether to show the grids or not, by default None.
+            Determines whether to show the grids or not.
         grid_alpha : float, optional
-            Controls the transparency of the grid, by default None.
+            Controls the transparency of the grid.
         style : StyleStr, optional
-            A style specification, by default None.
+            A style specification.
         figsize : tuple[int, int], optional
             Figure size, this takes a tuple of two integers that specifies the
-            width and height of the figure in inches, by default None.
+            width and height of the figure in inches.
         fontdict : FontDict, optional
-            A dictionary controlling the appearance of the title text, by default
-            None.
+            A dictionary controlling the appearance of the title text.
         legend_loc : LegendLocStr, optional
-            Location of the legend, by default None.
+            Location of the legend.
 
         Returns
         -------
@@ -504,7 +504,7 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
         stats: bool = True,
         *,
         on: Optional["AxesWrapper"] = None,
-    ) -> None:
+    ) -> Artist:
         """
         Create a histogram of the data.
 
@@ -527,13 +527,18 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
             Determines whether to show the statistics, including the calculated mean,
             standard deviation, skewness, and kurtosis of the input, by default True.
         on : Optional[AxesWrapper], optional
-            Specifies the axes wrapper on which the histogram should be plotted. If
+            Specifies the axes-wrapper on which the plot should be painted. If
             not specified, the histogram will be plotted on a new axes in a new
             figure. By default None.
 
+        Returns
+        -------
+        Artist
+            An instance of Artist.
+
         """
         locals().update(only=self.__class__ is PlotDataSet)
-        self._use_plotter(Histogram, locals())
+        return self._get_artist(Histogram, locals())
 
     def plot(
         self,
@@ -541,7 +546,7 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
         scatter: bool = False,
         *,
         on: Optional["AxesWrapper"] = None,
-    ) -> None:
+    ) -> Artist:
         """
         Create a line chart for the data. If there are more than one datasets, all of
         them should have the same length.
@@ -555,12 +560,17 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
             Determines whether to include scatter points in the line chart, by default
             False.
         on : AxesWrapper, optional
-            Specifies the axes wrapper on which the line chart should be plotted. If
+            Specifies the axes-wrapper on which the plot should be painted If
             not specified, the histogram will be plotted on a new axes in a new
             figure. By default None.
 
+        Returns
+        -------
+        Artist
+            An instance of Artist.
+
         """
-        self._use_plotter(LineChart, locals())
+        return self._get_artist(LineChart, locals())
 
     def qqplot(
         self,
@@ -568,7 +578,7 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
         num: int = 30,
         *,
         on: Optional["AxesWrapper"] = None,
-    ) -> None:
+    ) -> Artist:
         """
         Create a quantile-quantile plot.
 
@@ -581,12 +591,17 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
         dots : int, optional
             Number of dots, by default 30.
         on : AxesWrapper, optional
-            Specifies the axes wrapper on which the line chart should be plotted. If
+            Specifies the axes-wrapper on which the plot should be painted. If
             not specified, the histogram will be plotted on a new axes in a new
             figure. By default None.
 
+        Returns
+        -------
+        Artist
+            An instance of Artist.
+
         """
-        self._use_plotter(QQPlot, locals())
+        return self._get_artist(QQPlot, locals())
 
     def ksplot(
         self,
@@ -595,7 +610,7 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
         edge_precision: float = 1e-6,
         *,
         on: Optional["AxesWrapper"] = None,
-    ) -> None:
+    ) -> Artist:
         """
         Create a kolmogorov-smirnov plot.
 
@@ -608,25 +623,28 @@ class PlotDataSet(Plotter, metaclass=ABCMeta):
         dots : int, optional
             Number of dots, by default 1000.
         on : AxesWrapper, optional
-            Specifies the axes wrapper on which the line chart should be plotted. If
+            Specifies the axes-wrapper on which the plot should be painted. If
             not specified, the histogram will be plotted on a new axes in a new
             figure. By default None.
 
+        Returns
+        -------
+        Artist
+            An instance of Artist.
+
         """
-        self._use_plotter(KSPlot, locals())
+        return self._get_artist(KSPlot, locals())
 
-    def _use_plotter(self, plotter: type["Artist"], local: dict[str, Any]) -> None:
+    def _get_artist(self, cls: type["Plotter"], local: dict[str, Any]) -> Artist:
         params: dict[str, Any] = {}
-        for key in plotter.__init__.__code__.co_varnames[1:]:
+        for key in cls.__init__.__code__.co_varnames[1:]:
             params[key] = local[key]
-
-        active = local["on"] is None
-        with single(self.customize)(FigWrapper, 1, 1, active) as fig:
-            if active:
-                params["on"] = fig.axes[0]
-            self.customize(
-                plotter, data=self.data, label=self.formatted_label(), **params
-            ).paint()
+        plotter = self.customize(
+            cls, data=self.data, label=self.formatted_label(), **params
+        )
+        artist = single(self.customize)(Artist, plotter=plotter)
+        artist.paint(local["on"])
+        return artist
 
     # pylint: enable=unused-argument
 
@@ -646,7 +664,7 @@ class PlotDataSets:
 
     def __getattr__(self, __name: str) -> Any:
         match n := __name:
-            case "hist" | "plot" | "qqplot" | "join" | "_use_plotter":
+            case "hist" | "plot" | "qqplot" | "join" | "_get_artist":
                 return partial(getattr(PlotDataSet, n), self)
             case "customize":
                 return multi(

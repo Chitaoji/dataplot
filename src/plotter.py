@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from ._typing import (
         DefaultVar,
         FontDict,
-        PlotSetterVar,
+        PlotSettableVar,
         SettingDict,
         SettingKey,
         StyleStr,
@@ -22,7 +22,7 @@ if TYPE_CHECKING:
     )
 
 
-__all__ = ["PlotSettings", "Plotter"]
+__all__ = ["PlotSettings", "PlotSettable"]
 
 T = TypeVar("T")
 
@@ -88,7 +88,7 @@ class PlotSettings:
 
 
 @define(init=False)
-class Plotter:
+class PlotSettable:
     """Contains an attribute of plot settings, and provides methods for
     handling these settings.
 
@@ -174,7 +174,9 @@ class Plotter:
         """
         return default if (value := self.settings[key]) is None else value
 
-    def customize(self, cls: type["PlotSetterVar"], *args, **kwargs) -> "PlotSetterVar":
+    def customize(
+        self, cls: type["PlotSettableVar"], *args, **kwargs
+    ) -> "PlotSettableVar":
         """
         Initialize another instance with the same settings as `self`.
 
@@ -198,7 +200,7 @@ class Plotter:
             Raised when `cls` cannot be customized.
 
         """
-        if not issubclass(cls, Plotter):
+        if not issubclass(cls, PlotSettable):
             raise ValueError(f"type {cls} cannot be customized")
         matched: dict[str, Any] = {}
         unmatched: dict[str, Any] = {}

@@ -1,5 +1,5 @@
 """
-Contains an artist class: Histogram.
+Contains a plotter class: Histogram.
 
 NOTE: this module is private. All functions and objects are available in the main
 `dataplot` namespace - use that instead.
@@ -12,7 +12,7 @@ import numpy as np
 from attrs import define
 from scipy import stats
 
-from .base import Artist
+from .base import Plotter
 
 if TYPE_CHECKING:
     from ..container import AxesWrapper
@@ -21,9 +21,9 @@ __all__ = ["Histogram"]
 
 
 @define
-class Histogram(Artist):
+class Histogram(Plotter):
     """
-    An artist class that creates a histogram.
+    A plotter class that creates a histogram.
 
     """
 
@@ -34,22 +34,9 @@ class Histogram(Artist):
     stats: bool
     only: bool
 
-    def paint(self, reflex: Optional[list[float]] = None) -> list[float]:
-        """Paint on the axes.
-
-        Parameters
-        ----------
-        reflex : list[float], optional
-            Specifies the bins to divide the data into for the histogram plot,
-            by default None.
-
-        Returns
-        -------
-        list[float]
-            The bins of the histogram plot.
-
-        """
-        ax = self.prepare()
+    def paint(
+        self, ax: "AxesWrapper", reflex: Optional[list[float]] = None
+    ) -> list[float]:
         ax.set_default(
             title="Histogram",
             alpha=0.5 + 0.5 * self.only,

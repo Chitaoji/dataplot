@@ -1,5 +1,5 @@
 """
-Contains an artist class: LineChart.
+Contains a plotter class: LineChart.
 
 NOTE: this module is private. All functions and objects are available in the main
 `dataplot` namespace - use that instead.
@@ -10,8 +10,8 @@ from typing import TYPE_CHECKING, Optional
 
 from attrs import define
 
-from ..plotter import Plotter
-from .base import Artist
+from ..plotter import PlotSettable
+from .base import Plotter
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
@@ -23,24 +23,23 @@ __all__ = ["LineChart"]
 
 
 @define
-class LineChart(Artist):
+class LineChart(Plotter):
     """
-    An artist class that creates a line chart.
+    A plotter class that creates a line chart.
 
     """
 
     ticks: Optional["NDArray | PlotDataSet"]
     scatter: bool
 
-    def paint(self, reflex: None = None) -> None:
-        ax = self.prepare()
+    def paint(self, ax: "AxesWrapper", reflex: None = None) -> None:
         ax.set_default(title="Line Chart")
         ax.loading(self.settings)
         self.__plot(ax)
         return reflex
 
     def __plot(self, ax: "AxesWrapper") -> None:
-        if isinstance(self.ticks, Plotter):
+        if isinstance(self.ticks, PlotSettable):
             ticks = self.ticks.data
         else:
             ticks = self.ticks

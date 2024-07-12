@@ -22,7 +22,15 @@ if TYPE_CHECKING:
 T = TypeVar("T")
 
 
-__all__ = ["MultiObject", "REMAIN", "multi", "multi_partial", "cleaner", "single"]
+__all__ = [
+    "MultiObject",
+    "REMAIN",
+    "multi",
+    "multi_partial",
+    "cleaner",
+    "single",
+    "multiple",
+]
 
 
 class MultiObject:
@@ -223,6 +231,25 @@ def single(x: T, n: int = -1) -> T:
     return x.__multiobjects__[n] if isinstance(x, MultiObject) else x
 
 
+def multiple(x: T) -> list[T]:
+    """
+    If a MultiObject is provided, return a list of its elements, otherwise
+    return `[x]`.
+
+    Parameters
+    ----------
+    x : T
+        Can be a MultiObject or anything else.
+
+    Returns
+    -------
+    list[T]
+        List of elements.
+
+    """
+    return x.__multiobjects__ if isinstance(x, MultiObject) else [x]
+
+
 def repr_not_none(x: MultiObject) -> str:
     """
     Returns a string representation of the MultiObject's attributes with
@@ -244,5 +271,7 @@ def repr_not_none(x: MultiObject) -> str:
     for n in namelist:
         if (v := getattr(x, n)) is None:
             continue
-        not_nones.append(n.replace("_MultiObject__", "") + "=" + v.__name__)
+        if isinstance(v, Callable):
+            v = v.__name__
+        not_nones.append(n.replace("_MultiObject__", "") + f"={v!r}")
     return ", ".join(not_nones)

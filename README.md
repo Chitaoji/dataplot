@@ -29,7 +29,9 @@ This project falls under the BSD 3-Clause License.
 ## History
 
 ### v0.1.1
-* New method `.qqplot()`, `.ksplot()` for `PlotDataSet`.
+* New function `dp.show()`.
+* New method `PlotDataSet.qqplot()` and `PlotDataSet.ksplot()`.
+* All the plotting method (e.g., `.hist()`) will now return an `Artist` object instead of None.
 * New plot settings: `grid` and `grid_alpha`.
 * Parameters for `FigWrapper.set_figure()`, `AxesWrapper.set_axes()` and `PlotDataSet.set_plot()` are keyword-only now.
 * The returns of `.set_figure()` and `.set_axes()` will be None (instead of `self`) to avoid misunderstandings.
