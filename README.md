@@ -28,6 +28,9 @@ This project falls under the BSD 3-Clause License.
 
 ## History
 
+### v0.1.2
+* Bugfix.
+
 ### v0.1.1
 * New module-level function `dp.show()`.
 * New method `PlotDataSet.qqplot()` and `PlotDataSet.ksplot()`.

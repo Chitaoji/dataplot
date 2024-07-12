@@ -120,3 +120,5 @@ def show(
     with figure(ceil(len_a / ncols), ncols, **kwargs) as fig:
         for a, ax in zip(artist, fig.axes[:len_a]):
             a.paint(ax)
+        for ax in fig.axes[len_a:]:
+            fig.fig.delaxes(ax.ax)

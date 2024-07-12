@@ -102,12 +102,13 @@ class PlotSettable:
         obj = self if inplace else self.copy()
         keys = obj.settings.keys()
         for k, v in kwargs.items():
-            if k in keys and v is not None:
-                obj.setting_check(k, v)
-                if isinstance(v, dict) and isinstance(obj.settings[k], dict):
-                    obj.settings[k] = {**obj.settings[k], **v}
-                else:
-                    obj.settings[k] = v
+            if v is None or k not in keys:
+                continue
+            obj.setting_check(k, v)
+            if isinstance(v, dict) and isinstance(d := obj.settings[k], dict):
+                d.update(v)
+            else:
+                obj.settings[k] = v
         if not inplace:
             return obj
 
@@ -136,8 +137,12 @@ class PlotSettable:
         """
         keys = self.settings.keys()
         for k, v in kwargs.items():
-            if k in keys and self.settings[k] is None:
+            if k not in keys:
+                continue
+            if self.settings[k] is None:
                 self.settings[k] = v
+            elif isinstance(d := self.settings[k], dict):
+                self.settings[k] = {**v, **d}
 
     def loading(self, settings: PlotSettings) -> None:
         """
