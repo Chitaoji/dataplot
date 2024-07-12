@@ -1,5 +1,6 @@
 """
-Utils for dataplot.
+Contains utils for dataplot.
 
 """
+
 __all__ = []

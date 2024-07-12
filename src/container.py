@@ -7,25 +7,25 @@ NOTE: this module is private. All functions and objects are available in the mai
 """
 
 import logging
-from typing import TYPE_CHECKING, Any, Optional, Self
+from typing import TYPE_CHECKING, Any, Self, Unpack
 
 import matplotlib.pyplot as plt
 import numpy as np
 from attrs import define, field
 
-from .artist import Plotter
+from .plotter import PlotSettable
 
 if TYPE_CHECKING:
     from matplotlib.figure import Figure
     from matplotlib.pyplot import Axes
 
-    from ._typing import FontDict, LegendLocStr, SettingKey, StyleStr, SubplotDict
+    from ._typing import AxesSettingDict, FigureSettingDict, SettingKey
 
 __all__ = ["FigWrapper", "AxesWrapper"]
 
 
 @define
-class FigWrapper(Plotter):
+class FigWrapper(PlotSettable):
     """
     A wrapper of figure.
 
@@ -36,8 +36,8 @@ class FigWrapper(Plotter):
 
     nrows: int = 1
     ncols: int = 1
-    active: bool = True
-    entered: bool = field(init=False, default=False)
+    active: bool = field(repr=False, default=True)
+    entered: bool = field(init=False, repr=False, default=False)
     fig: "Figure" = field(init=False, repr=False)
     axes: list["AxesWrapper"] = field(init=False, repr=False)
 
@@ -53,9 +53,15 @@ class FigWrapper(Plotter):
         """
         if not self.active:
             return self
+        if self.entered:
+            raise DoubleEnteredError(
+                f"can't enter a {self.__class__.__name__} for twice - please do "
+                "all the operations in one single context manager"
+            )
+
         self.set_default(
             style="seaborn-v0_8-darkgrid",
-            figsize=(10, 5),
+            figsize=(10 * self.ncols, 5 * self.nrows),
             subplots_adjust={"hspace": 0.5},
             fontdict={"fontsize": "x-large"},
         )
@@ -63,9 +69,7 @@ class FigWrapper(Plotter):
         self.fig, axes = plt.subplots(
             self.nrows, self.ncols, figsize=self.settings.figsize
         )
-        self.axes: list["AxesWrapper"] = [
-            AxesWrapper(x) for x in np.array(axes).reshape(-1)
-        ]
+        self.axes: list["AxesWrapper"] = [AxesWrapper(x) for x in np.reshape(axes, -1)]
         self.entered = True
         return self
 
@@ -92,54 +96,29 @@ class FigWrapper(Plotter):
         plt.close(self.fig)
         plt.style.use("default")
 
-        self.active, self.entered = False, False
-
-    def set_figure(
-        self,
-        title: Optional[str] = None,
-        dpi: Optional[float] = None,
-        figsize: Optional[tuple[int, int]] = None,
-        style: Optional["StyleStr"] = None,
-        fontdict: Optional["FontDict"] = None,
-        subplots_adjust: Optional["SubplotDict"] = None,
-    ) -> Self:
+    def set_figure(self, **kwargs: Unpack["FigureSettingDict"]) -> None:
         """
         Set the settings of figure.
 
         Parameters
         ----------
         title : str, optional
-            Title for the figure, by default None.
+            Title of figure.
         dpi : float, optional
-            Sets the resolution of the figure in dots-per-inch, by default None.
+            Sets the resolution of figure in dots-per-inch.
+        style : StyleStr, optional
+            A style specification.
         figsize : tuple[int, int], optional
             Figure size, this takes a tuple of two integers that specifies the
-            width and height of the figure in inches, by default None.
-        style : StyleStr, optional
-            A style specification, by default None.
+            width and height of the figure in inches.
         fontdict : FontDict, optional
-            A dictionary controlling the appearance of the title text, by default
-            None.
+            A dictionary controlling the appearance of the title text.
         subplots_adjust : SubplotsParams, optional
-            Adjusts the subplot layout parameters including: left, right,
-            bottom, top, wspace, and hspace, by default None. See `SubplotsParams`
-            for more details.
-
-        Returns
-        -------
-        Self
-            An instance of self.
+            Adjusts the subplot layout parameters including: left, right, bottom,
+            top, wspace, and hspace. See `SubplotsParams` for more details.
 
         """
-
-        return self._set(
-            title=title,
-            dpi=dpi,
-            figsize=figsize,
-            style=style,
-            fontdict=fontdict,
-            subplots_adjust=subplots_adjust,
-        )
+        self._set(inplace=True, **kwargs)
 
     def setting_check(self, key: "SettingKey", value: Any) -> None:
         if self.entered and key == "style":
@@ -151,7 +130,7 @@ class FigWrapper(Plotter):
 
 
 @define
-class AxesWrapper(Plotter):
+class AxesWrapper(PlotSettable):
     """
     Serves as a wrapper for creating and customizing axes in matplotlib.
 
@@ -162,50 +141,33 @@ class AxesWrapper(Plotter):
 
     ax: "Axes"
 
-    def set_axes(
-        self,
-        title: Optional[str] = None,
-        xlabel: Optional[str] = None,
-        ylabel: Optional[str] = None,
-        alpha: Optional[float] = None,
-        fontdict: Optional["FontDict"] = None,
-        legend_loc: Optional["LegendLocStr"] = None,
-    ) -> Self:
+    def set_axes(self, **kwargs: Unpack["AxesSettingDict"]) -> None:
         """
         Set the settings of axes.
 
         Parameters
         ----------
         title : str, optional
-            Title for the axes, by default None.
+            Title of axes.
         xlabel : str, optional
-            Label for the x-axis, by default None.
+            Label for the x-axis.
         ylabel : str, optional
-            Label for the y-axis, by default None.
+            Label for the y-axis.
         alpha : float, optional
             Controls the transparency of the plotted elements. It takes a float
             value between 0 and 1, where 0 means completely transparent and 1
-            means completely opaque, by default None.
+            means completely opaque.
+        grid : bool, optional
+            Determines whether to show the grids or not.
+        grid_alpha : float, optional
+            Controls the transparency of the grid.
         fontdict : FontDict, optional
-            A dictionary controlling the appearance of the title text, by default
-            None.
+            A dictionary controlling the appearance of the title text.
         legend_loc : LegendLocStr, optional
-            Location of the legend, by default None.
-
-        Returns
-        -------
-        Self
-            An instance of self.
+            Location of the legend.
 
         """
-        return self._set(
-            title=title,
-            xlabel=xlabel,
-            ylabel=ylabel,
-            alpha=alpha,
-            fontdict=fontdict,
-            legend_loc=legend_loc,
-        )
+        self._set(inplace=True, **kwargs)
 
     def exit(self) -> None:
         """
@@ -213,17 +175,17 @@ class AxesWrapper(Plotter):
         by `FigWrapper.__exit__()`.
 
         """
-        self.set_default(fontdict={})
-
         self.ax.set_xlabel(self.settings.xlabel)
         self.ax.set_ylabel(self.settings.ylabel)
         if len(self.ax.get_legend_handles_labels()[0]):
             self.ax.legend(loc=self.settings.legend_loc)
-        if (alpha := self.settings.alpha) is None:
-            alpha = 1.0
-        self.ax.grid(alpha=alpha / 2)
-        self.ax.set_title(self.settings.title, **self.settings.fontdict)
+        if self.get_setting("grid", True):
+            alpha = self.get_setting("alpha", 1.0)
+            self.ax.grid(alpha=self.get_setting("grid_alpha", alpha / 2))
+        else:
+            self.ax.grid(False)
+        self.ax.set_title(self.settings.title, **self.get_setting("fontdict", {}))
 
 
-class PlotterError(Exception):
-    """Raised when data or labels are not set yet."""
+class DoubleEnteredError(Exception):
+    """Raised when entering a Figwrapper for twice."""

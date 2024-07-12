@@ -1,9 +1,10 @@
 """
-The core of multis: MultiObject, etc.
+The core of multi: MultiObject, etc.
 
 """
 
 from typing import (
+    TYPE_CHECKING,
     Any,
     Callable,
     Generic,
@@ -11,15 +12,25 @@ from typing import (
     Literal,
     Optional,
     TypeVar,
-    overload,
 )
 
 from attrs import define
 
+if TYPE_CHECKING:
+    from hintwith import hintwith
+
 T = TypeVar("T")
 
 
-__all__ = ["MultiObject", "REMAIN", "multi", "multi_partial", "cleaner", "single"]
+__all__ = [
+    "MultiObject",
+    "REMAIN",
+    "multi",
+    "multi_partial",
+    "cleaner",
+    "single",
+    "multiple",
+]
 
 
 class MultiObject:
@@ -44,47 +55,32 @@ class MultiObject:
 
     Parameters
     ----------
-    *args : Iterable if specified
-        An iterable of the items if specified (the same as what is needed for
-        initializing a list). If no argument is given, the constructor creates
-        a new empty MultiObject.
-    call_reducer : Optional[Callable[[list], Any]], optional
+    __iterable : Iterable, optional
+        If not given, the constructor creates a new empty MultiObject. If
+        specified, the argument must be an iterable (the same as what is needed
+        for creating a list). By default None.
+    call_reducer : Callable[[list], Any], optional
         Specifies a reducer for the returns of `__call__()`. If specified,
         should be a callable that receives the list of original returns, and
         gives back a new return. If None, the return will be a new MultiObject.
         By default None.
-    call_reflex : Optional[str], optional
+    call_reflex : str, optional
         If str, the returns of a previous element's `__call__()` will be
         provided to the next element as a keyword argument named by it, by
         default None.
-    attr_reducer: Optional[Callable[[list, str], Any]] = None,
+    attr_reducer: Callable[[list, str], Any],  optional
         Specifies a reducer for the returns of `__getattr__()`. If specified,
         should be a callable that receives 2 positional arguments: the list of
         original returns and the attribute name, and gives back a new return. If
         None, the return will be a new MultiObject. By default None.
+    clean : bool, optional
+
     """
 
-    @overload
     def __init__(
         self,
-        call_reducer: Optional[Callable[[list], Any]] = None,
-        call_reflex: Optional[str] = None,
-        attr_reducer: Optional[Callable[[list, str], Any]] = None,
-    ) -> None: ...
-
-    @overload
-    def __init__(
-        self,
-        __iterable: Iterable,
-        /,
-        call_reducer: Optional[Callable[[list], Any]] = None,
-        call_reflex: Optional[str] = None,
-        attr_reducer: Optional[Callable[[list, str], Any]] = None,
-    ) -> None: ...
-
-    def __init__(
-        self,
-        *args,
+        __iterable: Optional[Iterable] = None,
+        *,
         call_reducer: Optional[Callable[[list], Any]] = None,
         call_reflex: Optional[str] = None,
         attr_reducer: Optional[Callable[[list, str], Any]] = None,
@@ -92,13 +88,15 @@ class MultiObject:
         self.__call_reducer = call_reducer
         self.__call_reflex = call_reflex
         self.__attr_reducer = attr_reducer
-        self.__items = list(*args)
+        self.__items = [] if __iterable is None else list(__iterable)
 
     def __getattr__(self, __name: str) -> "MultiObject":
+        if __name.startswith("__"):
+            raise AttributeError(f"cannot reach attribute '{__name}'")
         attrs = [getattr(x, __name) for x in self.__items]
         if self.__attr_reducer:
             reduced = self.__attr_reducer(attrs, __name)
-            if isinstance(reduced, MultiFlag) and reduced == REMAIN:
+            if reduced == REMAIN:
                 pass
             else:
                 return reduced
@@ -114,14 +112,14 @@ class MultiObject:
     def __call__(self, *args: Any, **kwargs: Any) -> Any:
         returns = []
         for i, obj in enumerate(self.__items):
-            clean_args = [single(a, n=i) for a in args]
-            clean_kwargs = {k: single(v, n=i) for k, v in kwargs.items()}
+            a = [single(x, n=i) for x in args]
+            kwd = {k: single(v, n=i) for k, v in kwargs.items()}
             if self.__call_reflex and i > 0:
-                clean_kwargs[self.__call_reflex] = r
-            returns.append(r := obj(*clean_args, **clean_kwargs))
+                kwd[self.__call_reflex] = r
+            returns.append(r := obj(*a, **kwd))
         if self.__call_reducer:
             reduced = self.__call_reducer(returns)
-            if isinstance(reduced, MultiFlag) and reduced == REMAIN:
+            if reduced == REMAIN:
                 pass
             else:
                 return reduced
@@ -136,12 +134,7 @@ class MultiObject:
 
     def __repr__(self) -> str:
         items = ("\n- ").join(repr(x).replace("\n", "\n  ") for x in self.__items)
-        call_reducer = self.__call_reducer.__name__ if self.__call_reducer else None
-        signature = (
-            self.__class__.__name__
-            + f"(call_reducer={call_reducer}, call_reflex={self.__call_reflex!r}, "
-            f"attr_reducer={self.__attr_reducer})"
-        )
+        signature = self.__class__.__name__ + "(" + repr_not_none(self) + "):"
         return f"{signature}\n- {items}"
 
     @property
@@ -155,24 +148,26 @@ class MultiFlag(Generic[T]):
 
     flag: T
 
-    def __eq__(self, __value: "MultiFlag") -> bool:
-        return self.flag == __value.flag
+    def __eq__(self, __value: Any) -> bool:
+        if isinstance(__value, MultiFlag):
+            return self.flag == __value.flag
+        return False
 
 
 REMAIN: MultiFlag[Literal[0]] = MultiFlag(0)
 
 
-def multi(*args, **kwargs) -> MultiObject:
-    """
-    Same to `MultiObject()`.
+if TYPE_CHECKING:
 
-    Returns
-    -------
-    MultiObject
-        A MultiObject.
+    @hintwith(MultiObject)
+    def multi() -> MultiObject:
+        """Same to `MultiObject()`."""
 
-    """
-    return MultiObject(*args, **kwargs)
+else:
+
+    def multi(*args, **kwargs) -> MultiObject:
+        """Magic happens."""
+        return MultiObject(*args, **kwargs)
 
 
 def multi_partial(*args, **kwargs) -> Callable[[list], MultiObject]:
@@ -193,7 +188,7 @@ def multi_partial(*args, **kwargs) -> Callable[[list], MultiObject]:
     return multi_constructor
 
 
-def cleaner(x: list) -> Optional[list]:
+def cleaner(x: list, *_) -> list | None:
     """
     If the list is consist of None's only, return None, otherwise return
     a MultiObject instantiated by the list.
@@ -205,13 +200,13 @@ def cleaner(x: list) -> Optional[list]:
 
     Returns
     -------
-    Optional[list]
+    list | None
         None or a MultiObject instantiated by the list.
 
     """
     if all(i is None for i in x):
         return None
-    return MultiObject(x, call_reducer=cleaner)
+    return MultiObject(x, call_reducer=cleaner, attr_reducer=cleaner)
 
 
 def single(x: T, n: int = -1) -> T:
@@ -234,3 +229,49 @@ def single(x: T, n: int = -1) -> T:
 
     """
     return x.__multiobjects__[n] if isinstance(x, MultiObject) else x
+
+
+def multiple(x: T) -> list[T]:
+    """
+    If a MultiObject is provided, return a list of its elements, otherwise
+    return `[x]`.
+
+    Parameters
+    ----------
+    x : T
+        Can be a MultiObject or anything else.
+
+    Returns
+    -------
+    list[T]
+        List of elements.
+
+    """
+    return x.__multiobjects__ if isinstance(x, MultiObject) else [x]
+
+
+def repr_not_none(x: MultiObject) -> str:
+    """
+    Returns a string representation of the MultiObject's attributes with
+    not-None values. Attributes with values of None are ignored.
+
+    Parameters
+    ----------
+    x : MultiObject
+        Any object.
+
+    Returns
+    -------
+    str
+        String representation.
+
+    """
+    namelist = [n for n in dir(x) if not n.startswith("__") and not n.endswith("items")]
+    not_nones: list[str] = []
+    for n in namelist:
+        if (v := getattr(x, n)) is None:
+            continue
+        if isinstance(v, Callable):
+            v = v.__name__
+        not_nones.append(n.replace("_MultiObject__", "") + f"={v!r}")
+    return ", ".join(not_nones)

@@ -7,17 +7,17 @@ NOTE: this module is private. All functions and objects are available in the mai
 """
 
 import logging
-from typing import TYPE_CHECKING, Literal, NotRequired, TypedDict, TypeVar
+from typing import TYPE_CHECKING, Literal, NotRequired, Optional, TypedDict, TypeVar
 
 if TYPE_CHECKING:
-    from .artist import Plotter
+    from .plotter import PlotSettable
 
 logging.warning(
     "importing from '._typing'. This module is not aimed to be imported directly, "
-    "so unexpected behaviors may be discoverd"
+    "therefore unexpected behaviors may be discovered"
 )
 
-PlotSetterVar = TypeVar("PlotSetterVar", bound="Plotter")
+PlotSettableVar = TypeVar("PlotSettableVar", bound="PlotSettable")
 DefaultVar = TypeVar("DefaultVar")
 StyleStr = Literal[
     "Solarize_Light2",
@@ -82,7 +82,10 @@ FontWeightStr = Literal[
     "black",
 ]
 FontStyleStr = Literal["normal", "italic", "oblique"]
-ColorStr = Literal["b", "g", "r", "c", "m", "y", "k", "w"]
+ColorStr = (
+    Literal["b", "g", "r", "c", "m", "y", "k", "w"]
+    | Literal["C0", "C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9"]
+)
 VerticalAlignmentStr = Literal["baseline", "bottom", "center", "center_baseline", "top"]
 HorizontalAlignmentStr = Literal["left", "center", "right"]
 SettingKey = Literal[
@@ -91,29 +94,65 @@ SettingKey = Literal[
     "ylabel",
     "alpha",
     "dpi",
-    "figsize",
+    "grid",
+    "grid_alpha",
     "style",
+    "figsize",
+    "fontdict",
     "legend_loc",
     "subplots_adjust",
 ]
+DistStr = Literal["normal", "expon"]
 
 
 class SettingDict(TypedDict):
     """
-    Dict for the keyword-arguments of `PlotSetter._set()`.
+    Dict of keyword-arguments for `._set()`.
 
     """
 
-    title: NotRequired[str]
-    xlabel: NotRequired[str]
-    ylabel: NotRequired[str]
-    alpha: NotRequired[float]
-    dpi: NotRequired[float]
-    figsize: NotRequired[tuple[int, int]]
-    style: NotRequired[StyleStr]
-    fontdict: NotRequired["FontDict"]
-    legend_loc: NotRequired[str]
-    subplots_adjust: NotRequired["SubplotDict"]
+    title: NotRequired[Optional[str]]
+    xlabel: NotRequired[Optional[str]]
+    ylabel: NotRequired[Optional[str]]
+    alpha: NotRequired[Optional[float]]
+    dpi: NotRequired[Optional[float]]
+    grid: NotRequired[Optional[bool]]
+    grid_alpha: NotRequired[Optional[float]]
+    style: NotRequired[Optional[StyleStr]]
+    figsize: NotRequired[Optional[tuple[int, int]]]
+    fontdict: NotRequired[Optional["FontDict"]]
+    legend_loc: NotRequired[Optional[str]]
+    subplots_adjust: NotRequired[Optional["SubplotDict"]]
+
+
+class FigureSettingDict(TypedDict):
+    """
+    Dict of keyword-arguments for `.set_figure()`.
+
+    """
+
+    title: NotRequired[Optional[str]]
+    dpi: NotRequired[Optional[float]]
+    style: NotRequired[Optional[StyleStr]]
+    figsize: NotRequired[Optional[tuple[int, int]]]
+    fontdict: NotRequired[Optional["FontDict"]]
+    subplots_adjust: NotRequired[Optional["SubplotDict"]]
+
+
+class AxesSettingDict(TypedDict):
+    """
+    Dict of keyword-arguments for `.set_axes()`.
+
+    """
+
+    title: NotRequired[Optional[str]]
+    xlabel: NotRequired[Optional[str]]
+    ylabel: NotRequired[Optional[str]]
+    alpha: NotRequired[Optional[float]]
+    grid: NotRequired[Optional[bool]]
+    grid_alpha: NotRequired[Optional[float]]
+    fontdict: NotRequired[Optional["FontDict"]]
+    legend_loc: NotRequired[Optional[str]]
 
 
 class FontDict(TypedDict):
