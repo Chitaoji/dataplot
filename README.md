@@ -29,7 +29,7 @@ This project falls under the BSD 3-Clause License.
 ## History
 
 ### v0.1.1
-* New function `dp.show()`.
+* New module-level function `dp.show()`.
 * New method `PlotDataSet.qqplot()` and `PlotDataSet.ksplot()`.
 * All the plotting method (e.g., `.hist()`) will now return an `Artist` object instead of None.
 * New plot settings: `grid` and `grid_alpha`.
