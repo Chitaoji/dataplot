@@ -117,6 +117,6 @@ def show(
         artist = [artist]
     len_a = len(artist)
     ncols = int(sqrt(len_a)) if ncols is None else min(ncols, len_a)
-    with figure(ceil(len_a // ncols), ncols, **kwargs) as fig:
+    with figure(ceil(len_a / ncols), ncols, **kwargs) as fig:
         for a, ax in zip(artist, fig.axes[:len_a]):
             a.paint(ax)
