@@ -111,10 +111,12 @@ class MultiObject:
 
     def __call__(self, *args: Any, **kwargs: Any) -> Any:
         returns = []
+        len_items = len(self.__items)
         for i, obj in enumerate(self.__items):
             a = [single(x, n=i) for x in args]
             kwd = {k: single(v, n=i) for k, v in kwargs.items()}
             if self.__call_reflex and i > 0:
+                kwd["__multi_last_call__"] = i == len_items - 1
                 kwd[self.__call_reflex] = r
             returns.append(r := obj(*a, **kwd))
         if self.__call_reducer:

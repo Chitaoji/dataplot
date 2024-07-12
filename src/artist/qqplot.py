@@ -33,10 +33,13 @@ class QQPlot(Plotter):
 
     """
 
-    dist_or_sample: "DistStr | NDArray | PlotDataSet" = "normal"
-    num: int = 30
+    dist_or_sample: "DistStr | NDArray | PlotDataSet"
+    dots: int
+    fmt: str
 
-    def paint(self, ax: "AxesWrapper", reflex: None = None) -> None:
+    def paint(
+        self, ax: "AxesWrapper", reflex: None = None, __multi_last_call__: bool = False
+    ) -> None:
         ax.set_default(
             title="Quantile-Quantile Plot",
             xlabel="quantiles",
@@ -51,18 +54,18 @@ class QQPlot(Plotter):
             xlabel = x + "-distribution"
             match x:
                 case "normal":
-                    p = np.linspace(0, 1, self.num + 2)[1:-1]
+                    p = np.linspace(0, 1, self.dots + 2)[1:-1]
                     q1 = stats.norm.ppf(p)
                 case "expon":
-                    p = np.linspace(0, 1, self.num + 1)[0:-1]
+                    p = np.linspace(0, 1, self.dots + 1)[0:-1]
                     q1 = stats.expon.ppf(p)
         elif isinstance(x, PlotSettable):
             xlabel = x.formatted_label()
-            p = np.linspace(0, 1, self.num)
+            p = np.linspace(0, 1, self.dots)
             q1 = self.__get_quantile(x.data, p)
         elif isinstance(x, (list, np.ndarray)):
             xlabel = "sample"
-            p = np.linspace(0, 1, self.num)
+            p = np.linspace(0, 1, self.dots)
             q1 = self.__get_quantile(x, p)
         else:
             raise TypeError(
@@ -70,7 +73,7 @@ class QQPlot(Plotter):
                 f"or PlotDataSet, got {type(x)}"
             )
         q2 = self.__get_quantile(self.data, p)
-        ax.ax.plot(q1, q2, "o", zorder=2.1, label=f"{self.label} & {xlabel}")
+        ax.ax.plot(q1, q2, self.fmt, zorder=2.1, label=f"{self.label} & {xlabel}")
         a, b = linear_regression_1d(q2, q1)
         l, r = q1.min(), q1.max()
         ax.ax.plot(

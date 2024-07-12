@@ -67,5 +67,7 @@ class Plotter(PlotSettable):
     data: Optional["NDArray"] = field(repr=False, default=None, init=False)
     label: Optional[str] = field(default=None, init=False)
 
-    def paint(self, ax: "AxesWrapper", reflex: Any = None) -> Any:
+    def paint(
+        self, ax: "AxesWrapper", reflex: Any = None, __multi_last_call__: bool = False
+    ) -> Any:
         """Paint."""

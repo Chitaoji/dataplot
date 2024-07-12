@@ -36,7 +36,9 @@ class KSPlot(Plotter):
     dots: int
     edge_precision: float
 
-    def paint(self, ax: "AxesWrapper", reflex: None = None) -> None:
+    def paint(
+        self, ax: "AxesWrapper", reflex: None = None, __multi_last_call__: bool = False
+    ) -> None:
         ax.set_default(
             title="Kolmogorov-Smirnov Plot",
             xlabel="value",

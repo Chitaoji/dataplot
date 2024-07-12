@@ -35,7 +35,10 @@ class Histogram(Plotter):
     only: bool
 
     def paint(
-        self, ax: "AxesWrapper", reflex: Optional[list[float]] = None
+        self,
+        ax: "AxesWrapper",
+        reflex: Optional[list[float]] = None,
+        __multi_last_call__: bool = False,
     ) -> list[float]:
         ax.set_default(
             title="Histogram",

@@ -30,9 +30,12 @@ class LineChart(Plotter):
     """
 
     ticks: Optional["NDArray | PlotDataSet"]
+    fmt: str
     scatter: bool
 
-    def paint(self, ax: "AxesWrapper", reflex: None = None) -> None:
+    def paint(
+        self, ax: "AxesWrapper", reflex: None = None, __multi_last_call__: bool = False
+    ) -> None:
         ax.set_default(title="Line Chart")
         ax.loading(self.settings)
         self.__plot(ax)
@@ -44,13 +47,14 @@ class LineChart(Plotter):
         else:
             ticks = self.ticks
         if ticks is None:
-            ax.ax.plot(self.data, label=self.label)
+            ticks = range(len(self.data))
+            ax.ax.plot(self.data, self.fmt, label=self.label)
         elif (len_t := len(ticks)) == (len_d := len(self.data)):
-            ax.ax.plot(ticks, self.data, label=self.label)
+            ax.ax.plot(ticks, self.data, self.fmt, label=self.label)
         else:
             raise ValueError(
                 "ticks and data must have the same length, but have "
                 f"lengths {len_t} and {len_d}"
             )
         if self.scatter:
-            ax.ax.scatter(self.data)
+            ax.ax.scatter(ticks, self.data)

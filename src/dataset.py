@@ -25,14 +25,14 @@ import numpy as np
 import pandas as pd
 from attrs import define, field
 
-from .artist import Artist, Histogram, KSPlot, LineChart, QQPlot
+from .artist import Artist, CorrMap, Histogram, KSPlot, LineChart, QQPlot
 from .plotter import PlotSettable, PlotSettings
 from .utils.multi import REMAIN, MultiObject, cleaner, multi, multi_partial, single
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
 
-    from ._typing import DistStr, SettingDict
+    from ._typing import DistStr, ResampleRule, SettingDict
     from .artist import Plotter
     from .container import AxesWrapper
 T = TypeVar("T")
@@ -257,6 +257,41 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
         """
         return PlotDataSets(self, *others)
+
+    def resample(self, n: int, rule: "ResampleRule" = "random") -> Self:
+        """
+        Resample from the data.
+
+        Parameters
+        ----------
+        n : int
+            Length of new sample.
+        rule : ResampleRule, optional
+            Resample rule, by default "random".
+
+        Returns
+        -------
+        Self
+            A new instance of self.
+
+        Raises
+        ------
+        ValueError
+            Raised when receiving illegal rule.
+
+        """
+        new_fmt = f"resample({self.fmt}, {n})"
+        match rule:
+            case "random":
+                idx = np.random.randint(0, len(self.data), n)
+                new_data = self.data[idx]
+            case "first":
+                new_data = self.data[:n]
+            case "last":
+                new_data = self.data[-n:]
+            case _:
+                raise ValueError(f"rule not supported: {rule!r}")
+        return self.__create(new_fmt, new_data)
 
     def log(self) -> Self:
         """
@@ -543,6 +578,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
     def plot(
         self,
         ticks: Optional["NDArray | PlotDataSet"] = None,
+        fmt: str = "",
         scatter: bool = False,
         *,
         on: Optional["AxesWrapper"] = None,
@@ -556,6 +592,8 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         ticks : NDArray | PlotDataSet, optional
             Specifies the x-ticks for the line chart. If not provided, the x-ticks will
             be set to `range(len(data))`. By default None.
+        fmt : str, optional
+            A format string, e.g. 'ro' for red circles.
         scatter : bool, optional
             Determines whether to include scatter points in the line chart, by default
             False.
@@ -575,7 +613,8 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
     def qqplot(
         self,
         dist_or_sample: "DistStr | NDArray | PlotDataSet" = "normal",
-        num: int = 30,
+        dots: int = 30,
+        fmt: str = "o",
         *,
         on: Optional["AxesWrapper"] = None,
     ) -> Artist:
@@ -590,6 +629,8 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             another real sample. By default "normal".
         dots : int, optional
             Number of dots, by default 30.
+        fmt : str, optional
+            A format string, e.g. 'ro' for red circles.
         on : AxesWrapper, optional
             Specifies the axes-wrapper on which the plot should be painted. If
             not specified, the histogram will be plotted on a new axes in a new
@@ -635,6 +676,25 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         """
         return self._get_artist(KSPlot, locals())
 
+    def corrmap(self, *, on: Optional["AxesWrapper"] = None) -> Artist:
+        """
+        Create a correlation heatmap.
+
+        Parameters
+        ----------
+        on : AxesWrapper, optional
+            Specifies the axes-wrapper on which the plot should be painted. If
+            not specified, the histogram will be plotted on a new axes in a new
+            figure. By default None.
+
+        Returns
+        -------
+        Artist
+            An instance of Artist.
+
+        """
+        return self._get_artist(CorrMap, locals())
+
     def _get_artist(self, cls: type["Plotter"], local: dict[str, Any]) -> Artist:
         params: dict[str, Any] = {}
         for key in cls.__init__.__code__.co_varnames[1:]:
@@ -664,7 +724,15 @@ class PlotDataSets:
 
     def __getattr__(self, __name: str) -> Any:
         match n := __name:
-            case "hist" | "plot" | "qqplot" | "join" | "_get_artist":
+            case (
+                "hist"
+                | "plot"
+                | "qqplot"
+                | "ksplot"
+                | "corrmap"
+                | "join"
+                | "_get_artist"
+            ):
                 return partial(getattr(PlotDataSet, n), self)
             case "customize":
                 return multi(
