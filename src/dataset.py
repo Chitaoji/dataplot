@@ -25,7 +25,7 @@ from attrs import define, field
 
 from .artist import Artist, CorrMap, Histogram, KSPlot, LineChart, PPPlot, QQPlot
 from .plotter import PlotSettable, PlotSettings
-from .utils.multi import REMAIN, MultiObject, cleaner, multi, multipartial, single
+from .utils.multi import MULITEM, REMAIN, MultiObject, multi, multipartial, single
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
@@ -119,8 +119,8 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         not_none = self.settings.repr_not_none()
         return f"{self.formatted_label()}{': 'if not_none else ''}{not_none}"
 
-    def __getitem__(self, __key: int) -> Self:
-        return self
+    def __getitem__(self, __key: int) -> Self | Any:
+        return MULITEM
 
     def __neg__(self) -> Self:
         new_fmt = f"(-{self.__auto_remove_brackets(self.fmt_, priority=28)})"
@@ -802,13 +802,10 @@ class PlotDataSets(MultiObject[PlotDataSet]):
         data_info = "\n- ".join([x.data_info() for x in self.__multiobjects__])
         return f"{PlotDataSet.__name__}\n- {data_info}"
 
-    def __getitem__(self, __key: int) -> PlotDataSet:
-        return self.__multiobjects__[__key]
-
     def batched(self, n: int = 1) -> "MultiObject":
         """Overrides `PlotDataSet.batched()`."""
         PlotDataSet.batched(self, n)
-        m = multi(attr_reducer=cleaner)
+        m = multi()
         for i in range(0, len(self.__multiobjects__), n):
             m.__multiobjects__.append(PlotDataSets(*self.__multiobjects__[i : i + n]))
         return m

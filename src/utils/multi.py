@@ -9,7 +9,7 @@ from typing import (
     Callable,
     Generic,
     Iterable,
-    Literal,
+    LiteralString,
     Optional,
     TypeVar,
     overload,
@@ -21,16 +21,17 @@ if TYPE_CHECKING:
     from hintwith import hintwith
 
 T = TypeVar("T")
+S = TypeVar("S", bound=LiteralString)
 
 
 __all__ = [
     "MultiObject",
-    "REMAIN",
     "multi",
     "multipartial",
-    "cleaner",
     "single",
     "multiple",
+    "REMAIN",
+    "MULITEM",
 ]
 
 
@@ -89,7 +90,7 @@ class MultiObject(Generic[T]):
         self.__call_reducer = call_reducer
         self.__call_reflex = call_reflex
         self.__attr_reducer = attr_reducer
-        self.__items: list[T] = [] if __iterable is None else list(__iterable)
+        self.__items: list[S] = [] if __iterable is None else list(__iterable)
 
     def __getattr__(self, __name: str) -> "MultiObject | Any":
         if __name.startswith("__"):
@@ -128,28 +129,70 @@ class MultiObject(Generic[T]):
                 return reduced
         return MultiObject(returns, call_reflex=self.__call_reflex)
 
-    def __getitem__(self, __key: str) -> "MultiObject":
-        return MultiObject((x[__key] for x in self.__items))
+    def __getitem__(self, __key: Any) -> T | "MultiObject":
+        items = [x[__key] for x in self.__items]
+        if isinstance(__key, int) and MULITEM in items:
+            return self.__items[__key]
+        return MultiObject(items)
 
-    def __setitem__(self, __key: str, __value: Any) -> None:
+    def __setitem__(self, __key: Any, __value: Any) -> None:
         for i, obj in enumerate(self.__items):
             obj[single(__key, n=i)] = single(__value, n=i)
 
     def __repr__(self) -> str:
-        items = ("\n- ").join(repr(x).replace("\n", "\n  ") for x in self.__items)
-        signature = self.__class__.__name__ + "(" + repr_not_none(self) + "):"
-        return f"{signature}\n- {items}"
+        return ("\n").join("- " + repr(x).replace("\n", "\n  ") for x in self.__items)
+
+    def __str__(self) -> str:
+        signature = self.__class__.__name__ + repr_not_none(self)
+        return f"{signature}"
 
     @property
     def __multiobjects__(self) -> list[T]:
         return self.__items
 
 
+def repr_not_none(x: MultiObject) -> str:
+    """
+    Returns a string representation of the MultiObject's attributes with
+    not-None values. Attributes with values of None are ignored.
+
+    Parameters
+    ----------
+    x : MultiObject
+        Any object.
+
+    Returns
+    -------
+    str
+        String representation.
+
+    """
+    namelist = [n for n in x.__init__.__code__.co_varnames[1:] if not n.startswith("_")]
+    not_nones: list[str] = []
+    for n in namelist:
+        if not hasattr(x, p := f"_{type(x).__name__}__{n}"):
+            continue
+        if (v := getattr(x, p)) is None:
+            continue
+        if isinstance(v, Callable):
+            v = v.__name__
+        not_nones.append(f"{n}={v}")
+    return "" if len(not_nones) == 0 else "(" + ", ".join(not_nones) + ")"
+
+
 @define
-class MultiFlag(Generic[T]):
+class MultiFlag(Generic[S]):
     """Flag for MultiObjects."""
 
-    flag: T
+    flag: int
+    name: S
+    err: Optional[type[Exception]] = None
+    errmsg: str = ""
+
+    def __repr__(self) -> str:
+        if self.err is not None:
+            raise self.err(self.errmsg)
+        return self.name
 
     def __eq__(self, __value: Any) -> bool:
         if isinstance(__value, MultiFlag):
@@ -157,8 +200,8 @@ class MultiFlag(Generic[T]):
         return False
 
 
-REMAIN: MultiFlag[Literal[0]] = MultiFlag(0)
-
+REMAIN = MultiFlag(0, "REMAIN")
+MULITEM = MultiFlag(1, "MULITEM", TypeError, "object is not subscriptable")
 
 if TYPE_CHECKING:
 
@@ -193,6 +236,47 @@ def multipartial(**kwargs) -> Callable[[list | str], Any]:
     return multi_constructor
 
 
+def single(x: S, n: int = -1) -> S:
+    """
+    If a MultiObject is provided, return its n-th element, otherwise return
+    the input itself.
+
+    Parameters
+    ----------
+    x : T
+        Can be a MultiObject or anything else.
+    n : int, optional
+        Specifies which element to return if a MultiObject is provided, by
+        default -1.
+
+    Returns
+    -------
+    T
+        A single object.
+
+    """
+    return x.__multiobjects__[n] if isinstance(x, MultiObject) else x
+
+
+def multiple(x: S) -> list[S]:
+    """
+    If a MultiObject is provided, return a list of its elements, otherwise
+    return `[x]`.
+
+    Parameters
+    ----------
+    x : T
+        Can be a MultiObject or anything else.
+
+    Returns
+    -------
+    list[T]
+        List of elements.
+
+    """
+    return x.__multiobjects__ if isinstance(x, MultiObject) else [x]
+
+
 @overload
 def cleaner(x: list) -> list | None: ...
 @overload
@@ -218,71 +302,3 @@ def cleaner(x: list | str) -> list | None:
     if all(i is None for i in x):
         return None
     return MultiObject(x, call_reducer=cleaner, attr_reducer=cleaner)
-
-
-def single(x: T, n: int = -1) -> T:
-    """
-    If a MultiObject is provided, return its n-th element, otherwise return
-    the input itself.
-
-    Parameters
-    ----------
-    x : T
-        Can be a MultiObject or anything else.
-    n : int, optional
-        Specifies which element to return if a MultiObject is provided, by
-        default -1.
-
-    Returns
-    -------
-    T
-        A single object.
-
-    """
-    return x.__multiobjects__[n] if isinstance(x, MultiObject) else x
-
-
-def multiple(x: T) -> list[T]:
-    """
-    If a MultiObject is provided, return a list of its elements, otherwise
-    return `[x]`.
-
-    Parameters
-    ----------
-    x : T
-        Can be a MultiObject or anything else.
-
-    Returns
-    -------
-    list[T]
-        List of elements.
-
-    """
-    return x.__multiobjects__ if isinstance(x, MultiObject) else [x]
-
-
-def repr_not_none(x: MultiObject) -> str:
-    """
-    Returns a string representation of the MultiObject's attributes with
-    not-None values. Attributes with values of None are ignored.
-
-    Parameters
-    ----------
-    x : MultiObject
-        Any object.
-
-    Returns
-    -------
-    str
-        String representation.
-
-    """
-    namelist = [n for n in dir(x) if not n.startswith("__") and not n.endswith("items")]
-    not_nones: list[str] = []
-    for n in namelist:
-        if (v := getattr(x, n)) is None:
-            continue
-        if isinstance(v, Callable):
-            v = v.__name__
-        not_nones.append(n.replace("_MultiObject__", "") + f"={v!r}")
-    return ", ".join(not_nones)
