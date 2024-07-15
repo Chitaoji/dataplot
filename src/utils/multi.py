@@ -34,7 +34,7 @@ __all__ = [
 ]
 
 
-class MultiObject:
+class MultiObject(Generic[T]):
     """
     A basic object that enables multi-element attribute-getting,
     attribute-setting, calling, etc. This object maintains a list of items,
@@ -89,9 +89,9 @@ class MultiObject:
         self.__call_reducer = call_reducer
         self.__call_reflex = call_reflex
         self.__attr_reducer = attr_reducer
-        self.__items = [] if __iterable is None else list(__iterable)
+        self.__items: list[T] = [] if __iterable is None else list(__iterable)
 
-    def __getattr__(self, __name: str) -> "MultiObject":
+    def __getattr__(self, __name: str) -> "MultiObject | Any":
         if __name.startswith("__"):
             raise AttributeError(f"cannot reach attribute '{__name}'")
         attrs = [getattr(x, __name) for x in self.__items]
@@ -110,7 +110,7 @@ class MultiObject:
             for i, obj in enumerate(self.__items):
                 setattr(obj, single(__name, n=i), single(__value, n=i))
 
-    def __call__(self, *args: Any, **kwargs: Any) -> Any:
+    def __call__(self, *args: Any, **kwargs: Any) -> "MultiObject | Any":
         returns = []
         len_items = len(self.__items)
         for i, obj in enumerate(self.__items):
@@ -126,12 +126,12 @@ class MultiObject:
                 pass
             else:
                 return reduced
-        return self.__class__(returns, call_reflex=self.__call_reflex)
+        return MultiObject(returns, call_reflex=self.__call_reflex)
 
     def __getitem__(self, __key: str) -> "MultiObject":
         return MultiObject((x[__key] for x in self.__items))
 
-    def __setitem__(self, __key: str, __value: Any) -> "MultiObject":
+    def __setitem__(self, __key: str, __value: Any) -> None:
         for i, obj in enumerate(self.__items):
             obj[single(__key, n=i)] = single(__value, n=i)
 
@@ -141,7 +141,7 @@ class MultiObject:
         return f"{signature}\n- {items}"
 
     @property
-    def __multiobjects__(self):
+    def __multiobjects__(self) -> list[T]:
         return self.__items
 
 

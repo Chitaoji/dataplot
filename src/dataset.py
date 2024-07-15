@@ -782,18 +782,20 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
     # pylint: enable=unused-argument
 
 
-class PlotDataSets(MultiObject):
+class PlotDataSets(MultiObject[PlotDataSet]):
     """A duck subclass of `PlotDataSet`."""
 
     def __init__(self, *args: Any) -> None:
         if not args:
-            raise ValueError("number of data sets is 0")
+            raise ValueError("no args")
         objs: list[PlotDataSet] = []
         for a in args:
             if isinstance(a, self.__class__):
                 objs.extend(a.__multiobjects__)
-            else:
+            elif isinstance(a, PlotDataSet):
                 objs.append(a)
+            else:
+                raise TypeError(f"unrecognized type: {type(a)}")
         super().__init__(objs, attr_reducer=self.__dataset_attr_reducer)
 
     def __repr__(self) -> str:
