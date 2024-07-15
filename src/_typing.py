@@ -103,7 +103,7 @@ SettingKey = Literal[
     "subplots_adjust",
 ]
 DistStr = Literal["normal", "expon"]
-ResampleRule = Literal["first", "last", "random"]
+ResampleRule = Literal["head", "tail", "random"]
 
 
 class SettingDict(TypedDict):

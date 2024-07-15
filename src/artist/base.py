@@ -1,5 +1,5 @@
 """
-Contains the core of artist: figure(), data().
+Contains the core of artist: Artist, Plotter.
 
 NOTE: this module is private. All functions and objects are available in the main
 `dataplot` namespace - use that instead.

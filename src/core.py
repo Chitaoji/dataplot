@@ -1,5 +1,5 @@
 """
-Contains the core of dataplot: figure(), data().
+Contains the core of dataplot: figure(), data(), show(), etc.
 
 NOTE: this module is private. All functions and objects are available in the main
 `dataplot` namespace - use that instead.

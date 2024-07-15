@@ -1,12 +1,12 @@
 """
-Contains dataclasses: PlotSettings, Plotter.
+Contains dataclasses: PlotSettings, PlotSettable.
 
 NOTE: this module is private. All functions and objects are available in the main
 `dataplot` namespace - use that instead.
 
 """
 
-from typing import TYPE_CHECKING, Any, Optional, Self, TypeVar, Unpack
+from typing import TYPE_CHECKING, Any, Optional, Self, Unpack
 
 from attrs import Factory, asdict, define, field
 
@@ -23,8 +23,6 @@ if TYPE_CHECKING:
 
 
 __all__ = ["PlotSettings", "PlotSettable"]
-
-T = TypeVar("T")
 
 
 @define

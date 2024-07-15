@@ -12,11 +12,9 @@ from typing import (
     TYPE_CHECKING,
     Any,
     Callable,
-    Iterable,
     Literal,
     Optional,
     Self,
-    TypeVar,
     Unpack,
     overload,
 )
@@ -25,9 +23,9 @@ import numpy as np
 import pandas as pd
 from attrs import define, field
 
-from .artist import Artist, CorrMap, Histogram, KSPlot, LineChart, QQPlot
+from .artist import Artist, CorrMap, Histogram, KSPlot, LineChart, PPPlot, QQPlot
 from .plotter import PlotSettable, PlotSettings
-from .utils.multi import REMAIN, MultiObject, cleaner, multi, multi_partial, single
+from .utils.multi import REMAIN, MultiObject, cleaner, multi, multipartial, single
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
@@ -35,7 +33,7 @@ if TYPE_CHECKING:
     from ._typing import DistStr, ResampleRule, SettingDict
     from .artist import Plotter
     from .container import AxesWrapper
-T = TypeVar("T")
+
 
 __all__ = ["PlotDataSet"]
 
@@ -258,7 +256,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         """
         return PlotDataSets(self, *others)
 
-    def resample(self, n: int, rule: "ResampleRule" = "random") -> Self:
+    def resample(self, n: int, rule: "ResampleRule" = "head") -> Self:
         """
         Resample from the data.
 
@@ -267,7 +265,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         n : int
             Length of new sample.
         rule : ResampleRule, optional
-            Resample rule, by default "random".
+            Resample rule, by default "head".
 
         Returns
         -------
@@ -285,9 +283,9 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             case "random":
                 idx = np.random.randint(0, len(self.data), n)
                 new_data = self.data[idx]
-            case "first":
+            case "head":
                 new_data = self.data[:n]
-            case "last":
+            case "tail":
                 new_data = self.data[-n:]
             case _:
                 raise ValueError(f"rule not supported: {rule!r}")
@@ -304,7 +302,29 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
         """
         new_fmt = f"log({self.fmt})"
-        new_data = np.log(self.data)
+        new_data = np.log(np.where(self.data > 0, self.data, np.nan))
+        return self.__create(new_fmt, new_data)
+
+    def signlog(self) -> Self:
+        """
+        Perform a log operation on the data, but keep the sign.
+
+        signlog(x) =
+
+        * log(x),   for x > 0;
+        * 0,        for x = 0;
+        * -log(-x), for x < 0.
+
+        Returns
+        -------
+        Self
+            A new instance of self.
+
+        """
+        new_fmt = f"signlog({self.fmt})"
+        new_data = np.log(np.where(self.data > 0, self.data, np.nan))
+        new_data[self.data < 0] = np.log(-self.data[self.data < 0])
+        new_data[self.data == 0] = 0
         return self.__create(new_fmt, new_data)
 
     def rolling(self, n: int) -> Self:
@@ -538,7 +558,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         same_bin: bool = True,
         stats: bool = True,
         *,
-        on: Optional["AxesWrapper"] = None,
+        ax: Optional["AxesWrapper"] = None,
     ) -> Artist:
         """
         Create a histogram of the data.
@@ -581,7 +601,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         fmt: str = "",
         scatter: bool = False,
         *,
-        on: Optional["AxesWrapper"] = None,
+        ax: Optional["AxesWrapper"] = None,
     ) -> Artist:
         """
         Create a line chart for the data. If there are more than one datasets, all of
@@ -597,7 +617,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         scatter : bool, optional
             Determines whether to include scatter points in the line chart, by default
             False.
-        on : AxesWrapper, optional
+        ax : AxesWrapper, optional
             Specifies the axes-wrapper on which the plot should be painted If
             not specified, the histogram will be plotted on a new axes in a new
             figure. By default None.
@@ -614,9 +634,10 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         self,
         dist_or_sample: "DistStr | NDArray | PlotDataSet" = "normal",
         dots: int = 30,
+        edge_precision: float = 1e-2,
         fmt: str = "o",
         *,
-        on: Optional["AxesWrapper"] = None,
+        ax: Optional["AxesWrapper"] = None,
     ) -> Artist:
         """
         Create a quantile-quantile plot.
@@ -629,9 +650,12 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             another real sample. By default "normal".
         dots : int, optional
             Number of dots, by default 30.
+        edge_precision : float, optional
+            Specifies the lowest quantile (`=edge_precision`) and the highest
+            quantile (`=1-edge_precision`), by default 1e-2.
         fmt : str, optional
             A format string, e.g. 'ro' for red circles.
-        on : AxesWrapper, optional
+        ax : AxesWrapper, optional
             Specifies the axes-wrapper on which the plot should be painted. If
             not specified, the histogram will be plotted on a new axes in a new
             figure. By default None.
@@ -644,13 +668,52 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         """
         return self._get_artist(QQPlot, locals())
 
+    def ppplot(
+        self,
+        dist_or_sample: "DistStr | NDArray | PlotDataSet" = "normal",
+        dots: int = 30,
+        edge_precision: float = 1e-6,
+        fmt: str = "o",
+        *,
+        ax: Optional["AxesWrapper"] = None,
+    ) -> Artist:
+        """
+        Create a probability-probability plot.
+
+        Parameters
+        ----------
+        dist_or_sample : DistStr | NDArray | PlotDataSet, optional
+            Specifies the distribution to compare with. If str, specifies a
+            theoretical distribution; if NDArray or PlotDataSet, specifies
+            another real sample. By default "normal".
+        dots : int, optional
+            Number of dots, by default 30.
+        edge_precision : float, optional
+            Specifies the lowest quantile (`=edge_precision`) and the highest
+            quantile (`=1-edge_precision`), by default 1e-6.
+        fmt : str, optional
+            A format string, e.g. 'ro' for red circles.
+        ax : AxesWrapper, optional
+            Specifies the axes-wrapper on which the plot should be painted. If
+            not specified, the histogram will be plotted on a new axes in a new
+            figure. By default None.
+
+        Returns
+        -------
+        Artist
+            An instance of Artist.
+
+        """
+        return self._get_artist(PPPlot, locals())
+
     def ksplot(
         self,
         dist_or_sample: "DistStr | NDArray | PlotDataSet" = "normal",
         dots: int = 1000,
         edge_precision: float = 1e-6,
+        fmt: str = "",
         *,
-        on: Optional["AxesWrapper"] = None,
+        ax: Optional["AxesWrapper"] = None,
     ) -> Artist:
         """
         Create a kolmogorov-smirnov plot.
@@ -663,7 +726,12 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             another real sample. By default "normal".
         dots : int, optional
             Number of dots, by default 1000.
-        on : AxesWrapper, optional
+        edge_precision : float, optional
+            Specifies the lowest quantile (`=edge_precision`) and the highest
+            quantile (`=1-edge_precision`), by default 1e-6.
+        fmt : str, optional
+            A format string, e.g. 'ro' for red circles.
+        ax : AxesWrapper, optional
             Specifies the axes-wrapper on which the plot should be painted. If
             not specified, the histogram will be plotted on a new axes in a new
             figure. By default None.
@@ -676,13 +744,18 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         """
         return self._get_artist(KSPlot, locals())
 
-    def corrmap(self, *, on: Optional["AxesWrapper"] = None) -> Artist:
+    def corrmap(
+        self, annot: bool = True, *, ax: Optional["AxesWrapper"] = None
+    ) -> Artist:
         """
         Create a correlation heatmap.
 
         Parameters
         ----------
-        on : AxesWrapper, optional
+        annot : bool, optional
+            Specifies whether to write the data value in each cell, by default
+            True.
+        ax : AxesWrapper, optional
             Specifies the axes-wrapper on which the plot should be painted. If
             not specified, the histogram will be plotted on a new axes in a new
             figure. By default None.
@@ -703,69 +776,69 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             cls, data=self.data, label=self.formatted_label(), **params
         )
         artist = single(self.customize)(Artist, plotter=plotter)
-        artist.paint(local["on"])
+        artist.paint(local["ax"])
         return artist
 
     # pylint: enable=unused-argument
 
 
-class PlotDataSets:
+class PlotDataSets(MultiObject):
     """A duck subclass of `PlotDataSet`."""
 
     def __init__(self, *args: Any) -> None:
         if not args:
             raise ValueError("number of data sets is 0")
-        self.children: list[PlotDataSet] = []
+        objs: list[PlotDataSet] = []
         for a in args:
             if isinstance(a, self.__class__):
-                self.children.extend(a.children)
+                objs.extend(a.__multiobjects__)
             else:
-                self.children.append(a)
+                objs.append(a)
+        super().__init__(objs, attr_reducer=self.__dataset_attr_reducer)
 
-    def __getattr__(self, __name: str) -> Any:
-        match n := __name:
+    def __repr__(self) -> str:
+        data_info = "\n- ".join([x.data_info() for x in self.__multiobjects__])
+        return f"{PlotDataSet.__name__}\n- {data_info}"
+
+    def __getitem__(self, __key: int) -> PlotDataSet:
+        return self.__multiobjects__[__key]
+
+    def batched(self, n: int = 1) -> "MultiObject":
+        """Overrides `PlotDataSet.batched()`."""
+        PlotDataSet.batched(self, n)
+        m = multi(attr_reducer=cleaner)
+        for i in range(0, len(self.__multiobjects__), n):
+            m.__multiobjects__.append(PlotDataSets(*self.__multiobjects__[i : i + n]))
+        return m
+
+    def __dataset_attr_reducer(self, n: str):
+        match n:
             case (
                 "hist"
                 | "plot"
+                | "ppplot"
                 | "qqplot"
                 | "ksplot"
                 | "corrmap"
                 | "join"
                 | "_get_artist"
             ):
-                return partial(getattr(PlotDataSet, n), self)
+                return lambda _: partial(getattr(PlotDataSet, n), self)
             case "customize":
-                return multi(
-                    self.__getattrs(n),
-                    call_reducer=multi_partial(
-                        attr_reducer=multi_partial(call_reflex="reflex")
-                    ),
+                return multipartial(
+                    call_reducer=multipartial(
+                        attr_reducer=multipartial(call_reflex="reflex")
+                    )
                 )
             case _ if n.startswith("_"):
-                raise AttributeError(f"cannot reach attribute '{n}' after joining")
+                raise AttributeError(
+                    f"cannot reach attribute '{n}' after dataset is joined"
+                )
             case _:
-                return multi(self.__getattrs(n), call_reducer=self.__join_if_dataset)
-
-    def __repr__(self) -> str:
-        data_info = "\n- ".join([x.data_info() for x in self.children])
-        return f"{PlotDataSet.__name__}\n- {data_info}"
-
-    def __getitem__(self, __key: int) -> PlotDataSet:
-        return self.children[__key]
-
-    def batched(self, n: int = 1) -> "MultiObject":
-        """Overrides `PlotDataSet.batched()`."""
-        PlotDataSet.batched(self, n)
-        m = multi(attr_reducer=cleaner)
-        for i in range(0, len(self.children), n):
-            m.__multiobjects__.append(PlotDataSets(*self.children[i : i + n]))
-        return m
+                return multipartial(call_reducer=self.__join_if_dataset)
 
     @classmethod
     def __join_if_dataset(cls, x: list) -> Any:
         if x and isinstance(x[0], PlotDataSet):
             return cls(*x)
         return REMAIN
-
-    def __getattrs(self, __name: str) -> Iterable[Any]:
-        return (getattr(c, __name) for c in self.children)

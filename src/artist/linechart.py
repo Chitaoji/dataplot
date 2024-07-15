@@ -57,4 +57,4 @@ class LineChart(Plotter):
                 f"lengths {len_t} and {len_d}"
             )
         if self.scatter:
-            ax.ax.scatter(ticks, self.data)
+            ax.ax.scatter(ticks, self.data, zorder=2.0)
