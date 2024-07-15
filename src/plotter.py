@@ -1,12 +1,12 @@
 """
-Contains dataclasses: PlotSettings, Plotter.
+Contains dataclasses: PlotSettings, PlotSettable.
 
 NOTE: this module is private. All functions and objects are available in the main
 `dataplot` namespace - use that instead.
 
 """
 
-from typing import TYPE_CHECKING, Any, Optional, Self, TypeVar, Unpack
+from typing import TYPE_CHECKING, Any, Optional, Self, Unpack
 
 from attrs import Factory, asdict, define, field
 
@@ -23,8 +23,6 @@ if TYPE_CHECKING:
 
 
 __all__ = ["PlotSettings", "PlotSettable"]
-
-T = TypeVar("T")
 
 
 @define
@@ -102,12 +100,13 @@ class PlotSettable:
         obj = self if inplace else self.copy()
         keys = obj.settings.keys()
         for k, v in kwargs.items():
-            if k in keys and v is not None:
-                obj.setting_check(k, v)
-                if isinstance(v, dict) and isinstance(obj.settings[k], dict):
-                    obj.settings[k] = {**obj.settings[k], **v}
-                else:
-                    obj.settings[k] = v
+            if v is None or k not in keys:
+                continue
+            obj.setting_check(k, v)
+            if isinstance(v, dict) and isinstance(d := obj.settings[k], dict):
+                d.update(v)
+            else:
+                obj.settings[k] = v
         if not inplace:
             return obj
 
@@ -136,8 +135,12 @@ class PlotSettable:
         """
         keys = self.settings.keys()
         for k, v in kwargs.items():
-            if k in keys and self.settings[k] is None:
+            if k not in keys:
+                continue
+            if self.settings[k] is None:
                 self.settings[k] = v
+            elif isinstance(d := self.settings[k], dict):
+                self.settings[k] = {**v, **d}
 
     def loading(self, settings: PlotSettings) -> None:
         """

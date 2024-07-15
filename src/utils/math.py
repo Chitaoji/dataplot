@@ -1,5 +1,5 @@
 """
-The core of math: linear_regression_1d, etc.
+The core of math: linear_regression_1d(), get_quantile(), get_prob(), etc.
 
 """
 
@@ -10,7 +10,7 @@ import numpy as np
 if TYPE_CHECKING:
     from numpy.typing import NDArray
 
-__all__ = ["linear_regression_1d"]
+__all__ = ["linear_regression_1d", "get_quantile", "get_prob"]
 
 
 def linear_regression_1d(y: "NDArray", x: "NDArray") -> tuple[float, float]:
@@ -41,3 +41,44 @@ def linear_regression_1d(y: "NDArray", x: "NDArray") -> tuple[float, float]:
     b = (xy_mean - x_mean * y_mean) / np.nanvar(x)
     a = y_mean - x_mean * b
     return a, b
+
+
+def get_quantile(data: "NDArray", p: "NDArray") -> "NDArray":
+    """
+    Get quantiles from cummulative probabilities. Nan-values and inf-values
+    are handled smartly.
+
+    Parameters
+    ----------
+    data : NDArray
+        Original data.
+    p : NDArray
+        Cummulative probabilities.
+
+    Returns
+    -------
+    NDArray
+        Quantiles.
+
+    """
+    return np.nanquantile(np.nan_to_num(data, posinf=np.nan, neginf=np.nan), p)
+
+
+def get_prob(data: "NDArray", q: "NDArray") -> "NDArray":
+    """
+    Get cummulative probabilities from quantiles.
+
+    Parameters
+    ----------
+    data : NDArray
+        Original data.
+    q : NDArray
+        Quantiles.
+
+    Returns
+    -------
+    NDArray
+        Cummulative probabilities.
+
+    """
+    return np.array([np.sum(data <= x) for x in q]) / np.isfinite(data).sum()

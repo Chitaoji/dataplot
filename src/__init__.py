@@ -18,11 +18,11 @@ import lazyr
 
 VERBOSE = 0
 
+lazyr.register("matplotlib.pyplot", verbose=VERBOSE)
 lazyr.register("numpy", verbose=VERBOSE)
 lazyr.register("pandas", verbose=VERBOSE)
 lazyr.register("scipy.stats", verbose=VERBOSE)
-lazyr.register("matplotlib.pyplot", verbose=VERBOSE)
-
+lazyr.register("seaborn", verbose=VERBOSE)
 
 # pylint: disable=wrong-import-position
 from . import container, core, dataset, plotter

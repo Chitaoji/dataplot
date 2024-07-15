@@ -1,5 +1,5 @@
 """
-Contains a plotter class: KSPlot.
+Contains a plotter class: PPPlot.
 
 NOTE: this module is private. All functions and objects are available in the main
 `dataplot` namespace - use that instead.
@@ -10,20 +10,19 @@ from typing import TYPE_CHECKING
 
 from attrs import define
 
-from ..utils.math import get_quantile
+from ..utils.math import get_prob
 from .qqplot import QQPlot
 
 if TYPE_CHECKING:
     from ..container import AxesWrapper
 
-
-__all__ = ["KSPlot"]
+__all__ = ["PPPlot"]
 
 
 @define
-class KSPlot(QQPlot):
+class PPPlot(QQPlot):
     """
-    A plotter class that creates a K-S plot.
+    A plotter class that creates a P-P plot.
 
     """
 
@@ -31,16 +30,16 @@ class KSPlot(QQPlot):
         self, ax: "AxesWrapper", reflex: None = None, __multi_last_call__: bool = False
     ) -> None:
         ax.set_default(
-            title="Kolmogorov-Smirnov Plot",
-            xlabel="value",
-            ylabel="cummulative probability",
+            title="Probability-Probability Plot",
+            xlabel="cumulative probility",
+            ylabel="cumulative probility",
         )
         ax.loading(self.settings)
         self.__plot(ax)
         return reflex
 
     def __plot(self, ax: "AxesWrapper") -> None:
-        xlabel, p, q1 = self._generate_dist()
-        q2 = get_quantile(self.data, p)
-        ax.ax.plot(q1, p, self.fmt, label=xlabel)
-        ax.ax.plot(q2, p, self.fmt, label=self.label)
+        xlabel, p1, q = self._generate_dist()
+        p2 = get_prob(self.data, q)
+        ax.ax.plot(p1, p2, self.fmt, zorder=2.1, label=f"{self.label} & {xlabel}")
+        self._plot_fitted_line(ax, p1, p2)

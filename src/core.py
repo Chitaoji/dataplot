@@ -1,5 +1,5 @@
 """
-Contains the core of dataplot: figure(), data().
+Contains the core of dataplot: figure(), data(), show(), etc.
 
 NOTE: this module is private. All functions and objects are available in the main
 `dataplot` namespace - use that instead.
@@ -117,6 +117,8 @@ def show(
         artist = [artist]
     len_a = len(artist)
     ncols = int(sqrt(len_a)) if ncols is None else min(ncols, len_a)
-    with figure(ceil(len_a // ncols), ncols, **kwargs) as fig:
+    with figure(ceil(len_a / ncols), ncols, **kwargs) as fig:
         for a, ax in zip(artist, fig.axes[:len_a]):
             a.paint(ax)
+        for ax in fig.axes[len_a:]:
+            fig.fig.delaxes(ax.ax)
