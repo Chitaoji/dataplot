@@ -613,7 +613,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             Specifies the x-ticks for the line chart. If not provided, the x-ticks will
             be set to `range(len(data))`. By default None.
         fmt : str, optional
-            A format string, e.g. 'ro' for red circles.
+            A format string, e.g. 'ro' for red circles, by default ''.
         scatter : bool, optional
             Determines whether to include scatter points in the line chart, by default
             False.
@@ -647,14 +647,14 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         dist_or_sample : DistStr | NDArray | PlotDataSet, optional
             Specifies the distribution to compare with. If str, specifies a
             theoretical distribution; if NDArray or PlotDataSet, specifies
-            another real sample. By default "normal".
+            another real sample. By default 'normal'.
         dots : int, optional
             Number of dots, by default 30.
         edge_precision : float, optional
             Specifies the lowest quantile (`=edge_precision`) and the highest
             quantile (`=1-edge_precision`), by default 1e-2.
         fmt : str, optional
-            A format string, e.g. 'ro' for red circles.
+            A format string, e.g. 'ro' for red circles, by default 'o'.
         ax : AxesWrapper, optional
             Specifies the axes-wrapper on which the plot should be painted. If
             not specified, the histogram will be plotted on a new axes in a new
@@ -685,14 +685,14 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         dist_or_sample : DistStr | NDArray | PlotDataSet, optional
             Specifies the distribution to compare with. If str, specifies a
             theoretical distribution; if NDArray or PlotDataSet, specifies
-            another real sample. By default "normal".
+            another real sample. By default 'normal'.
         dots : int, optional
             Number of dots, by default 30.
         edge_precision : float, optional
             Specifies the lowest quantile (`=edge_precision`) and the highest
             quantile (`=1-edge_precision`), by default 1e-6.
         fmt : str, optional
-            A format string, e.g. 'ro' for red circles.
+            A format string, e.g. 'ro' for red circles, by default 'o'.
         ax : AxesWrapper, optional
             Specifies the axes-wrapper on which the plot should be painted. If
             not specified, the histogram will be plotted on a new axes in a new
@@ -723,14 +723,14 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         dist_or_sample : DistStr | NDArray | PlotDataSet, optional
             Specifies the distribution to compare with. If str, specifies a
             theoretical distribution; if NDArray or PlotDataSet, specifies
-            another real sample. By default "normal".
+            another real sample. By default 'normal'.
         dots : int, optional
             Number of dots, by default 1000.
         edge_precision : float, optional
             Specifies the lowest quantile (`=edge_precision`) and the highest
             quantile (`=1-edge_precision`), by default 1e-6.
         fmt : str, optional
-            A format string, e.g. 'ro' for red circles.
+            A format string, e.g. 'ro' for red circles, by default ''.
         ax : AxesWrapper, optional
             Specifies the axes-wrapper on which the plot should be painted. If
             not specified, the histogram will be plotted on a new axes in a new
@@ -813,7 +813,7 @@ class PlotDataSets(MultiObject[PlotDataSet]):
             m.__multiobjects__.append(PlotDataSets(*self.__multiobjects__[i : i + n]))
         return m
 
-    def __dataset_attr_reducer(self, n: str):
+    def __dataset_attr_reducer(self, n: str) -> Callable:
         match n:
             case (
                 "hist"
