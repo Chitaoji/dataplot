@@ -1,5 +1,5 @@
 # dataplot
-Provides plotters useful in datascience.
+Provides plotting tools useful in datascience.
 
 ## Installation
 ```sh
@@ -31,7 +31,7 @@ This project falls under the BSD 3-Clause License.
 
 ### v0.1.2
 * New method `PlotDataSet.corrmap()`, `PlotDataSet.ppplot()`, and `PlotDataSet.resample()`.
-* New parameter `fmt=` for multiple methods including `PlotDataSet.plot()`, `PlotDataSet.qqplot()`, etc.
+* New optional parameter `fmt=` for multiple methods including `PlotDataSet.plot()`, `PlotDataSet.qqplot()`, etc.
 * Bugfix.
 
 ### v0.1.1
@@ -39,9 +39,9 @@ This project falls under the BSD 3-Clause License.
 * New method `PlotDataSet.qqplot()` and `PlotDataSet.ksplot()`.
 * All the plotting method (e.g., `.hist()`) will now return an `Artist` object instead of None.
 * New plot settings: `grid` and `grid_alpha`.
-* Parameters for `FigWrapper.set_figure()`, `AxesWrapper.set_axes()` and `PlotDataSet.set_plot()` are keyword-only now.
+* Parameters of `FigWrapper.set_figure()`, `AxesWrapper.set_axes()` and `PlotDataSet.set_plot()` are keyword-only now.
 * The returns of `.set_figure()` and `.set_axes()` will be None (instead of `self`) to avoid misunderstandings.
-* New parameter `inplace=` for `PlotDataSet.set_plot()` to decide whether the changes will happen in-place (which is the only option before) or in a new copy.
+* New optional parameter `inplace=` for `PlotDataSet.set_plot()` to decide whether the changes will happen in-place (which is the only option before) or in a new copy.
 * Parameter `ticks=` for `PlotDataSet.plot()` can be set to a `PlotDataSet` object now.
 
 ### v0.1.0
