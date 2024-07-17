@@ -92,11 +92,13 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         self.label = "x1" if self.label is None else self.label
         self.original_data = self.data
 
-    def __create(self, fmt: str, data: "NDArray", priority: int = 0) -> Self:
+    def __create(
+        self, fmt: str, data: "NDArray", priority: int = 0, label: Optional[str] = None
+    ) -> Self:
         obj = self.customize(
             self.__class__,
             self.original_data,
-            self.label,
+            self.label if label is None else label,
             fmt_=fmt,
             priority=priority,
         )
@@ -251,7 +253,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         Returns
         -------
         Self
-            A new instance of self.
+            A new instance of self.__class__.
 
         """
         return PlotDataSets(self, *others)
@@ -270,7 +272,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         Returns
         -------
         Self
-            A new instance of self.
+            A new instance of self.__class__.
 
         Raises
         ------
@@ -298,7 +300,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         Returns
         -------
         Self
-            A new instance of self.
+            A new instance of self.__class__.
 
         """
         new_fmt = f"log({self.fmt})"
@@ -318,7 +320,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         Returns
         -------
         Self
-            A new instance of self.
+            A new instance of self.__class__.
 
         """
         new_fmt = f"signlog({self.fmt})"
@@ -340,7 +342,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         Returns
         -------
         Self
-            A new instance of self.
+            A new instance of self.__class__.
 
         """
         new_fmt = f"rolling({self.fmt}, {n})"
@@ -353,8 +355,8 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
         Returns
         -------
-        PlotData
-            A new instance of `PlotData`.
+        Self
+            A new instance of self.__class__.
 
         """
         new_fmt = f"exp({self.fmt})"
@@ -367,8 +369,8 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
         Returns
         -------
-        PlotData
-            A new instance of `PlotData`.
+        Self
+            A new instance of self.__class__.
 
         """
         new_fmt = f"abs({self.fmt})"
@@ -382,7 +384,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         Returns
         -------
         Self
-            A new instance of self.
+            A new instance of self.__class__.
 
         """
         new_fmt = f"({self.fmt}-mean({self.fmt}))"
@@ -396,8 +398,8 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
         Returns
         -------
-        PlotDataSet
-            A new instance of `PlotDataSet`.
+        Self
+            A new instance of self.__class__.
 
         """
         new_fmt = f"zscore({self.fmt})"
@@ -412,7 +414,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         Returns
         -------
         Self
-            A new instance of self.
+            A new instance of self.__class__.
 
         """
         new_fmt = f"csum({self.fmt})"
@@ -429,23 +431,22 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         Returns
         -------
         Self
-            A new instance of self.
+            A new instance of self.__class__.
 
         """
         obj = self.copy()
         obj.settings.reset()
         return obj
 
-    def opclear(self):
+    def opclear(self) -> None:
         """
         Undo all the operations performed on the data and clean the records.
 
         """
         self.fmt_ = "{0}"
         self.data = self.original_data
-        return self
 
-    def opclear_records_only(self):
+    def opclear_records_only(self) -> None:
         """
         Clear the records of operations performed on the data. Differences to
         `opclear()` that the operations are not undone and the original data
@@ -454,9 +455,8 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         """
         self.fmt_ = "{0}"
         self.original_data = self.data
-        return self
 
-    def set_label(self, __label: Optional[str] = None, **kwargs: str):
+    def set_label(self, __label: Optional[str] = None, **kwargs: str) -> Self:
         """
         Set the labels.
 
@@ -468,11 +468,21 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             Works as a mapper to find the new label. If `self.label` is in
             `kwargs`, the label will be set to `kwargs[self.label]`.
 
+        Returns
+        -------
+        Self
+            A new instance of self.__class__.
+
         """
         if isinstance(__label, str):
-            self.label = __label
+            new_label = __label
         elif self.label in kwargs:
-            self.label = kwargs[self.label]
+            new_label = kwargs[self.label]
+        else:
+            new_label = self.label
+        return self.__create(
+            self.fmt_, self.data, priority=self.priority, label=new_label
+        )
 
     @overload
     def set_plot(
@@ -521,8 +531,8 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
         Returns
         -------
-        Self
-            An instance of self or None.
+        Self | None
+            A new instance of self.__class__, or None.
 
         """
         return self._set(inplace=inplace, **kwargs)
@@ -542,7 +552,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         Returns
         -------
         Self
-            An instance of self.
+            A new instance of self.__class__.
 
         """
         if n <= 0:
