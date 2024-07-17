@@ -13,8 +13,8 @@ if TYPE_CHECKING:
     from .plotter import PlotSettable
 
 logging.warning(
-    "importing from '._typing'. This module is not aimed to be imported directly, "
-    "therefore unexpected behaviors may be discovered"
+    "importing from '._typing'. This module is not intended for direct import, "
+    "therefore unexpected errors may occur"
 )
 
 PlotSettableVar = TypeVar("PlotSettableVar", bound="PlotSettable")
