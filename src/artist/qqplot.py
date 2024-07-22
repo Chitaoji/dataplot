@@ -60,7 +60,7 @@ class QQPlot(Plotter):
         if self.edge_precision < 0 or self.edge_precision >= 0.5:
             raise ValueError(
                 "edge_precision should be on the interval [0, 0.5), got "
-                f"{self.edge_precision}"
+                f"{self.edge_precision} instead"
             )
         p = np.linspace(self.edge_precision, 1 - self.edge_precision, self.dots)
         if isinstance(x := self.dist_or_sample, str):
@@ -75,7 +75,7 @@ class QQPlot(Plotter):
         else:
             raise TypeError(
                 "argument 'dist_or_sample' expected to be str, NDArray, "
-                f"or PlotDataSet, got {type(x)}"
+                f"or PlotDataSet, got {type(x)} instead"
             )
         return xlabel, p, q
 

@@ -556,7 +556,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
         """
         if n <= 0:
-            raise ValueError(f"batch size should be greater than 0, but got {n}")
+            raise ValueError(f"batch size should be greater than 0, got {n} instead")
         return MultiObject([self])
 
     # pylint: disable=unused-argument

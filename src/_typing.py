@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     from .plotter import PlotSettable
 
 logging.warning(
-    "importing from '._typing'. This module is not intended for direct import, "
+    "importing from '._typing' - this module is not intended for direct import, "
     "therefore unexpected errors may occur"
 )
 
