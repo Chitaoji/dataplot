@@ -28,6 +28,9 @@ scipy
 This project falls under the BSD 3-Clause License.
 
 ## History
+### v0.1.3
+* New method `PlotDataSet.signedpow()`.
+* Renamed `PlotDataSet.signlog()` to `PlotDataSet.signedlog()`.
 
 ### v0.1.2
 * New method `PlotDataSet.corrmap()`, `PlotDataSet.ppplot()`, and `PlotDataSet.resample()`.
