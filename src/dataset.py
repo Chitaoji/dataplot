@@ -307,11 +307,11 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         new_data = np.log(np.where(self.data > 0, self.data, np.nan))
         return self.__create(new_fmt, new_data)
 
-    def signlog(self) -> Self:
+    def signedlog(self) -> Self:
         """
         Perform a log operation on the data, but keep the sign.
 
-        signlog(x) =
+        signedlog(x) =
 
         * log(x),   for x > 0;
         * 0,        for x = 0;
@@ -323,9 +323,31 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             A new instance of self.__class__.
 
         """
-        new_fmt = f"signlog({self.fmt})"
+        new_fmt = f"signedlog({self.fmt})"
         new_data = np.log(np.where(self.data > 0, self.data, np.nan))
         new_data[self.data < 0] = np.log(-self.data[self.data < 0])
+        new_data[self.data == 0] = 0
+        return self.__create(new_fmt, new_data)
+
+    def signedpow(self, n: float) -> Self:
+        """
+        Perform a power operation on the data, but keep the sign.
+
+        signedpow(x, n) =
+
+        * x**n,     for x > 0;
+        * 0,        for x = 0;
+        * -x**(-n)  for x < 0.
+
+        Returns
+        -------
+        Self
+            A new instance of self.__class__.
+
+        """
+        new_fmt = f"signedpow({self.fmt})"
+        new_data = np.where(self.data > 0, self.data, np.nan) ** n
+        new_data[self.data < 0] = -((-self.data[self.data < 0]) ** n)
         new_data[self.data == 0] = 0
         return self.__create(new_fmt, new_data)
 
