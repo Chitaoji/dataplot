@@ -33,13 +33,13 @@ This project falls under the BSD 3-Clause License.
 * Renamed `PlotDataSet.signlog()` to `PlotDataSet.signedlog()`.
 
 ### v0.1.2
-* New method `PlotDataSet.corrmap()`, `PlotDataSet.ppplot()`, and `PlotDataSet.resample()`.
+* New methods `PlotDataSet.corrmap()`, `PlotDataSet.ppplot()`, and `PlotDataSet.resample()`.
 * New optional parameter `fmt=` for multiple methods including `PlotDataSet.plot()`, `PlotDataSet.qqplot()`, etc.
 * Bugfix.
 
 ### v0.1.1
 * New module-level function `dp.show()`.
-* New method `PlotDataSet.qqplot()`, `PlotDataSet.ksplot()` and `PlotDataSet.abs()`.
+* New methods `PlotDataSet.qqplot()`, `PlotDataSet.ksplot()` and `PlotDataSet.abs()`.
 * All the plotting method (e.g., `.hist()`) will now return an `Artist` object instead of None.
 * New plot settings: `grid` and `grid_alpha`.
 * Parameters of `FigWrapper.set_figure()`, `AxesWrapper.set_axes()` and `PlotDataSet.set_plot()` are keyword-only now.
@@ -49,7 +49,7 @@ This project falls under the BSD 3-Clause License.
 
 ### v0.1.0
 * `PlotDataSet` now supports binary operations including +, -, *, /, and **.
-* Added `FigWrapper.set_figure()` and `AxesWrapper.set_axes()` - now use them instead of `.set_plot()`. `PlotDataSet.set_plot()` remains however.
+* New methods `FigWrapper.set_figure()` and `AxesWrapper.set_axes()` - now use them instead of `.set_plot()`.
 * Simplified the usage of `AxesWrapper`.
 * New plot settings: `subplots_adjust`, `fontdict` and `dpi`.
 * After this version, the required Python version is updated to >=3.11.9. Download and install v0.0.2 if the user is under lower Python version (>=3.8.13).
