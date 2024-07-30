@@ -57,9 +57,9 @@ class QQPlot(Plotter):
         self._plot_fitted_line(ax, q1, q2)
 
     def _generate_dist(self) -> tuple[str, "NDArray", "NDArray"]:
-        if self.edge_precision < 0 or self.edge_precision >= 0.5:
+        if not 0 <= self.edge_precision < 0.5:
             raise ValueError(
-                "edge_precision should be on the interval [0, 0.5), got "
+                "'edge_precision' should be on the interval [0, 0.5), got "
                 f"{self.edge_precision} instead"
             )
         p = np.linspace(self.edge_precision, 1 - self.edge_precision, self.dots)
