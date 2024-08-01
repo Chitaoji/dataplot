@@ -7,6 +7,7 @@ NOTE: this module is private. All functions and objects are available in the mai
 """
 
 from abc import ABCMeta
+from dataclasses import dataclass, field
 from functools import partial
 from typing import (
     TYPE_CHECKING,
@@ -21,7 +22,6 @@ from typing import (
 
 import numpy as np
 import pandas as pd
-from attrs import define, field
 
 from .artist import Artist, CorrMap, Histogram, KSPlot, LineChart, PPPlot, QQPlot
 from .plotter import PlotSettable, PlotSettings
@@ -38,7 +38,7 @@ if TYPE_CHECKING:
 __all__ = ["PlotDataSet"]
 
 
-@define
+@dataclass(slots=True)
 class PlotDataSet(PlotSettable, metaclass=ABCMeta):
     """
     A dataset class providing methods for mathematical operations and plotting.
@@ -79,16 +79,16 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
     label: Optional[str] = field(default=None)
     fmt_: str = field(init=False, default="{0}")
     original_data: "NDArray" = field(init=False)
-    settings: PlotSettings = field(init=False, factory=PlotSettings)
+    settings: PlotSettings = field(init=False, default_factory=PlotSettings)
     priority: int = field(init=False, default=0)
 
     @classmethod
     def __subclasshook__(cls, __subclass: type) -> bool:
-        if issubclass(__subclass, PlotDataSets):
+        if __subclass is PlotDataSet or issubclass(__subclass, PlotDataSets):
             return True
-        return super().__subclasshook__(__subclass)
+        return False
 
-    def __attrs_post_init__(self) -> None:
+    def __post_init__(self) -> None:
         self.label = "x1" if self.label is None else self.label
         self.original_data = self.data
 

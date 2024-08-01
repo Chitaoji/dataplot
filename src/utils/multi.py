@@ -3,6 +3,7 @@ The core of multi: multi(), multipartial(), etc.
 
 """
 
+from dataclasses import dataclass
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -14,8 +15,6 @@ from typing import (
     TypeVar,
     overload,
 )
-
-from attrs import define
 
 if TYPE_CHECKING:
     from hintwith import hintwith
@@ -180,7 +179,7 @@ def repr_not_none(x: MultiObject) -> str:
     return "" if len(not_nones) == 0 else "(" + ", ".join(not_nones) + ")"
 
 
-@define
+@dataclass(slots=True)
 class MultiFlag(Generic[S]):
     """Flag for MultiObjects."""
 

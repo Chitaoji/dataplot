@@ -6,11 +6,11 @@ NOTE: this module is private. All functions and objects are available in the mai
 
 """
 
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Optional
 
 import pandas as pd
 import seaborn as sns
-from attrs import define
 
 from .base import Plotter
 
@@ -23,7 +23,7 @@ if TYPE_CHECKING:
 __all__ = ["CorrMap"]
 
 
-@define
+@dataclass(slots=True)
 class CorrMap(Plotter):
     """
     A plotter class that creates a correlation heatmap.

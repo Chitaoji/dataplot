@@ -6,10 +6,10 @@ NOTE: this module is private. All functions and objects are available in the mai
 
 """
 
+from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 import numpy as np
-from attrs import define
 from scipy import stats
 
 from ..plotter import PlotSettable
@@ -26,7 +26,7 @@ if TYPE_CHECKING:
 __all__ = ["QQPlot"]
 
 
-@define
+@dataclass(slots=True)
 class QQPlot(Plotter):
     """
     A plotter class that creates a Q-Q plot.
