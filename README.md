@@ -31,6 +31,7 @@ This project falls under the BSD 3-Clause License.
 ### v0.1.3
 * New method `PlotDataSet.signedpow()`.
 * Renamed `PlotDataSet.signlog()` to `PlotDataSet.signedlog()`.
+* Used *dataclasses* instead of *attrs* for a faster import.
 
 ### v0.1.2
 * New methods `PlotDataSet.corrmap()`, `PlotDataSet.ppplot()`, and `PlotDataSet.resample()`.
