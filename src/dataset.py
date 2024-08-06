@@ -189,8 +189,8 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             new_data = func(self.data, other.data)
         else:
             raise ValueError(
-                f"binary operation between PlotDataSet and {type(other)} is not "
-                "supoorted, try float, int, or PlotDataSet"
+                f"{sign!r} not supported between instances of 'PlotDataSet' and "
+                f"{other.__class__.__name__!r}"
             )
         return self.__create(new_fmt, new_data, priority=priority)
 
@@ -827,7 +827,7 @@ class PlotDataSets(MultiObject[PlotDataSet]):
             elif isinstance(a, PlotDataSet):
                 objs.append(a)
             else:
-                raise TypeError(f"unrecognized type: {type(a)}")
+                raise TypeError(f"invalid type: {a.__class__.__name__!r}")
         super().__init__(objs, attr_reducer=self.__dataset_attr_reducer)
 
     def __repr__(self) -> str:

@@ -74,8 +74,7 @@ class QQPlot(Plotter):
             q = get_quantile(x, p)
         else:
             raise TypeError(
-                "argument 'dist_or_sample' expected to be str, NDArray, "
-                f"or PlotDataSet, got {type(x)} instead"
+                f"'dist_or_sample' can not be instance of {x.__class__.__name__!r}"
             )
         return xlabel, p, q
 
@@ -94,3 +93,5 @@ class QQPlot(Plotter):
                 return stats.norm.ppf(p)
             case "expon":
                 return stats.expon.ppf(p)
+            case _:
+                raise ValueError(f"no such distribution: {dist!r}")

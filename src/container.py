@@ -55,8 +55,8 @@ class FigWrapper(PlotSettable):
             return self
         if self.entered:
             raise DoubleEnteredError(
-                f"can't enter a {self.__class__.__name__} for twice - please do "
-                "all the operations in one single context manager"
+                f"can't enter an instance of {self.__class__.__name__!r} for twice; "
+                "please do all the operations in one single context manager"
             )
 
         self.set_default(
