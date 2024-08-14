@@ -89,24 +89,22 @@ def _readme2doc(
     doc, rd = "", ""
     for i, s in enumerate(rsplit("\n## ", readme)):
         head = re.search(" .*\n", s).group()[1:-1]
-        if head not in {"Installation", "Requirements", "History"}:
-            doc += s
         if i == 0:
-            rd += re.sub("^\n# .*", f"\n# {name}", s)
+            s = re.sub("^\n# .*", f"\n# {name}", s)
         elif head == "Requirements":
-            rd += re.sub(
+            s = re.sub(
                 "```txt.*```",
                 "```txt\n" + "\n".join(requires) + "\n```",
                 s,
                 flags=re.DOTALL,
             )
         elif head == "Installation":
-            rd += re.sub(
+            s = re.sub(
                 "```sh.*```", f"```sh\n$ pip install {name}\n```", s, flags=re.DOTALL
             )
         elif head == "See Also":
             pypipage = f"https://pypi.org/project/{name}/"
-            rd += re.sub(
+            s = re.sub(
                 "### PyPI project\n.*",
                 f"### PyPI project\n* {pypipage}",
                 re.sub(
@@ -116,10 +114,11 @@ def _readme2doc(
                 ),
             )
         elif head == "License":
-            rd += f"\n## License\nThis project falls under the {pkg_license}.\n"
+            s = f"\n## License\nThis project falls under the {pkg_license}.\n"
 
-        else:
-            rd += s
+        rd += s
+        if head not in {"Installation", "Requirements", "History"}:
+            doc += s
     doc = re.sub("<!--html-->.*<!--/html-->", "", doc, flags=re.DOTALL)
     return word_wrap(doc, maximum=88) + "\n\n", rd
 
@@ -162,9 +161,10 @@ if __name__ == "__main__":
         python_requires=REQUIRES_PYTHON,
         url=HOMEPAGE,
         packages=[
-            x.replace(PACKAGE_DIR, NAME) for x in find_packages(exclude=["examples"])
+            x.replace(PACKAGE_DIR, NAME.replace("-", "_"))
+            for x in find_packages(exclude=["examples"])
         ],
-        package_dir={NAME: PACKAGE_DIR},
+        package_dir={NAME.replace("-", "_"): PACKAGE_DIR},
         install_requires=REQUIRES,
         extras_require=EXTRAS,
         include_package_data=True,
@@ -175,9 +175,6 @@ if __name__ == "__main__":
             "License :: OSI Approved :: BSD License",
             "Programming Language :: Python",
             "Programming Language :: Python :: 3",
-            "Programming Language :: Python :: 3.8",
-            "Programming Language :: Python :: 3.9",
-            "Programming Language :: Python :: 3.10",
             "Programming Language :: Python :: 3.11",
             "Programming Language :: Python :: 3.12",
         ],
