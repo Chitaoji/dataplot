@@ -25,7 +25,14 @@ import pandas as pd
 
 from .artist import Artist, CorrMap, Histogram, KSPlot, LineChart, PPPlot, QQPlot
 from .plotter import PlotSettable, PlotSettings
-from .utils.multi import MULITEM, REMAIN, MultiObject, multi, multipartial, single
+from .utils.multi import (
+    REMAIN,
+    UNSUBSCRIPTABLE,
+    MultiObject,
+    multi,
+    multipartial,
+    single,
+)
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
@@ -122,7 +129,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         return f"{self.formatted_label()}{': 'if not_none else ''}{not_none}"
 
     def __getitem__(self, __key: int) -> Self | Any:
-        return MULITEM
+        return UNSUBSCRIPTABLE
 
     def __neg__(self) -> Self:
         new_fmt = f"(-{self.__auto_remove_brackets(self.fmt_, priority=28)})"

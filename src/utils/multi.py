@@ -30,7 +30,7 @@ __all__ = [
     "single",
     "multiple",
     "REMAIN",
-    "MULITEM",
+    "UNSUBSCRIPTABLE",
 ]
 
 
@@ -97,9 +97,7 @@ class MultiObject(Generic[T]):
         attrs = [getattr(x, __name) for x in self.__items]
         if self.__attr_reducer:
             reduced = self.__attr_reducer(__name)(attrs)
-            if reduced == REMAIN:
-                pass
-            else:
+            if reduced != REMAIN:
                 return reduced
         return MultiObject(attrs)
 
@@ -122,15 +120,13 @@ class MultiObject(Generic[T]):
             returns.append(r := obj(*a, **kwd))
         if self.__call_reducer:
             reduced = self.__call_reducer(returns)
-            if reduced == REMAIN:
-                pass
-            else:
+            if reduced != REMAIN:
                 return reduced
         return MultiObject(returns, call_reflex=self.__call_reflex)
 
     def __getitem__(self, __key: Any) -> T | "MultiObject":
         items = [x[__key] for x in self.__items]
-        if isinstance(__key, int) and MULITEM in items:
+        if isinstance(__key, int) and UNSUBSCRIPTABLE in items:
             return self.__items[__key]
         return MultiObject(items)
 
@@ -200,7 +196,9 @@ class MultiFlag(Generic[S]):
 
 
 REMAIN = MultiFlag(0, "REMAIN")
-MULITEM = MultiFlag(1, "MULITEM", TypeError, "object is not subscriptable")
+UNSUBSCRIPTABLE = MultiFlag(
+    1, "UNSUBSCRIPTABLE", TypeError, "object is not subscriptable"
+)
 
 if TYPE_CHECKING:
 
