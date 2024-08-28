@@ -197,7 +197,7 @@ class MultiFlag(Generic[S]):
 
 REMAIN = MultiFlag(0, "REMAIN")
 UNSUBSCRIPTABLE = MultiFlag(
-    1, "UNSUBSCRIPTABLE", TypeError, "object is not subscriptable"
+    -1, "UNSUBSCRIPTABLE", TypeError, "object is not subscriptable"
 )
 
 if TYPE_CHECKING:

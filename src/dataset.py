@@ -879,4 +879,6 @@ class PlotDataSets(MultiObject[PlotDataSet]):
     def __join_if_dataset(cls, x: list) -> Any:
         if x and isinstance(x[0], PlotDataSet):
             return cls(*x)
+        if all(i is None for i in x):
+            return None
         return REMAIN
