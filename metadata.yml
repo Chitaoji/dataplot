@@ -13,4 +13,5 @@ REQUIRES:
     - numpy
     - pandas
     - scipy
+    - seaborn
 EXTRAS: {}

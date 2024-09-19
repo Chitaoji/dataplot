@@ -314,6 +314,20 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         new_data = np.log(np.where(self.data > 0, self.data, np.nan))
         return self.__create(new_fmt, new_data)
 
+    def log10(self) -> Self:
+        """
+        Perform a log operation on the data (with base 10).
+
+        Returns
+        -------
+        Self
+            A new instance of self.__class__.
+
+        """
+        new_fmt = f"log10({self.fmt})"
+        new_data = np.log(np.where(self.data > 0, self.data, np.nan)) / np.log(10)
+        return self.__create(new_fmt, new_data)
+
     def signedlog(self) -> Self:
         """
         Perform a log operation on the data, but keep the sign.
