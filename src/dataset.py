@@ -649,7 +649,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
     def plot(
         self,
-        ticks: Optional["NDArray | PlotDataSet"] = None,
+        xticks: Optional["NDArray | PlotDataSet"] = None,
         fmt: str = "",
         scatter: bool = False,
         *,
@@ -661,7 +661,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
         Parameters
         ----------
-        ticks : NDArray | PlotDataSet, optional
+        xticks : NDArray | PlotDataSet, optional
             Specifies the x-ticks for the line chart. If not provided, the x-ticks will
             be set to `range(len(data))`. By default None.
         fmt : str, optional
