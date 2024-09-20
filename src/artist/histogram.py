@@ -32,7 +32,6 @@ class Histogram(Plotter):
     density: bool
     same_bin: bool
     stats: bool
-    only: bool
 
     def paint(
         self,
@@ -42,7 +41,7 @@ class Histogram(Plotter):
     ) -> list[float]:
         ax.set_default(
             title="Histogram",
-            alpha=0.5 + 0.5 * self.only,
+            alpha=0.8,
             xlabel="value",
             ylabel="density" if self.density else "count",
         )

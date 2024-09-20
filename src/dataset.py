@@ -645,7 +645,6 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             An instance of Artist.
 
         """
-        locals().update(only=self.__class__ is PlotDataSet)
         return self._get_artist(Histogram, locals())
 
     def plot(
