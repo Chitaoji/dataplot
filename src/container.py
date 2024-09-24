@@ -106,7 +106,7 @@ class FigWrapper(PlotSettable):
             Title of figure.
         dpi : float, optional
             Sets the resolution of figure in dots-per-inch.
-        style : StyleStr, optional
+        style : StyleName, optional
             A style specification.
         figsize : tuple[int, int], optional
             Figure size, this takes a tuple of two integers that specifies the
@@ -163,7 +163,7 @@ class AxesWrapper(PlotSettable):
             Controls the transparency of the grid.
         fontdict : FontDict, optional
             A dictionary controlling the appearance of the title text.
-        legend_loc : LegendLocStr, optional
+        legend_loc : LegendLoc, optional
             Location of the legend.
 
         """

@@ -30,6 +30,7 @@ class Histogram(Plotter):
     bins: int | list[float]
     fit: bool
     density: bool
+    log: bool
     same_bin: bool
     stats: bool
 
@@ -39,11 +40,14 @@ class Histogram(Plotter):
         reflex: Optional[list[float]] = None,
         __multi_last_call__: bool = False,
     ) -> list[float]:
+        ylabel = "density" if self.density else "count"
+        if self.log:
+            ylabel = f"log({ylabel})"
         ax.set_default(
             title="Histogram",
             alpha=0.8,
             xlabel="value",
-            ylabel="density" if self.density else "count",
+            ylabel=ylabel,
         )
         ax.loading(self.settings)
         ds, b = self.__hist(
@@ -60,6 +64,7 @@ class Histogram(Plotter):
             self.data,
             bins=bins,
             density=self.density,
+            log=self.log,
             alpha=ax.settings.alpha,
             label=self.label,
         )

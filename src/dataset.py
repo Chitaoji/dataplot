@@ -37,7 +37,7 @@ from .utils.multi import (
 if TYPE_CHECKING:
     from numpy.typing import NDArray
 
-    from ._typing import DistStr, ResampleRule, SettingDict
+    from ._typing import DistName, ResampleRule, SettingDict
     from .artist import Plotter
     from .container import AxesWrapper
 
@@ -325,7 +325,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
         """
         new_fmt = f"log10({self.fmt})"
-        new_data = np.log(np.where(self.data > 0, self.data, np.nan)) / np.log(10)
+        new_data = np.log10(np.where(self.data > 0, self.data, np.nan))
         return self.__create(new_fmt, new_data)
 
     def signedlog(self) -> Self:
@@ -562,14 +562,14 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             Determines whether to show the grids or not.
         grid_alpha : float, optional
             Controls the transparency of the grid.
-        style : StyleStr, optional
+        style : StyleName, optional
             A style specification.
         figsize : tuple[int, int], optional
             Figure size, this takes a tuple of two integers that specifies the
             width and height of the figure in inches.
         fontdict : FontDict, optional
             A dictionary controlling the appearance of the title text.
-        legend_loc : LegendLocStr, optional
+        legend_loc : LegendLoc, optional
             Location of the legend.
 
         Returns
@@ -608,6 +608,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         bins: int | list[float] = 100,
         fit: bool = True,
         density: bool = True,
+        log: bool = False,
         same_bin: bool = True,
         stats: bool = True,
         *,
@@ -628,6 +629,9 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             Determines whether to draw a probability density. If True, the histogram
             will be normalized such that the area under it equals to 1. By default
             True.
+        log : bool, optional
+            Determines whether to set the histogram axis to a log scale, by default
+            False.
         same_bin : bool, optional
             Determines whether the bins should be the same for all sets of data, by
             default True.
@@ -684,7 +688,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
     def qqplot(
         self,
-        dist_or_sample: "DistStr | NDArray | PlotDataSet" = "normal",
+        dist_or_sample: "DistName | NDArray | PlotDataSet" = "normal",
         dots: int = 30,
         edge_precision: float = 1e-2,
         fmt: str = "o",
@@ -696,7 +700,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
         Parameters
         ----------
-        dist_or_sample : DistStr | NDArray | PlotDataSet, optional
+        dist_or_sample : DistName | NDArray | PlotDataSet, optional
             Specifies the distribution to compare with. If str, specifies a
             theoretical distribution; if NDArray or PlotDataSet, specifies
             another real sample. By default 'normal'.
@@ -722,7 +726,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
     def ppplot(
         self,
-        dist_or_sample: "DistStr | NDArray | PlotDataSet" = "normal",
+        dist_or_sample: "DistName | NDArray | PlotDataSet" = "normal",
         dots: int = 30,
         edge_precision: float = 1e-6,
         fmt: str = "o",
@@ -734,7 +738,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
         Parameters
         ----------
-        dist_or_sample : DistStr | NDArray | PlotDataSet, optional
+        dist_or_sample : DistName | NDArray | PlotDataSet, optional
             Specifies the distribution to compare with. If str, specifies a
             theoretical distribution; if NDArray or PlotDataSet, specifies
             another real sample. By default 'normal'.
@@ -760,7 +764,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
     def ksplot(
         self,
-        dist_or_sample: "DistStr | NDArray | PlotDataSet" = "normal",
+        dist_or_sample: "DistName | NDArray | PlotDataSet" = "normal",
         dots: int = 1000,
         edge_precision: float = 1e-6,
         fmt: str = "",
@@ -772,7 +776,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
         Parameters
         ----------
-        dist_or_sample : DistStr | NDArray | PlotDataSet, optional
+        dist_or_sample : DistName | NDArray | PlotDataSet, optional
             Specifies the distribution to compare with. If str, specifies a
             theoretical distribution; if NDArray or PlotDataSet, specifies
             another real sample. By default 'normal'.

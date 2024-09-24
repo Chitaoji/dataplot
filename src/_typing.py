@@ -19,7 +19,7 @@ logging.warning(
 
 PlotSettableVar = TypeVar("PlotSettableVar", bound="PlotSettable")
 DefaultVar = TypeVar("DefaultVar")
-StyleStr = Literal[
+StyleName = Literal[
     "Solarize_Light2",
     "_classic_test_patch",
     "_mpl-gallery",
@@ -49,7 +49,7 @@ StyleStr = Literal[
     "seaborn-v0_8-whitegrid",
     "tableau-colorblind10",
 ]
-LegendLocStr = Literal[
+LegendLoc = Literal[
     "best",
     "upper right",
     "upper left",
@@ -62,10 +62,10 @@ LegendLocStr = Literal[
     "upper center",
     "center",
 ]
-FontSizeStr = Literal[
+FontSize = Literal[
     "xx-small", "x-small", "small", "medium", "large", "x-large", "xx-large"
 ]
-FontWeightStr = Literal[
+FontWeight = Literal[
     "ultralight",
     "light",
     "normal",
@@ -81,13 +81,14 @@ FontWeightStr = Literal[
     "extra bold",
     "black",
 ]
-FontStyleStr = Literal["normal", "italic", "oblique"]
-ColorStr = (
+FontStyleName = Literal["normal", "italic", "oblique"]
+ColorId = (
     Literal["b", "g", "r", "c", "m", "y", "k", "w"]
     | Literal["C0", "C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9"]
 )
-VerticalAlignmentStr = Literal["baseline", "bottom", "center", "center_baseline", "top"]
-HorizontalAlignmentStr = Literal["left", "center", "right"]
+VerticalAlignment = Literal["baseline", "bottom", "center", "center_baseline", "top"]
+HorizontalAlignment = Literal["left", "center", "right"]
+DistName = Literal["normal", "expon"]
 SettingKey = Literal[
     "title",
     "xlabel",
@@ -102,7 +103,6 @@ SettingKey = Literal[
     "legend_loc",
     "subplots_adjust",
 ]
-DistStr = Literal["normal", "expon"]
 ResampleRule = Literal["head", "tail", "random"]
 
 
@@ -119,7 +119,7 @@ class SettingDict(TypedDict):
     dpi: NotRequired[Optional[float]]
     grid: NotRequired[Optional[bool]]
     grid_alpha: NotRequired[Optional[float]]
-    style: NotRequired[Optional[StyleStr]]
+    style: NotRequired[Optional[StyleName]]
     figsize: NotRequired[Optional[tuple[int, int]]]
     fontdict: NotRequired[Optional["FontDict"]]
     legend_loc: NotRequired[Optional[str]]
@@ -134,7 +134,7 @@ class FigureSettingDict(TypedDict):
 
     title: NotRequired[Optional[str]]
     dpi: NotRequired[Optional[float]]
-    style: NotRequired[Optional[StyleStr]]
+    style: NotRequired[Optional[StyleName]]
     figsize: NotRequired[Optional[tuple[int, int]]]
     fontdict: NotRequired[Optional["FontDict"]]
     subplots_adjust: NotRequired[Optional["SubplotDict"]]
@@ -153,7 +153,7 @@ class AxesSettingDict(TypedDict):
     grid: NotRequired[Optional[bool]]
     grid_alpha: NotRequired[Optional[float]]
     fontdict: NotRequired[Optional["FontDict"]]
-    legend_loc: NotRequired[Optional[str]]
+    legend_loc: NotRequired[Optional[LegendLoc]]
 
 
 class FontDict(TypedDict):
@@ -180,12 +180,12 @@ class FontDict(TypedDict):
 
     """
 
-    fontsize: NotRequired[float | FontSizeStr]
-    fontweight: NotRequired[float | FontWeightStr]
-    fontstyle: NotRequired[FontStyleStr]
-    color: NotRequired[ColorStr]
-    verticalalignment: NotRequired[VerticalAlignmentStr]
-    horizontalalignment: NotRequired[HorizontalAlignmentStr]
+    fontsize: NotRequired[float | FontSize]
+    fontweight: NotRequired[float | FontWeight]
+    fontstyle: NotRequired[FontStyleName]
+    color: NotRequired[ColorId]
+    verticalalignment: NotRequired[VerticalAlignment]
+    horizontalalignment: NotRequired[HorizontalAlignment]
 
 
 class SubplotDict(TypedDict):

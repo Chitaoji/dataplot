@@ -19,7 +19,7 @@ from .base import Plotter
 if TYPE_CHECKING:
     from numpy.typing import NDArray
 
-    from .._typing import DistStr
+    from .._typing import DistName
     from ..container import AxesWrapper
     from ..dataset import PlotDataSet
 
@@ -33,7 +33,7 @@ class QQPlot(Plotter):
 
     """
 
-    dist_or_sample: "DistStr | NDArray | PlotDataSet"
+    dist_or_sample: "DistName | NDArray | PlotDataSet"
     dots: int
     edge_precision: float
     fmt: str

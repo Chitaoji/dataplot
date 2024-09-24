@@ -16,7 +16,7 @@ if TYPE_CHECKING:
         PlotSettableVar,
         SettingDict,
         SettingKey,
-        StyleStr,
+        StyleName,
         SubplotDict,
     )
 
@@ -35,7 +35,7 @@ class PlotSettings:
     dpi: Optional[float] = None
     grid: Optional[bool] = None
     grid_alpha: Optional[float] = None
-    style: Optional["StyleStr"] = None
+    style: Optional["StyleName"] = None
     figsize: Optional[tuple[int, int]] = None
     fontdict: Optional["FontDict"] = None
     legend_loc: Optional[str] = None
