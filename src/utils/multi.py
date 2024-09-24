@@ -233,7 +233,7 @@ def multipartial(**kwargs) -> Callable[[list | str], Any]:
     return multi_constructor
 
 
-def single(x: S, n: int = -1) -> S:
+def single(x: T, n: int = -1) -> T:
     """
     If a MultiObject is provided, return its n-th element, otherwise return
     the input itself.
@@ -255,7 +255,7 @@ def single(x: S, n: int = -1) -> S:
     return x.__multiobjects__[n] if isinstance(x, MultiObject) else x
 
 
-def multiple(x: S) -> list[S]:
+def multiple(x: T) -> list[T]:
     """
     If a MultiObject is provided, return a list of its elements, otherwise
     return `[x]`.
