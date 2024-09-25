@@ -28,6 +28,10 @@ scipy
 This project falls under the BSD 3-Clause License.
 
 ## History
+### v0.1.4
+* Allowed users to set the plot-settings by kwargs in artist methods like `PlotDataSet.hist()`, `PlotDataSet.plot()`, etc.
+* New method `PlotDataSet.undo_all()`.
+
 ### v0.1.3
 * New method `PlotDataSet.signedpow()`.
 * Renamed `PlotDataSet.signlog()` to `PlotDataSet.signedlog()`.
