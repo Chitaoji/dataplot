@@ -8,13 +8,13 @@ $ pip install dataplot
 
 ## Requirements
 ```txt
-attrs
-hintwith
+hintwith>=0.1.3
 lazyr>=0.0.16
 matplotlib
 numpy
 pandas
 scipy
+seaborn
 ```
 
 ## See Also

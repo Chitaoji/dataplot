@@ -1,6 +1,6 @@
 """
 # dataplot
-Provides plotters useful in datascience.
+Provides plotting tools useful in datascience.
 
 ## See Also
 ### Github repository
