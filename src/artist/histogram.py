@@ -40,14 +40,11 @@ class Histogram(Plotter):
         reflex: Optional[list[float]] = None,
         __multi_last_call__: bool = False,
     ) -> list[float]:
-        ylabel = "density" if self.density else "count"
-        if self.log:
-            ylabel = f"log({ylabel})"
         ax.set_default(
             title="Histogram",
             alpha=0.8,
             xlabel="value",
-            ylabel=ylabel,
+            ylabel="density" if self.density else "count",
         )
         ax.load(self.settings)
         ds, b = self.__hist(

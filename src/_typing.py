@@ -123,6 +123,7 @@ class SettingDict(TypedDict):
     figsize: NotRequired[Optional[tuple[int, int]]]
     fontdict: NotRequired[Optional["FontDict"]]
     legend_loc: NotRequired[Optional[str]]
+    format_label: NotRequired[Optional[bool]]
     subplots_adjust: NotRequired[Optional["SubplotDict"]]
 
 

@@ -490,7 +490,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         self.data = self.original_data
 
     def set_label(
-        self, label: Optional[str] = None, reset_format: bool = False, /, **kwargs: str
+        self, label: Optional[str] = None, reset_format: bool = True, /, **kwargs: str
     ) -> Self:
         """
         Set the labels.
@@ -500,8 +500,8 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         label : str, optional
             The new label (if specified), by default None.
         reset_format : bool, optional
-            Determines whether to reset the format of the label (which shows the
-            operations done on the data), by default False.
+            Determines whether to reset the format of the label (which shows
+            the operations done on the data), by default True.
         **kwargs : str
             Works as a mapper to find the new label. If `self.label` is in
             `kwargs`, the label will be set to `kwargs[self.label]`.
@@ -569,6 +569,9 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             A dictionary controlling the appearance of the title text.
         legend_loc : LegendLoc, optional
             Location of the legend.
+        format_label : bool, optional
+            Determines whether to format the label (to show the operations done
+            on the data).
 
         Returns
         -------
@@ -847,9 +850,11 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         params: dict[str, Any] = {}
         for key in cls.__init__.__code__.co_varnames[1:]:
             params[key] = local[key]
-        plotter = self.customize(
-            cls, data=self.data, label=self.formatted_label(), **params
-        )
+        if "format_label" in local["kwargs"] and not local["kwargs"]["format_label"]:
+            label = self.label
+        else:
+            label = self.formatted_label()
+        plotter = self.customize(cls, data=self.data, label=label, **params)
         if local["kwargs"]:
             plotter.load(local["kwargs"])
         artist = single(self.customize)(Artist, plotter=plotter)
