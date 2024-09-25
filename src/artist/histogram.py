@@ -6,10 +6,10 @@ NOTE: this module is private. All functions and objects are available in the mai
 
 """
 
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Optional
 
 import numpy as np
-from attrs import define
 from scipy import stats
 
 from .base import Plotter
@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 __all__ = ["Histogram"]
 
 
-@define
+@dataclass(slots=True)
 class Histogram(Plotter):
     """
     A plotter class that creates a histogram.
@@ -30,9 +30,9 @@ class Histogram(Plotter):
     bins: int | list[float]
     fit: bool
     density: bool
+    log: bool
     same_bin: bool
     stats: bool
-    only: bool
 
     def paint(
         self,
@@ -42,11 +42,11 @@ class Histogram(Plotter):
     ) -> list[float]:
         ax.set_default(
             title="Histogram",
-            alpha=0.5 + 0.5 * self.only,
+            alpha=0.8,
             xlabel="value",
             ylabel="density" if self.density else "count",
         )
-        ax.loading(self.settings)
+        ax.load(self.settings)
         ds, b = self.__hist(
             ax, bins=self.bins if (reflex is None or not self.same_bin) else reflex
         )
@@ -61,6 +61,7 @@ class Histogram(Plotter):
             self.data,
             bins=bins,
             density=self.density,
+            log=self.log,
             alpha=ax.settings.alpha,
             label=self.label,
         )

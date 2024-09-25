@@ -6,9 +6,8 @@ NOTE: this module is private. All functions and objects are available in the mai
 
 """
 
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Optional
-
-from attrs import define
 
 from ..plotter import PlotSettable
 from .base import Plotter
@@ -22,14 +21,14 @@ if TYPE_CHECKING:
 __all__ = ["LineChart"]
 
 
-@define
+@dataclass(slots=True)
 class LineChart(Plotter):
     """
     A plotter class that creates a line chart.
 
     """
 
-    ticks: Optional["NDArray | PlotDataSet"]
+    xticks: Optional["NDArray | PlotDataSet"]
     fmt: str
     scatter: bool
 
@@ -37,24 +36,24 @@ class LineChart(Plotter):
         self, ax: "AxesWrapper", reflex: None = None, __multi_last_call__: bool = False
     ) -> None:
         ax.set_default(title="Line Chart")
-        ax.loading(self.settings)
+        ax.load(self.settings)
         self.__plot(ax)
         return reflex
 
     def __plot(self, ax: "AxesWrapper") -> None:
-        if isinstance(self.ticks, PlotSettable):
-            ticks = self.ticks.data
+        if isinstance(self.xticks, PlotSettable):
+            xticks = self.xticks.data
         else:
-            ticks = self.ticks
-        if ticks is None:
-            ticks = range(len(self.data))
+            xticks = self.xticks
+        if xticks is None:
+            xticks = range(len(self.data))
             ax.ax.plot(self.data, self.fmt, label=self.label)
-        elif (len_t := len(ticks)) == (len_d := len(self.data)):
-            ax.ax.plot(ticks, self.data, self.fmt, label=self.label)
+        elif (len_t := len(xticks)) == (len_d := len(self.data)):
+            ax.ax.plot(xticks, self.data, self.fmt, label=self.label)
         else:
             raise ValueError(
-                "ticks and data must have the same length, but have "
+                "x-ticks and data must have the same length, but have "
                 f"lengths {len_t} and {len_d}"
             )
         if self.scatter:
-            ax.ax.scatter(ticks, self.data, zorder=2.0)
+            ax.ax.scatter(xticks, self.data, zorder=2.0)

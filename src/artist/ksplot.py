@@ -6,9 +6,8 @@ NOTE: this module is private. All functions and objects are available in the mai
 
 """
 
+from dataclasses import dataclass
 from typing import TYPE_CHECKING
-
-from attrs import define
 
 from ..utils.math import get_quantile
 from .qqplot import QQPlot
@@ -20,7 +19,7 @@ if TYPE_CHECKING:
 __all__ = ["KSPlot"]
 
 
-@define
+@dataclass(slots=True)
 class KSPlot(QQPlot):
     """
     A plotter class that creates a K-S plot.
@@ -35,7 +34,7 @@ class KSPlot(QQPlot):
             xlabel="value",
             ylabel="cummulative probability",
         )
-        ax.loading(self.settings)
+        ax.load(self.settings)
         self.__plot(ax)
         return reflex
 

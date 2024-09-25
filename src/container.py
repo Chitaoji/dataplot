@@ -7,11 +7,11 @@ NOTE: this module is private. All functions and objects are available in the mai
 """
 
 import logging
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Self, Unpack
 
 import matplotlib.pyplot as plt
 import numpy as np
-from attrs import define, field
 
 from .plotter import PlotSettable
 
@@ -24,7 +24,7 @@ if TYPE_CHECKING:
 __all__ = ["FigWrapper", "AxesWrapper"]
 
 
-@define
+@dataclass(slots=True)
 class FigWrapper(PlotSettable):
     """
     A wrapper of figure.
@@ -55,8 +55,8 @@ class FigWrapper(PlotSettable):
             return self
         if self.entered:
             raise DoubleEnteredError(
-                f"can't enter a {self.__class__.__name__} for twice - please do "
-                "all the operations in one single context manager"
+                f"can't enter an instance of {self.__class__.__name__!r} for twice; "
+                "please do all the operations in one single context manager"
             )
 
         self.set_default(
@@ -106,7 +106,7 @@ class FigWrapper(PlotSettable):
             Title of figure.
         dpi : float, optional
             Sets the resolution of figure in dots-per-inch.
-        style : StyleStr, optional
+        style : StyleName, optional
             A style specification.
         figsize : tuple[int, int], optional
             Figure size, this takes a tuple of two integers that specifies the
@@ -129,7 +129,7 @@ class FigWrapper(PlotSettable):
             )
 
 
-@define
+@dataclass(slots=True)
 class AxesWrapper(PlotSettable):
     """
     Serves as a wrapper for creating and customizing axes in matplotlib.
@@ -163,7 +163,7 @@ class AxesWrapper(PlotSettable):
             Controls the transparency of the grid.
         fontdict : FontDict, optional
             A dictionary controlling the appearance of the title text.
-        legend_loc : LegendLocStr, optional
+        legend_loc : LegendLoc, optional
             Location of the legend.
 
         """

@@ -7,9 +7,8 @@ NOTE: this module is private. All functions and objects are available in the mai
 """
 
 from collections import Counter
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Optional
-
-from attrs import define, field
 
 from ..container import FigWrapper
 from ..plotter import PlotSettable
@@ -23,7 +22,7 @@ if TYPE_CHECKING:
 __all__ = ["Artist", "Plotter"]
 
 
-@define
+@dataclass(slots=True)
 class Artist(PlotSettable):
     """
     Paint the desired images on an axes.
@@ -57,7 +56,7 @@ class Artist(PlotSettable):
             self.plotter.paint(fig.axes[0] if active else ax)
 
 
-@define(init=False, slots=False)
+@dataclass(slots=True, init=False)
 class Plotter(PlotSettable):
     """
     Painting tool used by Artist - user can ignore this.

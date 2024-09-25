@@ -3,6 +3,7 @@ The core of multi: multi(), multipartial(), etc.
 
 """
 
+from dataclasses import dataclass
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -12,10 +13,7 @@ from typing import (
     LiteralString,
     Optional,
     TypeVar,
-    overload,
 )
-
-from attrs import define
 
 if TYPE_CHECKING:
     from hintwith import hintwith
@@ -31,7 +29,7 @@ __all__ = [
     "single",
     "multiple",
     "REMAIN",
-    "MULITEM",
+    "UNSUBSCRIPTABLE",
 ]
 
 
@@ -98,9 +96,7 @@ class MultiObject(Generic[T]):
         attrs = [getattr(x, __name) for x in self.__items]
         if self.__attr_reducer:
             reduced = self.__attr_reducer(__name)(attrs)
-            if reduced == REMAIN:
-                pass
-            else:
+            if reduced != REMAIN:
                 return reduced
         return MultiObject(attrs)
 
@@ -123,15 +119,13 @@ class MultiObject(Generic[T]):
             returns.append(r := obj(*a, **kwd))
         if self.__call_reducer:
             reduced = self.__call_reducer(returns)
-            if reduced == REMAIN:
-                pass
-            else:
+            if reduced != REMAIN:
                 return reduced
         return MultiObject(returns, call_reflex=self.__call_reflex)
 
     def __getitem__(self, __key: Any) -> T | "MultiObject":
         items = [x[__key] for x in self.__items]
-        if isinstance(__key, int) and MULITEM in items:
+        if isinstance(__key, int) and UNSUBSCRIPTABLE in items:
             return self.__items[__key]
         return MultiObject(items)
 
@@ -180,7 +174,7 @@ def repr_not_none(x: MultiObject) -> str:
     return "" if len(not_nones) == 0 else "(" + ", ".join(not_nones) + ")"
 
 
-@define
+@dataclass(slots=True)
 class MultiFlag(Generic[S]):
     """Flag for MultiObjects."""
 
@@ -201,7 +195,9 @@ class MultiFlag(Generic[S]):
 
 
 REMAIN = MultiFlag(0, "REMAIN")
-MULITEM = MultiFlag(1, "MULITEM", TypeError, "object is not subscriptable")
+UNSUBSCRIPTABLE = MultiFlag(
+    -1, "UNSUBSCRIPTABLE", TypeError, "object is not subscriptable"
+)
 
 if TYPE_CHECKING:
 
@@ -216,27 +212,25 @@ else:
         return MultiObject(*args, **kwargs)
 
 
-def multipartial(**kwargs) -> Callable[[list | str], Any]:
+def multipartial(**kwargs) -> Callable[[list], MultiObject]:
     """
     Returns a MultiObject constructor with partial application of the
     given arguments and keywords.
 
     Returns
     -------
-    Callable[[list | str], Any]
+    Callable[[list], MultiObject]
         A MultiObject constructor.
 
     """
 
-    def multi_constructor(x: list | str):
-        if isinstance(x, str):
-            return multi_constructor
+    def multi_constructor(x: list):
         return MultiObject(x, **kwargs)
 
     return multi_constructor
 
 
-def single(x: S, n: int = -1) -> S:
+def single(x: T, n: int = -1) -> T:
     """
     If a MultiObject is provided, return its n-th element, otherwise return
     the input itself.
@@ -258,7 +252,7 @@ def single(x: S, n: int = -1) -> S:
     return x.__multiobjects__[n] if isinstance(x, MultiObject) else x
 
 
-def multiple(x: S) -> list[S]:
+def multiple(x: T) -> list[T]:
     """
     If a MultiObject is provided, return a list of its elements, otherwise
     return `[x]`.
@@ -277,28 +271,22 @@ def multiple(x: S) -> list[S]:
     return x.__multiobjects__ if isinstance(x, MultiObject) else [x]
 
 
-@overload
-def cleaner(x: list) -> list | None: ...
-@overload
-def cleaner(x: str) -> Callable[[list], list | None]: ...
-def cleaner(x: list | str) -> list | None:
+def cleaner(x: list) -> MultiObject | None:
     """
     If the list is consist of None's only, return None, otherwise return
     a MultiObject instantiated by the list.
 
     Parameters
     ----------
-    x : list | str
-        May be a list.
+    x : list
+        List of objects.
 
     Returns
     -------
-    Any
-        May be None or a MultiObject instantiated by the list.
+    MultiObject | None
+        May be a MultiObject instantiated by the list or None.
 
     """
-    if isinstance(x, str):
-        return cleaner
     if all(i is None for i in x):
         return None
-    return MultiObject(x, call_reducer=cleaner, attr_reducer=cleaner)
+    return MultiObject(x, call_reducer=cleaner, attr_reducer=lambda x: cleaner)

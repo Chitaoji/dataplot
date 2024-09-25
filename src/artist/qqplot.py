@@ -6,10 +6,10 @@ NOTE: this module is private. All functions and objects are available in the mai
 
 """
 
+from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 import numpy as np
-from attrs import define
 from scipy import stats
 
 from ..plotter import PlotSettable
@@ -19,21 +19,21 @@ from .base import Plotter
 if TYPE_CHECKING:
     from numpy.typing import NDArray
 
-    from .._typing import DistStr
+    from .._typing import DistName
     from ..container import AxesWrapper
     from ..dataset import PlotDataSet
 
 __all__ = ["QQPlot"]
 
 
-@define
+@dataclass(slots=True)
 class QQPlot(Plotter):
     """
     A plotter class that creates a Q-Q plot.
 
     """
 
-    dist_or_sample: "DistStr | NDArray | PlotDataSet"
+    dist_or_sample: "DistName | NDArray | PlotDataSet"
     dots: int
     edge_precision: float
     fmt: str
@@ -46,7 +46,7 @@ class QQPlot(Plotter):
             xlabel="quantiles",
             ylabel="quantiles",
         )
-        ax.loading(self.settings)
+        ax.load(self.settings)
         self.__plot(ax)
         return reflex
 
@@ -57,10 +57,10 @@ class QQPlot(Plotter):
         self._plot_fitted_line(ax, q1, q2)
 
     def _generate_dist(self) -> tuple[str, "NDArray", "NDArray"]:
-        if self.edge_precision < 0 or self.edge_precision >= 0.5:
+        if not 0 <= self.edge_precision < 0.5:
             raise ValueError(
-                "edge_precision should be on the interval [0, 0.5), got "
-                f"{self.edge_precision}"
+                "'edge_precision' should be on the interval [0, 0.5), got "
+                f"{self.edge_precision} instead"
             )
         p = np.linspace(self.edge_precision, 1 - self.edge_precision, self.dots)
         if isinstance(x := self.dist_or_sample, str):
@@ -74,8 +74,7 @@ class QQPlot(Plotter):
             q = get_quantile(x, p)
         else:
             raise TypeError(
-                "argument 'dist_or_sample' expected to be str, NDArray, "
-                f"or PlotDataSet, got {type(x)}"
+                f"'dist_or_sample' can not be instance of {x.__class__.__name__!r}"
             )
         return xlabel, p, q
 
@@ -94,3 +93,5 @@ class QQPlot(Plotter):
                 return stats.norm.ppf(p)
             case "expon":
                 return stats.expon.ppf(p)
+            case _:
+                raise ValueError(f"no such distribution: {dist!r}")

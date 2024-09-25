@@ -7,6 +7,7 @@ NOTE: this module is private. All functions and objects are available in the mai
 """
 
 from abc import ABCMeta
+from dataclasses import dataclass, field
 from functools import partial
 from typing import (
     TYPE_CHECKING,
@@ -21,16 +22,22 @@ from typing import (
 
 import numpy as np
 import pandas as pd
-from attrs import define, field
 
 from .artist import Artist, CorrMap, Histogram, KSPlot, LineChart, PPPlot, QQPlot
 from .plotter import PlotSettable, PlotSettings
-from .utils.multi import MULITEM, REMAIN, MultiObject, multi, multipartial, single
+from .utils.multi import (
+    REMAIN,
+    UNSUBSCRIPTABLE,
+    MultiObject,
+    multi,
+    multipartial,
+    single,
+)
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
 
-    from ._typing import DistStr, ResampleRule, SettingDict
+    from ._typing import DistName, ResampleRule, SettingDict
     from .artist import Plotter
     from .container import AxesWrapper
 
@@ -38,7 +45,7 @@ if TYPE_CHECKING:
 __all__ = ["PlotDataSet"]
 
 
-@define
+@dataclass(slots=True)
 class PlotDataSet(PlotSettable, metaclass=ABCMeta):
     """
     A dataset class providing methods for mathematical operations and plotting.
@@ -79,24 +86,26 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
     label: Optional[str] = field(default=None)
     fmt_: str = field(init=False, default="{0}")
     original_data: "NDArray" = field(init=False)
-    settings: PlotSettings = field(init=False, factory=PlotSettings)
+    settings: PlotSettings = field(init=False, default_factory=PlotSettings)
     priority: int = field(init=False, default=0)
 
     @classmethod
     def __subclasshook__(cls, __subclass: type) -> bool:
-        if issubclass(__subclass, PlotDataSets):
+        if __subclass is PlotDataSet or issubclass(__subclass, PlotDataSets):
             return True
-        return super().__subclasshook__(__subclass)
+        return False
 
-    def __attrs_post_init__(self) -> None:
+    def __post_init__(self) -> None:
         self.label = "x1" if self.label is None else self.label
         self.original_data = self.data
 
-    def __create(self, fmt: str, data: "NDArray", priority: int = 0) -> Self:
+    def __create(
+        self, fmt: str, data: "NDArray", priority: int = 0, label: Optional[str] = None
+    ) -> Self:
         obj = self.customize(
             self.__class__,
             self.original_data,
-            self.label,
+            self.label if label is None else label,
             fmt_=fmt,
             priority=priority,
         )
@@ -120,7 +129,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         return f"{self.formatted_label()}{': 'if not_none else ''}{not_none}"
 
     def __getitem__(self, __key: int) -> Self | Any:
-        return MULITEM
+        return UNSUBSCRIPTABLE
 
     def __neg__(self) -> Self:
         new_fmt = f"(-{self.__auto_remove_brackets(self.fmt_, priority=28)})"
@@ -187,8 +196,8 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             new_data = func(self.data, other.data)
         else:
             raise ValueError(
-                f"binary operation between PlotDataSet and {type(other)} is not "
-                "supoorted, try float, int, or PlotDataSet"
+                f"{sign!r} not supported between instances of 'PlotDataSet' and "
+                f"{other.__class__.__name__!r}"
             )
         return self.__create(new_fmt, new_data, priority=priority)
 
@@ -251,7 +260,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         Returns
         -------
         Self
-            A new instance of self.
+            A new instance of self.__class__.
 
         """
         return PlotDataSets(self, *others)
@@ -270,7 +279,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         Returns
         -------
         Self
-            A new instance of self.
+            A new instance of self.__class__.
 
         Raises
         ------
@@ -298,18 +307,32 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         Returns
         -------
         Self
-            A new instance of self.
+            A new instance of self.__class__.
 
         """
         new_fmt = f"log({self.fmt})"
         new_data = np.log(np.where(self.data > 0, self.data, np.nan))
         return self.__create(new_fmt, new_data)
 
-    def signlog(self) -> Self:
+    def log10(self) -> Self:
+        """
+        Perform a log operation on the data (with base 10).
+
+        Returns
+        -------
+        Self
+            A new instance of self.__class__.
+
+        """
+        new_fmt = f"log10({self.fmt})"
+        new_data = np.log10(np.where(self.data > 0, self.data, np.nan))
+        return self.__create(new_fmt, new_data)
+
+    def signedlog(self) -> Self:
         """
         Perform a log operation on the data, but keep the sign.
 
-        signlog(x) =
+        signedlog(x) =
 
         * log(x),   for x > 0;
         * 0,        for x = 0;
@@ -318,12 +341,34 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         Returns
         -------
         Self
-            A new instance of self.
+            A new instance of self.__class__.
 
         """
-        new_fmt = f"signlog({self.fmt})"
+        new_fmt = f"signedlog({self.fmt})"
         new_data = np.log(np.where(self.data > 0, self.data, np.nan))
         new_data[self.data < 0] = np.log(-self.data[self.data < 0])
+        new_data[self.data == 0] = 0
+        return self.__create(new_fmt, new_data)
+
+    def signedpow(self, n: float) -> Self:
+        """
+        Perform a power operation on the data, but keep the sign.
+
+        signedpow(x, n) =
+
+        * x**n,     for x > 0;
+        * 0,        for x = 0;
+        * -x**(-n)  for x < 0.
+
+        Returns
+        -------
+        Self
+            A new instance of self.__class__.
+
+        """
+        new_fmt = f"signedpow({self.fmt})"
+        new_data = np.where(self.data > 0, self.data, np.nan) ** n
+        new_data[self.data < 0] = -((-self.data[self.data < 0]) ** n)
         new_data[self.data == 0] = 0
         return self.__create(new_fmt, new_data)
 
@@ -340,7 +385,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         Returns
         -------
         Self
-            A new instance of self.
+            A new instance of self.__class__.
 
         """
         new_fmt = f"rolling({self.fmt}, {n})"
@@ -353,8 +398,8 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
         Returns
         -------
-        PlotData
-            A new instance of `PlotData`.
+        Self
+            A new instance of self.__class__.
 
         """
         new_fmt = f"exp({self.fmt})"
@@ -367,8 +412,8 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
         Returns
         -------
-        PlotData
-            A new instance of `PlotData`.
+        Self
+            A new instance of self.__class__.
 
         """
         new_fmt = f"abs({self.fmt})"
@@ -382,7 +427,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         Returns
         -------
         Self
-            A new instance of self.
+            A new instance of self.__class__.
 
         """
         new_fmt = f"({self.fmt}-mean({self.fmt}))"
@@ -396,8 +441,8 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
         Returns
         -------
-        PlotDataSet
-            A new instance of `PlotDataSet`.
+        Self
+            A new instance of self.__class__.
 
         """
         new_fmt = f"zscore({self.fmt})"
@@ -412,7 +457,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         Returns
         -------
         Self
-            A new instance of self.
+            A new instance of self.__class__.
 
         """
         new_fmt = f"csum({self.fmt})"
@@ -429,50 +474,56 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         Returns
         -------
         Self
-            A new instance of self.
+            A new instance of self.__class__.
 
         """
         obj = self.copy()
         obj.settings.reset()
         return obj
 
-    def opclear(self):
+    def undo_all(self) -> None:
         """
         Undo all the operations performed on the data and clean the records.
 
         """
         self.fmt_ = "{0}"
         self.data = self.original_data
-        return self
 
-    def opclear_records_only(self):
-        """
-        Clear the records of operations performed on the data. Differences to
-        `opclear()` that the operations are not undone and the original data
-        will be removed.
-
-        """
-        self.fmt_ = "{0}"
-        self.original_data = self.data
-        return self
-
-    def set_label(self, __label: Optional[str] = None, **kwargs: str):
+    def set_label(
+        self, label: Optional[str] = None, reset_format: bool = True, /, **kwargs: str
+    ) -> Self:
         """
         Set the labels.
 
         Parameters
         ----------
-        __label : str, optional
+        label : str, optional
             The new label (if specified), by default None.
+        reset_format : bool, optional
+            Determines whether to reset the format of the label (which shows
+            the operations done on the data), by default True.
         **kwargs : str
             Works as a mapper to find the new label. If `self.label` is in
             `kwargs`, the label will be set to `kwargs[self.label]`.
 
+        Returns
+        -------
+        Self
+            A new instance of self.__class__.
+
         """
-        if isinstance(__label, str):
-            self.label = __label
+        if isinstance(label, str):
+            new_label = label
         elif self.label in kwargs:
-            self.label = kwargs[self.label]
+            new_label = kwargs[self.label]
+        else:
+            new_label = self.label
+        return self.__create(
+            "{0}" if reset_format else self.fmt_,
+            self.data,
+            priority=self.priority,
+            label=new_label,
+        )
 
     @overload
     def set_plot(
@@ -509,20 +560,23 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             Determines whether to show the grids or not.
         grid_alpha : float, optional
             Controls the transparency of the grid.
-        style : StyleStr, optional
+        style : StyleName, optional
             A style specification.
         figsize : tuple[int, int], optional
             Figure size, this takes a tuple of two integers that specifies the
             width and height of the figure in inches.
         fontdict : FontDict, optional
             A dictionary controlling the appearance of the title text.
-        legend_loc : LegendLocStr, optional
+        legend_loc : LegendLoc, optional
             Location of the legend.
+        format_label : bool, optional
+            Determines whether to format the label (to show the operations done
+            on the data).
 
         Returns
         -------
-        Self
-            An instance of self or None.
+        Self | None
+            A new instance of self.__class__, or None.
 
         """
         return self._set(inplace=inplace, **kwargs)
@@ -542,11 +596,11 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         Returns
         -------
         Self
-            An instance of self.
+            A new instance of self.__class__.
 
         """
         if n <= 0:
-            raise ValueError(f"batch size should be greater than 0, but got {n}")
+            raise ValueError(f"batch size should be greater than 0, got {n} instead")
         return MultiObject([self])
 
     # pylint: disable=unused-argument
@@ -555,10 +609,12 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         bins: int | list[float] = 100,
         fit: bool = True,
         density: bool = True,
+        log: bool = False,
         same_bin: bool = True,
         stats: bool = True,
         *,
         ax: Optional["AxesWrapper"] = None,
+        **kwargs: Unpack["SettingDict"],
     ) -> Artist:
         """
         Create a histogram of the data.
@@ -575,6 +631,9 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             Determines whether to draw a probability density. If True, the histogram
             will be normalized such that the area under it equals to 1. By default
             True.
+        log : bool, optional
+            Determines whether to set the histogram axis to a log scale, by default
+            False.
         same_bin : bool, optional
             Determines whether the bins should be the same for all sets of data, by
             default True.
@@ -585,6 +644,8 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             Specifies the axes-wrapper on which the plot should be painted. If
             not specified, the histogram will be plotted on a new axes in a new
             figure. By default None.
+        **kwargs : **SettingDict
+            Specifies the plot settings, see `.set_plot()` for more details.
 
         Returns
         -------
@@ -592,16 +653,16 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             An instance of Artist.
 
         """
-        locals().update(only=self.__class__ is PlotDataSet)
         return self._get_artist(Histogram, locals())
 
     def plot(
         self,
-        ticks: Optional["NDArray | PlotDataSet"] = None,
+        xticks: Optional["NDArray | PlotDataSet"] = None,
         fmt: str = "",
         scatter: bool = False,
         *,
         ax: Optional["AxesWrapper"] = None,
+        **kwargs: Unpack["SettingDict"],
     ) -> Artist:
         """
         Create a line chart for the data. If there are more than one datasets, all of
@@ -609,7 +670,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
         Parameters
         ----------
-        ticks : NDArray | PlotDataSet, optional
+        xticks : NDArray | PlotDataSet, optional
             Specifies the x-ticks for the line chart. If not provided, the x-ticks will
             be set to `range(len(data))`. By default None.
         fmt : str, optional
@@ -621,6 +682,8 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             Specifies the axes-wrapper on which the plot should be painted If
             not specified, the histogram will be plotted on a new axes in a new
             figure. By default None.
+        **kwargs : **SettingDict
+            Specifies the plot settings, see `.set_plot()` for more details.
 
         Returns
         -------
@@ -632,19 +695,20 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
     def qqplot(
         self,
-        dist_or_sample: "DistStr | NDArray | PlotDataSet" = "normal",
+        dist_or_sample: "DistName | NDArray | PlotDataSet" = "normal",
         dots: int = 30,
         edge_precision: float = 1e-2,
         fmt: str = "o",
         *,
         ax: Optional["AxesWrapper"] = None,
+        **kwargs: Unpack["SettingDict"],
     ) -> Artist:
         """
         Create a quantile-quantile plot.
 
         Parameters
         ----------
-        dist_or_sample : DistStr | NDArray | PlotDataSet, optional
+        dist_or_sample : DistName | NDArray | PlotDataSet, optional
             Specifies the distribution to compare with. If str, specifies a
             theoretical distribution; if NDArray or PlotDataSet, specifies
             another real sample. By default 'normal'.
@@ -659,6 +723,8 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             Specifies the axes-wrapper on which the plot should be painted. If
             not specified, the histogram will be plotted on a new axes in a new
             figure. By default None.
+        **kwargs : **SettingDict
+            Specifies the plot settings, see `.set_plot()` for more details.
 
         Returns
         -------
@@ -670,19 +736,20 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
     def ppplot(
         self,
-        dist_or_sample: "DistStr | NDArray | PlotDataSet" = "normal",
+        dist_or_sample: "DistName | NDArray | PlotDataSet" = "normal",
         dots: int = 30,
         edge_precision: float = 1e-6,
         fmt: str = "o",
         *,
         ax: Optional["AxesWrapper"] = None,
+        **kwargs: Unpack["SettingDict"],
     ) -> Artist:
         """
         Create a probability-probability plot.
 
         Parameters
         ----------
-        dist_or_sample : DistStr | NDArray | PlotDataSet, optional
+        dist_or_sample : DistName | NDArray | PlotDataSet, optional
             Specifies the distribution to compare with. If str, specifies a
             theoretical distribution; if NDArray or PlotDataSet, specifies
             another real sample. By default 'normal'.
@@ -697,6 +764,8 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             Specifies the axes-wrapper on which the plot should be painted. If
             not specified, the histogram will be plotted on a new axes in a new
             figure. By default None.
+        **kwargs : **SettingDict
+            Specifies the plot settings, see `.set_plot()` for more details.
 
         Returns
         -------
@@ -708,19 +777,20 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
     def ksplot(
         self,
-        dist_or_sample: "DistStr | NDArray | PlotDataSet" = "normal",
+        dist_or_sample: "DistName | NDArray | PlotDataSet" = "normal",
         dots: int = 1000,
         edge_precision: float = 1e-6,
         fmt: str = "",
         *,
         ax: Optional["AxesWrapper"] = None,
+        **kwargs: Unpack["SettingDict"],
     ) -> Artist:
         """
         Create a kolmogorov-smirnov plot.
 
         Parameters
         ----------
-        dist_or_sample : DistStr | NDArray | PlotDataSet, optional
+        dist_or_sample : DistName | NDArray | PlotDataSet, optional
             Specifies the distribution to compare with. If str, specifies a
             theoretical distribution; if NDArray or PlotDataSet, specifies
             another real sample. By default 'normal'.
@@ -735,6 +805,8 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             Specifies the axes-wrapper on which the plot should be painted. If
             not specified, the histogram will be plotted on a new axes in a new
             figure. By default None.
+        **kwargs : **SettingDict
+            Specifies the plot settings, see `.set_plot()` for more details.
 
         Returns
         -------
@@ -745,7 +817,11 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         return self._get_artist(KSPlot, locals())
 
     def corrmap(
-        self, annot: bool = True, *, ax: Optional["AxesWrapper"] = None
+        self,
+        annot: bool = True,
+        *,
+        ax: Optional["AxesWrapper"] = None,
+        **kwargs: Unpack["SettingDict"],
     ) -> Artist:
         """
         Create a correlation heatmap.
@@ -759,6 +835,8 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             Specifies the axes-wrapper on which the plot should be painted. If
             not specified, the histogram will be plotted on a new axes in a new
             figure. By default None.
+        **kwargs : **SettingDict
+            Specifies the plot settings, see `.set_plot()` for more details.
 
         Returns
         -------
@@ -772,9 +850,13 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         params: dict[str, Any] = {}
         for key in cls.__init__.__code__.co_varnames[1:]:
             params[key] = local[key]
-        plotter = self.customize(
-            cls, data=self.data, label=self.formatted_label(), **params
-        )
+        if "format_label" in local["kwargs"] and not local["kwargs"]["format_label"]:
+            label = self.label
+        else:
+            label = self.formatted_label()
+        plotter = self.customize(cls, data=self.data, label=label, **params)
+        if local["kwargs"]:
+            plotter.load(local["kwargs"])
         artist = single(self.customize)(Artist, plotter=plotter)
         artist.paint(local["ax"])
         return artist
@@ -795,7 +877,7 @@ class PlotDataSets(MultiObject[PlotDataSet]):
             elif isinstance(a, PlotDataSet):
                 objs.append(a)
             else:
-                raise TypeError(f"unrecognized type: {type(a)}")
+                raise TypeError(f"invalid type: {a.__class__.__name__!r}")
         super().__init__(objs, attr_reducer=self.__dataset_attr_reducer)
 
     def __repr__(self) -> str:
@@ -826,7 +908,9 @@ class PlotDataSets(MultiObject[PlotDataSet]):
             case "customize":
                 return multipartial(
                     call_reducer=multipartial(
-                        attr_reducer=multipartial(call_reflex="reflex")
+                        attr_reducer=lambda x: multipartial(
+                            call_reflex="reflex" if x == "paint" else None
+                        )
                     )
                 )
             case _ if n.startswith("_"):
@@ -840,4 +924,6 @@ class PlotDataSets(MultiObject[PlotDataSet]):
     def __join_if_dataset(cls, x: list) -> Any:
         if x and isinstance(x[0], PlotDataSet):
             return cls(*x)
+        if all(i is None for i in x):
+            return None
         return REMAIN

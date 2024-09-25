@@ -6,9 +6,8 @@ NOTE: this module is private. All functions and objects are available in the mai
 
 """
 
+from dataclasses import dataclass
 from typing import TYPE_CHECKING
-
-from attrs import define
 
 from ..utils.math import get_prob
 from .qqplot import QQPlot
@@ -19,7 +18,7 @@ if TYPE_CHECKING:
 __all__ = ["PPPlot"]
 
 
-@define
+@dataclass(slots=True)
 class PPPlot(QQPlot):
     """
     A plotter class that creates a P-P plot.
@@ -34,7 +33,7 @@ class PPPlot(QQPlot):
             xlabel="cumulative probility",
             ylabel="cumulative probility",
         )
-        ax.loading(self.settings)
+        ax.load(self.settings)
         self.__plot(ax)
         return reflex
 
