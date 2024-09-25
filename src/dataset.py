@@ -481,7 +481,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         obj.settings.reset()
         return obj
 
-    def opclear(self) -> None:
+    def undo_all(self) -> None:
         """
         Undo all the operations performed on the data and clean the records.
 
@@ -489,24 +489,15 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         self.fmt_ = "{0}"
         self.data = self.original_data
 
-    def opclear_records_only(self) -> None:
-        """
-        Clear the records of operations performed on the data. Differences to
-        `opclear()` that the operations are not undone and the original data
-        will be removed.
-
-        """
-        self.fmt_ = "{0}"
-        self.original_data = self.data
-
-    def set_label(self, __label: Optional[str] = None, **kwargs: str) -> Self:
+    def set_label(self, label: Optional[str] = None, /, **kwargs: str) -> Self:
         """
         Set the labels.
 
         Parameters
         ----------
-        __label : str, optional
+        label : str, optional
             The new label (if specified), by default None.
+
         **kwargs : str
             Works as a mapper to find the new label. If `self.label` is in
             `kwargs`, the label will be set to `kwargs[self.label]`.
@@ -517,8 +508,8 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             A new instance of self.__class__.
 
         """
-        if isinstance(__label, str):
-            new_label = __label
+        if isinstance(label, str):
+            new_label = label
         elif self.label in kwargs:
             new_label = kwargs[self.label]
         else:
