@@ -32,7 +32,7 @@ This project falls under the BSD 3-Clause License.
 * Allowed users to set the plot-settings by kwargs in artist methods like `PlotDataSet.hist()`, `PlotDataSet.plot()`, etc.
 * New method `PlotDataSet.signedpow()`.
 * Renamed `PlotDataSet.signlog()` to `.signedlog()`; renamed `PlotDataSet.opclear()` to `.undo_all()`; removed `PlotDataSet.opclear_records_only()`.
-* New optional parameter `format_label=` for `PlotDataSet.set_plot()` to decide whether to format the label of the data.
+* New optional parameter `format_label=` for `PlotDataSet.set_plot()` to decide whether to format the label when painting on the axes.
 * When defining the data classes, used *dataclasses* instead of *attrs* for a faster import.
 
 ### v0.1.2
