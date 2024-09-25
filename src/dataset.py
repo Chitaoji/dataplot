@@ -613,6 +613,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         stats: bool = True,
         *,
         ax: Optional["AxesWrapper"] = None,
+        **kwargs: Unpack["SettingDict"],
     ) -> Artist:
         """
         Create a histogram of the data.
@@ -642,6 +643,8 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             Specifies the axes-wrapper on which the plot should be painted. If
             not specified, the histogram will be plotted on a new axes in a new
             figure. By default None.
+        **kwargs : **SettingDict
+            Specifies the plot settings, see `.set_plot()` for more details.
 
         Returns
         -------
@@ -658,6 +661,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         scatter: bool = False,
         *,
         ax: Optional["AxesWrapper"] = None,
+        **kwargs: Unpack["SettingDict"],
     ) -> Artist:
         """
         Create a line chart for the data. If there are more than one datasets, all of
@@ -677,6 +681,8 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             Specifies the axes-wrapper on which the plot should be painted If
             not specified, the histogram will be plotted on a new axes in a new
             figure. By default None.
+        **kwargs : **SettingDict
+            Specifies the plot settings, see `.set_plot()` for more details.
 
         Returns
         -------
@@ -694,6 +700,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         fmt: str = "o",
         *,
         ax: Optional["AxesWrapper"] = None,
+        **kwargs: Unpack["SettingDict"],
     ) -> Artist:
         """
         Create a quantile-quantile plot.
@@ -715,6 +722,8 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             Specifies the axes-wrapper on which the plot should be painted. If
             not specified, the histogram will be plotted on a new axes in a new
             figure. By default None.
+        **kwargs : **SettingDict
+            Specifies the plot settings, see `.set_plot()` for more details.
 
         Returns
         -------
@@ -732,6 +741,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         fmt: str = "o",
         *,
         ax: Optional["AxesWrapper"] = None,
+        **kwargs: Unpack["SettingDict"],
     ) -> Artist:
         """
         Create a probability-probability plot.
@@ -753,6 +763,8 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             Specifies the axes-wrapper on which the plot should be painted. If
             not specified, the histogram will be plotted on a new axes in a new
             figure. By default None.
+        **kwargs : **SettingDict
+            Specifies the plot settings, see `.set_plot()` for more details.
 
         Returns
         -------
@@ -770,6 +782,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         fmt: str = "",
         *,
         ax: Optional["AxesWrapper"] = None,
+        **kwargs: Unpack["SettingDict"],
     ) -> Artist:
         """
         Create a kolmogorov-smirnov plot.
@@ -791,6 +804,8 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             Specifies the axes-wrapper on which the plot should be painted. If
             not specified, the histogram will be plotted on a new axes in a new
             figure. By default None.
+        **kwargs : **SettingDict
+            Specifies the plot settings, see `.set_plot()` for more details.
 
         Returns
         -------
@@ -801,7 +816,11 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         return self._get_artist(KSPlot, locals())
 
     def corrmap(
-        self, annot: bool = True, *, ax: Optional["AxesWrapper"] = None
+        self,
+        annot: bool = True,
+        *,
+        ax: Optional["AxesWrapper"] = None,
+        **kwargs: Unpack["SettingDict"],
     ) -> Artist:
         """
         Create a correlation heatmap.
@@ -815,6 +834,8 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             Specifies the axes-wrapper on which the plot should be painted. If
             not specified, the histogram will be plotted on a new axes in a new
             figure. By default None.
+        **kwargs : **SettingDict
+            Specifies the plot settings, see `.set_plot()` for more details.
 
         Returns
         -------
@@ -831,6 +852,8 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         plotter = self.customize(
             cls, data=self.data, label=self.formatted_label(), **params
         )
+        if local["kwargs"]:
+            plotter.load(local["kwargs"])
         artist = single(self.customize)(Artist, plotter=plotter)
         artist.paint(local["ax"])
         return artist
@@ -882,7 +905,9 @@ class PlotDataSets(MultiObject[PlotDataSet]):
             case "customize":
                 return multipartial(
                     call_reducer=multipartial(
-                        attr_reducer=multipartial(call_reflex="reflex")
+                        attr_reducer=lambda x: multipartial(
+                            call_reflex="reflex" if x == "paint" else None
+                        )
                     )
                 )
             case _ if n.startswith("_"):

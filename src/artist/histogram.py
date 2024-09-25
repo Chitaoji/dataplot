@@ -49,7 +49,7 @@ class Histogram(Plotter):
             xlabel="value",
             ylabel=ylabel,
         )
-        ax.loading(self.settings)
+        ax.load(self.settings)
         ds, b = self.__hist(
             ax, bins=self.bins if (reflex is None or not self.same_bin) else reflex
         )

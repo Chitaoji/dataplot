@@ -46,7 +46,7 @@ class QQPlot(Plotter):
             xlabel="quantiles",
             ylabel="quantiles",
         )
-        ax.loading(self.settings)
+        ax.load(self.settings)
         self.__plot(ax)
         return reflex
 

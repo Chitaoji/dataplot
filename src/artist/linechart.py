@@ -36,7 +36,7 @@ class LineChart(Plotter):
         self, ax: "AxesWrapper", reflex: None = None, __multi_last_call__: bool = False
     ) -> None:
         ax.set_default(title="Line Chart")
-        ax.loading(self.settings)
+        ax.load(self.settings)
         self.__plot(ax)
         return reflex
 

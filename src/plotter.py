@@ -141,17 +141,19 @@ class PlotSettable:
             elif isinstance(d := self.settings[k], dict):
                 self.settings[k] = {**v, **d}
 
-    def loading(self, settings: PlotSettings) -> None:
+    def load(self, settings: "PlotSettings | SettingDict") -> None:
         """
         Load in the settings.
 
         Parameters
         ----------
-        settings : PlotSettings
-            An instance of `PlotSettings`.
+        settings : PlotSettings | SettingDict
+            An instance of `PlotSettings` or a dict.
 
         """
-        self._set(inplace=True, **asdict(settings))
+        if isinstance(settings, PlotSettings):
+            settings = asdict(settings)
+        self._set(inplace=True, **settings)
 
     def get_setting(
         self, key: "SettingKey", default: Optional["DefaultVar"] = None
@@ -227,4 +229,4 @@ class PlotSettable:
             A new instance of self.
 
         """
-        raise TypeError(f"cannot copy instance of {self.__class__}")
+        raise TypeError(f"cannot copy instance of {self.__class__.__name__!r}")

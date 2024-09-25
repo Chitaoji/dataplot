@@ -13,7 +13,6 @@ from typing import (
     LiteralString,
     Optional,
     TypeVar,
-    overload,
 )
 
 if TYPE_CHECKING:
@@ -213,21 +212,19 @@ else:
         return MultiObject(*args, **kwargs)
 
 
-def multipartial(**kwargs) -> Callable[[list | str], Any]:
+def multipartial(**kwargs) -> Callable[[list], MultiObject]:
     """
     Returns a MultiObject constructor with partial application of the
     given arguments and keywords.
 
     Returns
     -------
-    Callable[[list | str], Any]
+    Callable[[list], MultiObject]
         A MultiObject constructor.
 
     """
 
-    def multi_constructor(x: list | str):
-        if isinstance(x, str):
-            return multi_constructor
+    def multi_constructor(x: list):
         return MultiObject(x, **kwargs)
 
     return multi_constructor
@@ -274,28 +271,22 @@ def multiple(x: T) -> list[T]:
     return x.__multiobjects__ if isinstance(x, MultiObject) else [x]
 
 
-@overload
-def cleaner(x: list) -> list | None: ...
-@overload
-def cleaner(x: str) -> Callable[[list], list | None]: ...
-def cleaner(x: list | str) -> list | None:
+def cleaner(x: list) -> MultiObject | None:
     """
     If the list is consist of None's only, return None, otherwise return
     a MultiObject instantiated by the list.
 
     Parameters
     ----------
-    x : list | str
-        May be a list.
+    x : list
+        List of objects.
 
     Returns
     -------
-    Any
-        May be None or a MultiObject instantiated by the list.
+    MultiObject | None
+        May be a MultiObject instantiated by the list or None.
 
     """
-    if isinstance(x, str):
-        return cleaner
     if all(i is None for i in x):
         return None
-    return MultiObject(x, call_reducer=cleaner, attr_reducer=cleaner)
+    return MultiObject(x, call_reducer=cleaner, attr_reducer=lambda x: cleaner)

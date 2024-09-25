@@ -33,7 +33,7 @@ class PPPlot(QQPlot):
             xlabel="cumulative probility",
             ylabel="cumulative probility",
         )
-        ax.loading(self.settings)
+        ax.load(self.settings)
         self.__plot(ax)
         return reflex
 

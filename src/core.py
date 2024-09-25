@@ -40,7 +40,7 @@ def figure(
         Determines how many subplots can be arranged horizontally in the figure,
         by default 1.
     **kwargs : **FigureSettingDict
-        Figure settings, see `FigWrapper.set_figure()` for more details.
+        Specifies the figure settings, see `FigWrapper.set_figure()` for more details.
 
     Returns
     -------
@@ -110,7 +110,7 @@ def show(
         Number of columns. If None, will be set to `floor(sqrt(n))`, where `n`
         is the number of artist(s). By default None.
     **kwargs : **FigureSettingDict
-        Figure settings, see `FigWrapper.set_figure()` for more details.
+        Specifies the figure settings, see `FigWrapper.set_figure()` for more details.
 
     """
     if not isinstance(artist, list):

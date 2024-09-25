@@ -34,7 +34,7 @@ class KSPlot(QQPlot):
             xlabel="value",
             ylabel="cummulative probability",
         )
-        ax.loading(self.settings)
+        ax.load(self.settings)
         self.__plot(ax)
         return reflex
 
