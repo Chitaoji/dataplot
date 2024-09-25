@@ -36,7 +36,7 @@ This project falls under the BSD 3-Clause License.
 
 ### v0.1.2
 * New methods `PlotDataSet.corrmap()`, `PlotDataSet.ppplot()`, and `PlotDataSet.resample()`.
-* New optional parameter `fmt=` for multiple methods including `PlotDataSet.plot()`, `PlotDataSet.qqplot()`, etc.
+* New optional parameter `fmt=` for `PlotDataSet.plot()`, `PlotDataSet.qqplot()`, `PlotDataSet.ppplot()`, and `PlotDataSet.ksplot()`.
 * Bugfix.
 
 ### v0.1.1
