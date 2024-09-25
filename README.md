@@ -28,14 +28,11 @@ scipy
 This project falls under the BSD 3-Clause License.
 
 ## History
-### v0.1.4
-* Allowed users to set the plot-settings by kwargs in artist methods like `PlotDataSet.hist()`, `PlotDataSet.plot()`, etc.
-* New method `PlotDataSet.undo_all()`.
-
 ### v0.1.3
+* Allowed users to set the plot-settings by kwargs in artist methods like `PlotDataSet.hist()`, `PlotDataSet.plot()`, etc.
 * New method `PlotDataSet.signedpow()`.
-* Renamed `PlotDataSet.signlog()` to `PlotDataSet.signedlog()`.
-* Used *dataclasses* instead of *attrs* for a faster import.
+* Renamed `PlotDataSet.signlog()` to `.signedlog()`; renamed `PlotDataSet.opclear()` to `.undo_all()`; removed `PlotDataSet.opclear_records_only()`.
+* When defining the data classes, used *dataclasses* instead of *attrs* for a faster import.
 
 ### v0.1.2
 * New methods `PlotDataSet.corrmap()`, `PlotDataSet.ppplot()`, and `PlotDataSet.resample()`.
