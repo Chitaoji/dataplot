@@ -489,7 +489,9 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         self.fmt_ = "{0}"
         self.data = self.original_data
 
-    def set_label(self, label: Optional[str] = None, /, **kwargs: str) -> Self:
+    def set_label(
+        self, label: Optional[str] = None, reset_format: bool = False, /, **kwargs: str
+    ) -> Self:
         """
         Set the labels.
 
@@ -497,7 +499,9 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         ----------
         label : str, optional
             The new label (if specified), by default None.
-
+        reset_format : bool, optional
+            Determines whether to reset the format of the label (which shows the
+            operations done on the data), by default False.
         **kwargs : str
             Works as a mapper to find the new label. If `self.label` is in
             `kwargs`, the label will be set to `kwargs[self.label]`.
@@ -515,7 +519,10 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         else:
             new_label = self.label
         return self.__create(
-            self.fmt_, self.data, priority=self.priority, label=new_label
+            "{0}" if reset_format else self.fmt_,
+            self.data,
+            priority=self.priority,
+            label=new_label,
         )
 
     @overload
