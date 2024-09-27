@@ -27,7 +27,7 @@ class KSPlot(QQPlot):
     """
 
     def paint(
-        self, ax: "AxesWrapper", reflex: None = None, __multi_last_call__: bool = False
+        self, ax: "AxesWrapper", reflex: None = None, __multi_last_call__: bool = True
     ) -> None:
         ax.set_default(
             title="Kolmogorov-Smirnov Plot",

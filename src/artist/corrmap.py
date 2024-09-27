@@ -36,7 +36,7 @@ class CorrMap(Plotter):
         self,
         ax: "AxesWrapper",
         reflex: Optional[tuple[list["NDArray"], list[str]]] = None,
-        __multi_last_call__: bool = False,
+        __multi_last_call__: bool = True,
     ) -> tuple[list["NDArray"], list[str]]:
         if reflex is None:
             reflex = ([], [])
