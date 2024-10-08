@@ -25,9 +25,7 @@ class PPPlot(QQPlot):
 
     """
 
-    def paint(
-        self, ax: "AxesWrapper", reflex: None = None, __multi_last_call__: bool = False
-    ) -> None:
+    def paint(self, ax: "AxesWrapper", **_) -> None:
         ax.set_default(
             title="Probability-Probability Plot",
             xlabel="cumulative probility",
@@ -35,7 +33,6 @@ class PPPlot(QQPlot):
         )
         ax.load(self.settings)
         self.__plot(ax)
-        return reflex
 
     def __plot(self, ax: "AxesWrapper") -> None:
         xlabel, p1, q = self._generate_dist()

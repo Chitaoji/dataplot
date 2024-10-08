@@ -908,9 +908,7 @@ class PlotDataSets(MultiObject[PlotDataSet]):
             case "customize":
                 return multipartial(
                     call_reducer=multipartial(
-                        attr_reducer=lambda x: multipartial(
-                            call_reflex="reflex" if x == "paint" else None
-                        )
+                        attr_reducer=lambda x: multipartial(call_reflex=x == "paint")
                     )
                 )
             case _ if n.startswith("_"):

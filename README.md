@@ -28,9 +28,12 @@ seaborn
 This project falls under the BSD 3-Clause License.
 
 ## History
+### v0.1.4
+* Fixed issue: incorrectly displayed histogram statistics when the x-label had been modified by the user.
+
 ### v0.1.3
 * Allowed users to set the plot-settings by kwargs in artist methods like `PlotDataSet.hist()`, `PlotDataSet.plot()`, etc.
-* New operation methods `PlotDataSet.signedpow()`, `PlotDataSet.log10()`.
+* New operation methods `PlotDataSet.signedpow()` and `PlotDataSet.log10()`.
 * Renamed `PlotDataSet.signlog()` to `.signedlog()`; renamed `PlotDataSet.opclear()` to `.undo_all()`; removed `PlotDataSet.opclear_records_only()`.
 * New optional parameter `format_label=` for `PlotDataSet.set_plot()` to decide whether to format the label when painting on the axes.
 * When defining the data classes, used *dataclasses* instead of *attrs* for a faster import.

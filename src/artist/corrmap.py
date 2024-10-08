@@ -35,15 +35,16 @@ class CorrMap(Plotter):
     def paint(
         self,
         ax: "AxesWrapper",
-        reflex: Optional[tuple[list["NDArray"], list[str]]] = None,
-        __multi_last_call__: bool = False,
+        __multi_prev_returned__: Optional[tuple[list["NDArray"], list[str]]] = None,
+        __multi_is_final__: bool = True,
     ) -> tuple[list["NDArray"], list[str]]:
-        if reflex is None:
-            reflex = ([], [])
-        arrays, labels = reflex
+        if __multi_prev_returned__ is None:
+            arrays, labels = [], []
+        else:
+            arrays, labels = __multi_prev_returned__
         arrays.append(self.data)
         labels.append(self.label)
-        if __multi_last_call__:
+        if __multi_is_final__:
             ax.set_default(title="Correlation Heatmap")
             ax.load(self.settings)
             self.__plot(ax, arrays, labels)

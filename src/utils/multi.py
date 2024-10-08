@@ -60,20 +60,20 @@ class MultiObject(Generic[T]):
         specified, the argument must be an iterable (the same as what is needed
         for creating a list). By default None.
     call_reducer : Callable[[list], Any], optional
-        Specifies a reducer for the returns of `__call__()`. If specified,
+        Specifies a reducer for the return values of `__call__()`. If specified,
         should be a callable that receives the list of original returns, and
         gives back a reduced value. If None, the reduced value will always be a
         new MultiObject. By default None.
-    call_reflex : str, optional
-        If str, the returns of a previous element's `__call__()` will be
-        provided to the next element as a keyword argument named by it, by
-        default None.
+    call_reflex : bool, optional
+        If True, the return values of a previous element's `__call__()` will be
+        provided to the next element as a keyword argument named
+        '__multi_prev_returned__', by default None.
     attr_reducer: Callable[[str], Callable[[list], Any]],  optional
-        Specifies a reducer for the returns of `__getattr__()`. If specified,
-        should be a callable that receives the attribute name, and gives back a
-        new callable. The new callable will receive the list of original returns,
-        and gives back a reduced value. If None, the reduced value will always be
-        a new MultiObject. By default None.
+        Specifies a reducer for the return values of `__getattr__()`. If
+        specified, should be a callable that receives the attribute name, and
+        gives back a new callable. The new callable will receive the list of
+        original return values, and gives back a reduced value. If None, the
+        reduced value will always be a new MultiObject. By default None.
 
     """
 
@@ -82,7 +82,7 @@ class MultiObject(Generic[T]):
         __iterable: Optional[Iterable] = None,
         *,
         call_reducer: Optional[Callable[[list], Any]] = None,
-        call_reflex: Optional[str] = None,
+        call_reflex: Optional[bool] = None,
         attr_reducer: Optional[Callable[[str], Callable[[list], Any]]] = None,
     ) -> None:
         self.__call_reducer = call_reducer
@@ -113,15 +113,15 @@ class MultiObject(Generic[T]):
         for i, obj in enumerate(self.__items):
             a = [single(x, n=i) for x in args]
             kwd = {k: single(v, n=i) for k, v in kwargs.items()}
-            if self.__call_reflex and i > 0:
-                kwd["__multi_last_call__"] = i == len_items - 1
-                kwd[self.__call_reflex] = r
+            if self.__call_reflex:
+                kwd["__multi_is_final__"] = i == len_items - 1
+                kwd["__multi_prev_returned__"] = r if i > 0 else None
             returns.append(r := obj(*a, **kwd))
         if self.__call_reducer:
             reduced = self.__call_reducer(returns)
             if reduced != REMAIN:
                 return reduced
-        return MultiObject(returns, call_reflex=self.__call_reflex)
+        return MultiObject(returns)
 
     def __getitem__(self, __key: Any) -> T | "MultiObject":
         items = [x[__key] for x in self.__items]

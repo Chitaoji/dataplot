@@ -37,8 +37,8 @@ class Histogram(Plotter):
     def paint(
         self,
         ax: "AxesWrapper",
-        reflex: Optional[list[float]] = None,
-        __multi_last_call__: bool = False,
+        __multi_prev_returned__: Optional[tuple[str, list[float]]] = None,
+        __multi_is_final__: bool = True,
     ) -> list[float]:
         ax.set_default(
             title="Histogram",
@@ -47,12 +47,18 @@ class Histogram(Plotter):
             ylabel="density" if self.density else "count",
         )
         ax.load(self.settings)
-        ds, b = self.__hist(
-            ax, bins=self.bins if (reflex is None or not self.same_bin) else reflex
+        if __multi_prev_returned__ is None:
+            xlabel, bins = ax.settings.xlabel, None
+        else:
+            xlabel, bins = __multi_prev_returned__
+        ds, new_bins = self.__hist(
+            ax, bins=self.bins if (bins is None or not self.same_bin) else bins
         )
         if self.stats:
-            ax.set_axes(xlabel=ax.settings.xlabel + "\n" + ds)
-        return b
+            xlabel += "\n" + ds
+        if __multi_is_final__:
+            ax.set_axes(xlabel=xlabel)
+        return (xlabel, new_bins)
 
     def __hist(
         self, ax: "AxesWrapper", bins: int | list[float] = 100

@@ -32,13 +32,10 @@ class LineChart(Plotter):
     fmt: str
     scatter: bool
 
-    def paint(
-        self, ax: "AxesWrapper", reflex: None = None, __multi_last_call__: bool = False
-    ) -> None:
+    def paint(self, ax: "AxesWrapper", **_) -> None:
         ax.set_default(title="Line Chart")
         ax.load(self.settings)
         self.__plot(ax)
-        return reflex
 
     def __plot(self, ax: "AxesWrapper") -> None:
         if isinstance(self.xticks, PlotSettable):
