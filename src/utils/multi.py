@@ -67,7 +67,7 @@ class MultiObject(Generic[T]):
     call_reflex : bool, optional
         If True, the return values of a previous element's `__call__()` will be
         provided to the next element as a keyword argument named
-        '__multi_prev_returned__', by default None.
+        '__multi_prev_returned__', by default False.
     attr_reducer: Callable[[str], Callable[[list], Any]],  optional
         Specifies a reducer for the return values of `__getattr__()`. If
         specified, should be a callable that receives the attribute name, and
@@ -82,7 +82,7 @@ class MultiObject(Generic[T]):
         __iterable: Optional[Iterable] = None,
         *,
         call_reducer: Optional[Callable[[list], Any]] = None,
-        call_reflex: Optional[bool] = None,
+        call_reflex: bool = False,
         attr_reducer: Optional[Callable[[str], Callable[[list], Any]]] = None,
     ) -> None:
         self.__call_reducer = call_reducer
