@@ -121,7 +121,7 @@ class MultiObject(Generic[T]):
             reduced = self.__call_reducer(returns)
             if reduced != REMAIN:
                 return reduced
-        return MultiObject(returns, call_reflex=self.__call_reflex)
+        return MultiObject(returns)
 
     def __getitem__(self, __key: Any) -> T | "MultiObject":
         items = [x[__key] for x in self.__items]
