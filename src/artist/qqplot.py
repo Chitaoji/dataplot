@@ -38,9 +38,7 @@ class QQPlot(Plotter):
     edge_precision: float
     fmt: str
 
-    def paint(
-        self, ax: "AxesWrapper", reflex: None = None, __multi_last_call__: bool = True
-    ) -> None:
+    def paint(self, ax: "AxesWrapper", **_) -> None:
         ax.set_default(
             title="Quantile-Quantile Plot",
             xlabel="quantiles",
@@ -48,7 +46,6 @@ class QQPlot(Plotter):
         )
         ax.load(self.settings)
         self.__plot(ax)
-        return reflex
 
     def __plot(self, ax: "AxesWrapper") -> None:
         xlabel, p, q1 = self._generate_dist()

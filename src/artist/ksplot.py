@@ -26,9 +26,7 @@ class KSPlot(QQPlot):
 
     """
 
-    def paint(
-        self, ax: "AxesWrapper", reflex: None = None, __multi_last_call__: bool = True
-    ) -> None:
+    def paint(self, ax: "AxesWrapper", **_) -> None:
         ax.set_default(
             title="Kolmogorov-Smirnov Plot",
             xlabel="value",
@@ -36,7 +34,6 @@ class KSPlot(QQPlot):
         )
         ax.load(self.settings)
         self.__plot(ax)
-        return reflex
 
     def __plot(self, ax: "AxesWrapper") -> None:
         xlabel, p, q1 = self._generate_dist()
