@@ -29,7 +29,7 @@ This project falls under the BSD 3-Clause License.
 
 ## History
 ### v0.1.4
-* Fixed issue: the statistics of histograms might not be correctly displayed when the x-label had been modified by the user.
+* Fixed issue: incorrectly displayed histogram statistics when the x-label had been modified by the user.
 
 ### v0.1.3
 * Allowed users to set the plot-settings by kwargs in artist methods like `PlotDataSet.hist()`, `PlotDataSet.plot()`, etc.
