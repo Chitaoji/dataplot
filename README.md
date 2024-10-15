@@ -28,6 +28,9 @@ seaborn
 This project falls under the BSD 3-Clause License.
 
 ## History
+### v0.1.5
+* Fixed issue: unworking figure settings in the artist methods.
+
 ### v0.1.4
 * Fixed issue: incorrectly displayed histogram statistics when the x-label had been modified by the user.
 

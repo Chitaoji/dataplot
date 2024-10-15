@@ -855,9 +855,10 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         else:
             label = self.formatted_label()
         plotter = self.customize(cls, data=self.data, label=label, **params)
-        if local["kwargs"]:
-            plotter.load(local["kwargs"])
         artist = single(self.customize)(Artist, plotter=plotter)
+        if local["kwargs"]:
+            artist.plotter.load(local["kwargs"])
+            artist.load(local["kwargs"])
         artist.paint(local["ax"])
         return artist
 
