@@ -66,9 +66,7 @@ class FigWrapper(PlotSettable):
             fontdict={"fontsize": "x-large"},
         )
         plt.style.use(self.settings.style)
-        self.fig, axes = plt.subplots(
-            self.nrows, self.ncols, figsize=self.settings.figsize
-        )
+        self.fig, axes = plt.subplots(self.nrows, self.ncols)
         self.axes: list["AxesWrapper"] = [AxesWrapper(x) for x in np.reshape(axes, -1)]
         self.entered = True
         return self
@@ -103,7 +101,8 @@ class FigWrapper(PlotSettable):
         Parameters
         ----------
         title : str, optional
-            Title of figure.
+            Title of figure. Please note that there's another parameter with
+            the same name in `.set_axis()`.
         dpi : float, optional
             Sets the resolution of figure in dots-per-inch.
         style : StyleName, optional
@@ -148,7 +147,8 @@ class AxesWrapper(PlotSettable):
         Parameters
         ----------
         title : str, optional
-            Title of axes.
+            Title of axes. Please note that there's another parameter with
+            the same name in `.set_figure()`.
         xlabel : str, optional
             Label for the x-axis.
         ylabel : str, optional
