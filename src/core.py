@@ -60,7 +60,7 @@ def data(x: list["NDArray"], label: Optional[list[str]] = None) -> PlotDataSet: 
 @overload
 def data(x: Any, label: Optional[list[str]] = None) -> PlotDataSet: ...
 def data(
-    x: "NDArray | list[NDArray]" | Any, label: Optional[str | list[str]] = None
+    x: "NDArray | list[NDArray] | Any", label: Optional[str | list[str]] = None
 ) -> PlotDataSet:
     """
     Initializes a dataset interface which provides methods for mathematical
