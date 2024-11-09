@@ -11,7 +11,7 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Optional
 
 from ..container import FigWrapper
-from ..plotter import PlotSettable
+from ..setting import PlotSettable
 from ..utils.multi import multiple
 
 if TYPE_CHECKING:
@@ -69,6 +69,7 @@ class Plotter(PlotSettable):
     def paint(
         self,
         ax: "AxesWrapper",
+        *,
         __multi_prev_returned__: Any = None,
         __multi_is_final__: bool = True,
     ) -> Any:

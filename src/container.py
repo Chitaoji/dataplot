@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING, Any, Self, Unpack
 import matplotlib.pyplot as plt
 import numpy as np
 
-from .plotter import PlotSettable
+from .setting import PlotSettable
 
 if TYPE_CHECKING:
     from matplotlib.figure import Figure

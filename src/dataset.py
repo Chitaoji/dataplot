@@ -24,7 +24,7 @@ import numpy as np
 import pandas as pd
 
 from .artist import Artist, CorrMap, Histogram, KSPlot, LineChart, PPPlot, QQPlot
-from .plotter import PlotSettable, PlotSettings
+from .setting import PlotSettable, PlotSettings
 from .utils.multi import (
     REMAIN,
     UNSUBSCRIPTABLE,

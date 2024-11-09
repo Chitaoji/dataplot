@@ -10,7 +10,7 @@ import logging
 from typing import TYPE_CHECKING, Literal, NotRequired, Optional, TypedDict, TypeVar
 
 if TYPE_CHECKING:
-    from .plotter import PlotSettable
+    from .setting import PlotSettable
 
 logging.warning(
     "importing from '._typing' - this module is not intended for direct import, "
