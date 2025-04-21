@@ -112,9 +112,9 @@ class FigWrapper(PlotSettable):
             width and height of the figure in inches.
         fontdict : FontDict, optional
             A dictionary controlling the appearance of the title text.
-        subplots_adjust : SubplotsParams, optional
+        subplots_adjust : SubplotDict, optional
             Adjusts the subplot layout parameters including: left, right, bottom,
-            top, wspace, and hspace. See `SubplotsParams` for more details.
+            top, wspace, and hspace. See `SubplotDict` for more details.
 
         """
         self._set(inplace=True, **kwargs)
