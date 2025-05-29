@@ -203,12 +203,12 @@ if TYPE_CHECKING:
 
     @hintwith(MultiObject)
     def multi() -> MultiObject:
-        """Same to `MultiObject()`."""
+        """Magic happens."""
 
 else:
 
     def multi(*args, **kwargs) -> MultiObject:
-        """Magic happens."""
+        """Same to `MultiObject()`"""
         return MultiObject(*args, **kwargs)
 
 
