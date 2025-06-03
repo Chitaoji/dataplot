@@ -1,21 +1,18 @@
 """
 Contains typing classes.
 
-NOTE: this module is private. All functions and objects are available in the main
-`dataplot` namespace - use that instead.
+NOTE: this module is not intended to be imported at runtime.
 
 """
 
-import logging
 from typing import TYPE_CHECKING, Literal, NotRequired, Optional, TypedDict, TypeVar
+
+import loggings
 
 if TYPE_CHECKING:
     from .setting import PlotSettable
 
-logging.warning(
-    "importing from '._typing' - this module is not intended for direct import, "
-    "therefore unexpected errors may occur"
-)
+loggings.warning("this module is not intended to be imported at runtime")
 
 PlotSettableVar = TypeVar("PlotSettableVar", bound="PlotSettable")
 DefaultVar = TypeVar("DefaultVar")
