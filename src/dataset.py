@@ -24,7 +24,7 @@ import numpy as np
 import pandas as pd
 
 from .artist import Artist, CorrMap, Histogram, KSPlot, LineChart, PPPlot, QQPlot
-from .plotter import PlotSettable, PlotSettings
+from .setting import PlotSettable, PlotSettings
 from .utils.multi import (
     REMAIN,
     UNSUBSCRIPTABLE,
@@ -855,9 +855,10 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         else:
             label = self.formatted_label()
         plotter = self.customize(cls, data=self.data, label=label, **params)
-        if local["kwargs"]:
-            plotter.load(local["kwargs"])
         artist = single(self.customize)(Artist, plotter=plotter)
+        if local["kwargs"]:
+            artist.plotter.load(local["kwargs"])
+            artist.load(local["kwargs"])
         artist.paint(local["ax"])
         return artist
 

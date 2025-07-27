@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING
 import numpy as np
 from scipy import stats
 
-from ..plotter import PlotSettable
+from ..setting import PlotSettable
 from ..utils.math import get_quantile, linear_regression_1d
 from .base import Plotter
 

@@ -9,7 +9,7 @@ NOTE: this module is private. All functions and objects are available in the mai
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Optional
 
-from ..plotter import PlotSettable
+from ..setting import PlotSettable
 from .base import Plotter
 
 if TYPE_CHECKING:

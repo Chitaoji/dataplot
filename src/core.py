@@ -7,7 +7,7 @@ NOTE: this module is private. All functions and objects are available in the mai
 """
 
 from math import ceil, sqrt
-from typing import TYPE_CHECKING, Optional, Unpack, overload
+from typing import TYPE_CHECKING, Any, Optional, Unpack, overload
 
 import numpy as np
 
@@ -57,8 +57,10 @@ def figure(
 def data(x: "NDArray", label: Optional[str] = None) -> PlotDataSet: ...
 @overload
 def data(x: list["NDArray"], label: Optional[list[str]] = None) -> PlotDataSet: ...
+@overload
+def data(x: Any, label: Optional[str | list[str]] = None) -> PlotDataSet: ...
 def data(
-    x: "NDArray | list[NDArray]", label: Optional[str | list[str]] = None
+    x: "NDArray | list[NDArray] | Any", label: Optional[str | list[str]] = None
 ) -> PlotDataSet:
     """
     Initializes a dataset interface which provides methods for mathematical
@@ -66,7 +68,7 @@ def data(
 
     Parameters
     ----------
-    x : NDArray | list[NDArray]
+    x : NDArray | list[NDArray] | Any
         Input values, this takes either a single array or a list of arrays, with
         each array representing a dataset.
     label : str | list[str], optional

@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING, Any, Self, Unpack
 import matplotlib.pyplot as plt
 import numpy as np
 
-from .plotter import PlotSettable
+from .setting import PlotSettable
 
 if TYPE_CHECKING:
     from matplotlib.figure import Figure
@@ -66,9 +66,7 @@ class FigWrapper(PlotSettable):
             fontdict={"fontsize": "x-large"},
         )
         plt.style.use(self.settings.style)
-        self.fig, axes = plt.subplots(
-            self.nrows, self.ncols, figsize=self.settings.figsize
-        )
+        self.fig, axes = plt.subplots(self.nrows, self.ncols)
         self.axes: list["AxesWrapper"] = [AxesWrapper(x) for x in np.reshape(axes, -1)]
         self.entered = True
         return self
@@ -103,7 +101,8 @@ class FigWrapper(PlotSettable):
         Parameters
         ----------
         title : str, optional
-            Title of figure.
+            Title of figure. Please note that there's another parameter with
+            the same name in `.set_axis()`.
         dpi : float, optional
             Sets the resolution of figure in dots-per-inch.
         style : StyleName, optional
@@ -113,9 +112,9 @@ class FigWrapper(PlotSettable):
             width and height of the figure in inches.
         fontdict : FontDict, optional
             A dictionary controlling the appearance of the title text.
-        subplots_adjust : SubplotsParams, optional
+        subplots_adjust : SubplotDict, optional
             Adjusts the subplot layout parameters including: left, right, bottom,
-            top, wspace, and hspace. See `SubplotsParams` for more details.
+            top, wspace, and hspace. See `SubplotDict` for more details.
 
         """
         self._set(inplace=True, **kwargs)
@@ -148,7 +147,8 @@ class AxesWrapper(PlotSettable):
         Parameters
         ----------
         title : str, optional
-            Title of axes.
+            Title of axes. Please note that there's another parameter with
+            the same name in `.set_figure()`.
         xlabel : str, optional
             Label for the x-axis.
         ylabel : str, optional

@@ -25,15 +25,15 @@ lazyr.register("scipy.stats", verbose=VERBOSE)
 lazyr.register("seaborn", verbose=VERBOSE)
 
 # pylint: disable=wrong-import-position
-from . import container, core, dataset, plotter
+from . import container, core, dataset, setting
 from .__version__ import __version__
 from .container import *
 from .core import *
 from .dataset import *
-from .plotter import *
+from .setting import *
 
 __all__: list[str] = []
 __all__.extend(core.__all__)
-__all__.extend(plotter.__all__)
+__all__.extend(setting.__all__)
 __all__.extend(container.__all__)
 __all__.extend(dataset.__all__)
