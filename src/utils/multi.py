@@ -4,19 +4,9 @@ The core of multi: multi(), multipartial(), etc.
 """
 
 from dataclasses import dataclass
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Callable,
-    Generic,
-    Iterable,
-    LiteralString,
-    Optional,
-    TypeVar,
-)
+from typing import Any, Callable, Generic, Iterable, LiteralString, Optional, TypeVar
 
-if TYPE_CHECKING:
-    from hintwith import hintwith
+from hintwith import hintwith
 
 T = TypeVar("T")
 S = TypeVar("S", bound=LiteralString)
@@ -199,17 +189,11 @@ UNSUBSCRIPTABLE = MultiFlag(
     -1, "UNSUBSCRIPTABLE", TypeError, "object is not subscriptable"
 )
 
-if TYPE_CHECKING:
 
-    @hintwith(MultiObject)
-    def multi() -> MultiObject:
-        """Magic happens."""
-
-else:
-
-    def multi(*args, **kwargs) -> MultiObject:
-        """Same to `MultiObject()`"""
-        return MultiObject(*args, **kwargs)
+@hintwith(MultiObject)
+def multi(*args, **kwargs) -> MultiObject:
+    """Same to `MultiObject()`"""
+    return MultiObject(*args, **kwargs)
 
 
 def multipartial(**kwargs) -> Callable[[list], MultiObject]:
