@@ -8,8 +8,8 @@ $ pip install dataplot
 
 ## Requirements
 ```txt
-hintwith>=0.1.3
-lazyr>=0.0.16
+hintwith
+lazyr
 matplotlib
 numpy
 pandas

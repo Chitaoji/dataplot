@@ -26,7 +26,7 @@ lazyr.register("seaborn", verbose=VERBOSE)
 
 # pylint: disable=wrong-import-position
 from . import container, core, dataset, setting
-from .__version__ import __version__
+from ._version import __version__
 from .container import *
 from .core import *
 from .dataset import *
