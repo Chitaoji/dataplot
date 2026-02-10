@@ -37,6 +37,7 @@ class Histogram(Plotter):
     def paint(
         self,
         ax: "AxesWrapper",
+        *,
         __multi_prev_returned__: Optional[tuple[str, list[float]]] = None,
         __multi_is_final__: bool = True,
     ) -> list[float]:

@@ -35,6 +35,7 @@ class CorrMap(Plotter):
     def paint(
         self,
         ax: "AxesWrapper",
+        *,
         __multi_prev_returned__: Optional[tuple[list["NDArray"], list[str]]] = None,
         __multi_is_final__: bool = True,
     ) -> tuple[list["NDArray"], list[str]]:
