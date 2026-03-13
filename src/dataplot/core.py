@@ -53,12 +53,6 @@ def figure(
     return fig
 
 
-@overload
-def data(x: "NDArray", label: Optional[str] = None) -> PlotDataSet: ...
-@overload
-def data(*x: "NDArray", label: Optional[list[str]] = None) -> PlotDataSet: ...
-@overload
-def data(*x: Any, label: Optional[str | list[str]] = None) -> PlotDataSet: ...
 def data(*x: Any, label: Optional[str | list[str]] = None) -> PlotDataSet:
     """
     Initializes a dataset interface which provides methods for mathematical
