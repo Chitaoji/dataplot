@@ -56,26 +56,24 @@ def figure(
 @overload
 def data(x: "NDArray", label: Optional[str] = None) -> PlotDataSet: ...
 @overload
-def data(x: list["NDArray"], label: Optional[list[str]] = None) -> PlotDataSet: ...
+def data(*x: "NDArray", label: Optional[list[str]] = None) -> PlotDataSet: ...
 @overload
-def data(x: Any, label: Optional[str | list[str]] = None) -> PlotDataSet: ...
-def data(
-    x: "NDArray | list[NDArray] | Any", label: Optional[str | list[str]] = None
-) -> PlotDataSet:
+def data(*x: Any, label: Optional[str | list[str]] = None) -> PlotDataSet: ...
+def data(*x: Any, label: Optional[str | list[str]] = None) -> PlotDataSet:
     """
     Initializes a dataset interface which provides methods for mathematical
     operations and plotting.
 
     Parameters
     ----------
-    x : NDArray | list[NDArray] | Any
-        Input values, this takes either a single array or a list of arrays, with
-        each array representing a dataset.
+    *x : NDArray | Any
+        Input values, this takes one or multiple arrays, with each array
+        representing a dataset.
     label : str | list[str], optional
         Label(s) of the data, this takes either a single string or a list of strings.
-        If a list, should be the same length as `x`, with each element corresponding
-        to a specific array in `x`. If set to None, use "x{i}" (i = 1, 2. 3, ...) as
-        the label(s). By default None.
+        If a list, should be the same length as the number of input arrays, with
+        each element corresponding to a specific array in `x`. If set to None,
+        use "x{i}" (i = 1, 2. 3, ...) as the label(s). By default None.
 
     Returns
     -------
@@ -83,17 +81,29 @@ def data(
         Provides methods for mathematical operations and plotting.
 
     """
-    if isinstance(x, list) and any(isinstance(i, (np.ndarray, list)) for i in x):
+    if not x:
+        raise ValueError("at least one dataset should be provided")
+
+    if len(x) > 1:
         if label is None:
             label = [f"x{i}" for i in range(1, 1 + len(x))]
+        elif isinstance(label, str):
+            raise ValueError(
+                "for multiple datasets, please provide labels as a list of strings"
+            )
+        elif len(label) != len(x):
+            raise ValueError(
+                f"label should have the same length as x ({len(x)}), got {len(label)}"
+            )
         datas = [PlotDataSet(np.array(d), lb) for d, lb in zip(x, label)]
         return PlotDataSets(*datas)
+
     if isinstance(label, list):
         raise ValueError(
             "it seems not necessary to provide a list of labels, since "
             "the data has only one dimension"
         )
-    return PlotDataSet(np.array(x), label=label)
+    return PlotDataSet(np.array(x[0]), label=label)
 
 
 def show(
