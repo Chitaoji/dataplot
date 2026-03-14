@@ -8,7 +8,7 @@ $ pip install dataplot
 
 ## Requirements
 ```txt
-hintwith
+validating
 lazyr
 matplotlib
 numpy
