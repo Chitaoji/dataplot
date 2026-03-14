@@ -612,7 +612,6 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         log: bool = False,
         same_bin: bool = True,
         stats: bool = True,
-        *,
         ax: Optional["AxesWrapper"] = None,
         **kwargs: Unpack["SettingDict"],
     ) -> Artist:
@@ -661,7 +660,6 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         fmt: str = "",
         scatter: bool = False,
         sorted: bool = False,
-        *,
         ax: Optional["AxesWrapper"] = None,
         **kwargs: Unpack["SettingDict"],
     ) -> Artist:
@@ -703,7 +701,6 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         dots: int = 30,
         edge_precision: float = 1e-2,
         fmt: str = "o",
-        *,
         ax: Optional["AxesWrapper"] = None,
         **kwargs: Unpack["SettingDict"],
     ) -> Artist:
@@ -744,7 +741,6 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         dots: int = 30,
         edge_precision: float = 1e-6,
         fmt: str = "o",
-        *,
         ax: Optional["AxesWrapper"] = None,
         **kwargs: Unpack["SettingDict"],
     ) -> Artist:
@@ -785,7 +781,6 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         dots: int = 1000,
         edge_precision: float = 1e-6,
         fmt: str = "",
-        *,
         ax: Optional["AxesWrapper"] = None,
         **kwargs: Unpack["SettingDict"],
     ) -> Artist:
@@ -823,7 +818,6 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
     def corrmap(
         self,
         annot: bool = True,
-        *,
         ax: Optional["AxesWrapper"] = None,
         **kwargs: Unpack["SettingDict"],
     ) -> Artist:
