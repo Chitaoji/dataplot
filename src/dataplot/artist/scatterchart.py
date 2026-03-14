@@ -1,0 +1,59 @@
+"""
+Contains a plotter class: ScatterChart.
+
+NOTE: this module is private. All functions and objects are available in the main
+`dataplot` namespace - use that instead.
+
+"""
+
+from typing import TYPE_CHECKING, Optional
+
+import numpy as np
+from validating import dataclass
+
+from ..setting import PlotSettable
+from .base import Plotter
+
+if TYPE_CHECKING:
+    from ..container import AxesWrapper
+    from ..dataset import PlotDataSet
+
+__all__ = ["ScatterChart"]
+
+
+@dataclass(validate_methods=True)
+class ScatterChart(Plotter):
+    """
+    A plotter class that creates a scatter chart.
+
+    """
+
+    xticks: Optional["np.ndarray | PlotDataSet"]
+    fmt: str
+    sorted: bool
+
+    def paint(self, ax: "AxesWrapper", **_) -> None:
+        ax.set_default(title="Scatter Chart")
+        ax.load(self.settings)
+        self.__plot(ax)
+
+    def __plot(self, ax: "AxesWrapper") -> None:
+        if isinstance(self.xticks, PlotSettable):
+            xticks = self.xticks.data
+        else:
+            xticks = self.xticks
+        if xticks is None:
+            xticks = range(len(self.data))
+        elif (len_t := len(xticks)) != (len_d := len(self.data)):
+            raise ValueError(
+                "x-ticks and data must have the same length, but have "
+                f"lengths {len_t} and {len_d}"
+            )
+
+        if self.sorted:
+            paired = sorted(zip(xticks, self.data, strict=True), key=lambda pair: pair[0])
+            xticks, data = zip(*paired, strict=True)
+        else:
+            data = self.data
+
+        ax.ax.plot(xticks, data, self.fmt, linestyle="None", label=self.label)
