@@ -660,6 +660,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         xticks: Optional["NDArray | PlotDataSet"] = None,
         fmt: str = "",
         scatter: bool = False,
+        sorted: bool = False,
         *,
         ax: Optional["AxesWrapper"] = None,
         **kwargs: Unpack["SettingDict"],
@@ -678,6 +679,9 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         scatter : bool, optional
             Determines whether to include scatter points in the line chart, by default
             False.
+        sorted : bool, optional
+            Determines whether to sort by x-ticks before drawing the chart, by
+            default False.
         ax : AxesWrapper, optional
             Specifies the axes-wrapper on which the plot should be painted If
             not specified, the histogram will be plotted on a new axes in a new
