@@ -611,7 +611,6 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         log: bool = False,
         same_bin: bool = True,
         stats: bool = True,
-        *,
         ax: Optional["AxesWrapper"] = None,
         **kwargs: Unpack["SettingDict"],
     ) -> Artist:
@@ -659,7 +658,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         xticks: Optional["NDArray | PlotDataSet"] = None,
         fmt: str = "",
         scatter: bool = False,
-        *,
+        sorted: bool = False,
         ax: Optional["AxesWrapper"] = None,
         **kwargs: Unpack["SettingDict"],
     ) -> Artist:
@@ -677,6 +676,9 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         scatter : bool, optional
             Determines whether to include scatter points in the line chart, by default
             False.
+        sorted : bool, optional
+            Determines whether to sort by x-ticks before drawing the chart, by
+            default False.
         ax : AxesWrapper, optional
             Specifies the axes-wrapper on which the plot should be painted If
             not specified, the histogram will be plotted on a new axes in a new
@@ -698,7 +700,6 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         dots: int = 30,
         edge_precision: float = 1e-2,
         fmt: str = "o",
-        *,
         ax: Optional["AxesWrapper"] = None,
         **kwargs: Unpack["SettingDict"],
     ) -> Artist:
@@ -739,7 +740,6 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         dots: int = 30,
         edge_precision: float = 1e-6,
         fmt: str = "o",
-        *,
         ax: Optional["AxesWrapper"] = None,
         **kwargs: Unpack["SettingDict"],
     ) -> Artist:
@@ -780,7 +780,6 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         dots: int = 1000,
         edge_precision: float = 1e-6,
         fmt: str = "",
-        *,
         ax: Optional["AxesWrapper"] = None,
         **kwargs: Unpack["SettingDict"],
     ) -> Artist:
@@ -818,7 +817,6 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
     def corrmap(
         self,
         annot: bool = True,
-        *,
         ax: Optional["AxesWrapper"] = None,
         **kwargs: Unpack["SettingDict"],
     ) -> Artist:
