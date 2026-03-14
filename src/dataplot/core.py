@@ -5,17 +5,18 @@ NOTE: this module is private. All functions and objects are available in the mai
 `dataplot` namespace - use that instead.
 
 """
-from math import ceil, sqrt
+
 import dis
 import re
 import sys
-from typing import TYPE_CHECKING, Any, Optional, Unpack, overload
+from math import ceil, sqrt
+from typing import TYPE_CHECKING, Any, Optional, Unpack
 
 import numpy as np
 
+from ._typing import FigureSettingDict
 from .container import FigWrapper
 from .dataset import PlotDataSet, PlotDataSets
-from ._typing import FigureSettingDict
 
 if TYPE_CHECKING:
     from .artist import Artist
@@ -63,7 +64,8 @@ def _infer_assigned_name() -> Optional[str]:
             (
                 i
                 for i, ins in enumerate(instructions)
-                if ins.offset > frame.f_lasti and ins.opname in {"STORE_NAME", "STORE_FAST", "STORE_GLOBAL"}
+                if ins.offset > frame.f_lasti
+                and ins.opname in {"STORE_NAME", "STORE_FAST", "STORE_GLOBAL"}
             ),
             None,
         )
@@ -71,10 +73,9 @@ def _infer_assigned_name() -> Optional[str]:
             # `a = b = data(...)` compiles to STORE_* b then STORE_* a;
             # returning the last one better matches user expectation.
             last_store = store_index
-            while (
-                last_store + 1 < len(instructions)
-                and instructions[last_store + 1].opname in {"STORE_NAME", "STORE_FAST", "STORE_GLOBAL"}
-            ):
+            while last_store + 1 < len(instructions) and instructions[
+                last_store + 1
+            ].opname in {"STORE_NAME", "STORE_FAST", "STORE_GLOBAL"}:
                 last_store += 1
             return str(instructions[last_store].argval)
     except Exception:
@@ -177,7 +178,7 @@ def data(*x: Any, label: Optional[str | list[str]] = None) -> PlotDataSet:
             "the data has only one dimension"
         )
     if label is None:
-        label = _infer_assigned_name() or _infer_var_names(x[0])[0] or "x"
+        label = _infer_assigned_name() or _infer_var_names(x[0])[0] or "x1"
     return PlotDataSet(np.array(x[0]), label=label)
 
 
