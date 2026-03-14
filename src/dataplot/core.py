@@ -6,6 +6,7 @@ NOTE: this module is private. All functions and objects are available in the mai
 
 """
 from math import ceil, sqrt
+import dis
 import re
 import sys
 from typing import TYPE_CHECKING, Any, Optional, Unpack, overload
@@ -48,11 +49,36 @@ def _infer_var_names(*values: Any) -> list[Optional[str]]:
 
 
 def _infer_assigned_name() -> Optional[str]:
-    """Try inferring assignment target name from call-site source code."""
+    """Try inferring assignment target name from call-site."""
     try:
         frame = sys._getframe(2)
     except ValueError:
         return None
+
+    # Bytecode inspection works in REPL/notebook contexts where source code file
+    # is unavailable.
+    try:
+        instructions = list(dis.get_instructions(frame.f_code))
+        store_index = next(
+            (
+                i
+                for i, ins in enumerate(instructions)
+                if ins.offset > frame.f_lasti and ins.opname in {"STORE_NAME", "STORE_FAST", "STORE_GLOBAL"}
+            ),
+            None,
+        )
+        if store_index is not None:
+            # `a = b = data(...)` compiles to STORE_* b then STORE_* a;
+            # returning the last one better matches user expectation.
+            last_store = store_index
+            while (
+                last_store + 1 < len(instructions)
+                and instructions[last_store + 1].opname in {"STORE_NAME", "STORE_FAST", "STORE_GLOBAL"}
+            ):
+                last_store += 1
+            return str(instructions[last_store].argval)
+    except Exception:
+        pass
 
     try:
         context = frame.f_code.co_filename
