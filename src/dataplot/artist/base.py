@@ -7,9 +7,7 @@ NOTE: this module is private. All functions and objects are available in the mai
 """
 
 from collections import Counter
-from dataclasses import field
-
-from validating import dataclass
+from validating import attr, dataclass
 from typing import TYPE_CHECKING, Any, Optional
 
 from ..container import FigWrapper
@@ -65,8 +63,8 @@ class Plotter(PlotSettable):
 
     """
 
-    data: Optional["NDArray"] = field(repr=False, default=None, init=False)
-    label: Optional[str] = field(default=None, init=False)
+    data: Optional["NDArray"] = attr(repr=False, default=None, init=False)
+    label: Optional[str] = attr(default=None, init=False)
 
     def paint(
         self,
