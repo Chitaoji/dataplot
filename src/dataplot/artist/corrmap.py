@@ -6,13 +6,12 @@ NOTE: this module is private. All functions and objects are available in the mai
 
 """
 
-from validating import dataclass
 from typing import TYPE_CHECKING, Optional
 
 import numpy as np
-
 import pandas as pd
 import seaborn as sns
+from validating import dataclass
 
 from .base import Plotter
 
@@ -36,9 +35,9 @@ class CorrMap(Plotter):
         self,
         ax: "AxesWrapper",
         *,
-        __multi_prev_returned__: Optional[tuple[list["np.ndarray"], list[str]]] = None,
+        __multi_prev_returned__: Optional[tuple[list[np.ndarray], list[str]]] = None,
         __multi_is_final__: bool = True,
-    ) -> tuple[list["np.ndarray"], list[str]]:
+    ) -> tuple[list[np.ndarray], list[str]]:
         if __multi_prev_returned__ is None:
             arrays, labels = [], []
         else:
@@ -52,7 +51,7 @@ class CorrMap(Plotter):
         return arrays, labels
 
     def __plot(
-        self, ax: "AxesWrapper", arrays: list["np.ndarray"], labels: list[str]
+        self, ax: "AxesWrapper", arrays: list[np.ndarray], labels: list[str]
     ) -> None:
         corr = pd.DataFrame(arrays, index=labels).T.corr()
         sns.heatmap(corr, ax=ax.ax, annot=self.annot)

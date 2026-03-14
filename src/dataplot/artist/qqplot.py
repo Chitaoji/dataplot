@@ -5,14 +5,15 @@ NOTE: this module is private. All functions and objects are available in the mai
 `dataplot` namespace - use that instead.
 
 """
-from validating import dataclass
+
 from typing import TYPE_CHECKING
 
 import numpy as np
 from scipy import stats
+from validating import dataclass
 
-from ..setting import PlotSettable
 from .._typing import DistName
+from ..setting import PlotSettable
 from ..utils.math import get_quantile, linear_regression_1d
 from .base import Plotter
 
@@ -50,7 +51,7 @@ class QQPlot(Plotter):
         ax.ax.plot(q1, q2, self.fmt, zorder=2.1, label=f"{self.label} & {xlabel}")
         self._plot_fitted_line(ax, q1, q2)
 
-    def _generate_dist(self) -> tuple[str, "np.ndarray", "np.ndarray"]:
+    def _generate_dist(self) -> tuple[str, np.ndarray, np.ndarray]:
         if not 0 <= self.edge_precision < 0.5:
             raise ValueError(
                 "'edge_precision' should be on the interval [0, 0.5), got "
@@ -73,7 +74,7 @@ class QQPlot(Plotter):
         return xlabel, p, q
 
     @staticmethod
-    def _plot_fitted_line(ax: "AxesWrapper", x: "np.ndarray", y: "np.ndarray") -> None:
+    def _plot_fitted_line(ax: "AxesWrapper", x: np.ndarray, y: np.ndarray) -> None:
         a, b = linear_regression_1d(y, x)
         l, r = x.min(), x.max()
         ax.ax.plot(
@@ -81,7 +82,7 @@ class QQPlot(Plotter):
         )
 
     @staticmethod
-    def _get_ppf(dist: str, p: "np.ndarray") -> "np.ndarray":
+    def _get_ppf(dist: str, p: np.ndarray) -> np.ndarray:
         match dist:
             case "normal":
                 return stats.norm.ppf(p)

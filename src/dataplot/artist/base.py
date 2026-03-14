@@ -7,14 +7,14 @@ NOTE: this module is private. All functions and objects are available in the mai
 """
 
 from collections import Counter
-from validating import attr, dataclass
 from typing import TYPE_CHECKING, Any, Optional
 
 import numpy as np
+from validating import attr, dataclass
 
 from ..container import FigWrapper
 from ..setting import PlotSettable
-from ..utils.multi import multiple
+from ..utils.multi import MultiObject, multiple
 
 if TYPE_CHECKING:
     from ..container import AxesWrapper
@@ -34,7 +34,7 @@ class Artist(PlotSettable):
 
     """
 
-    plotter: "Plotter"
+    plotter: "Plotter | MultiObject"
 
     def __repr__(self) -> str:
         names = (x.__class__.__name__ for x in multiple(self.plotter))
@@ -63,7 +63,7 @@ class Plotter(PlotSettable):
 
     """
 
-    data: Optional["np.ndarray"] = attr(repr=False, default=None, init=False)
+    data: Optional[np.ndarray] = attr(repr=False, default=None, init=False)
     label: Optional[str] = attr(default=None, init=False)
 
     def paint(
