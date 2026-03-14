@@ -35,8 +35,6 @@ from .utils.multi import (
 )
 
 if TYPE_CHECKING:
-    from numpy.typing import NDArray
-
     from .artist import Plotter
     from .container import AxesWrapper
 
@@ -54,7 +52,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
     Parameters
     ----------
-    data : NDArray
+    data : np.ndarray
         Input data.
     label : str, optional
         Label of the data. If set to None, use "x1" as the label. By default None.
@@ -63,7 +61,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
     ----------
     fmt : str
         A string recording the mathmatical operations done on the data.
-    original_data : NDArray
+    original_data : np.ndarray
         Original input data.
     settings : PlotSettings
         Settings for plot (whether a figure or an axes).
@@ -654,7 +652,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
     def plot(
         self,
-        xticks: Optional["NDArray | PlotDataSet"] = None,
+        xticks: Optional["np.ndarray | PlotDataSet"] = None,
         fmt: str = "",
         scatter: bool = False,
         sorted: bool = False,
@@ -667,7 +665,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
         Parameters
         ----------
-        xticks : NDArray | PlotDataSet, optional
+        xticks : np.ndarray | PlotDataSet, optional
             Specifies the x-ticks for the line chart. If not provided, the x-ticks will
             be set to `range(len(data))`. By default None.
         fmt : str, optional
@@ -695,7 +693,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
     def qqplot(
         self,
-        dist_or_sample: "DistName | NDArray | PlotDataSet" = "normal",
+        dist_or_sample: "DistName | np.ndarray | PlotDataSet" = "normal",
         dots: int = 30,
         edge_precision: float = 1e-2,
         fmt: str = "o",
@@ -707,9 +705,9 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
         Parameters
         ----------
-        dist_or_sample : DistName | NDArray | PlotDataSet, optional
+        dist_or_sample : DistName | np.ndarray | PlotDataSet, optional
             Specifies the distribution to compare with. If str, specifies a
-            theoretical distribution; if NDArray or PlotDataSet, specifies
+            theoretical distribution; if np.ndarray or PlotDataSet, specifies
             another real sample. By default 'normal'.
         dots : int, optional
             Number of dots, by default 30.
@@ -735,7 +733,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
     def ppplot(
         self,
-        dist_or_sample: "DistName | NDArray | PlotDataSet" = "normal",
+        dist_or_sample: "DistName | np.ndarray | PlotDataSet" = "normal",
         dots: int = 30,
         edge_precision: float = 1e-6,
         fmt: str = "o",
@@ -747,9 +745,9 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
         Parameters
         ----------
-        dist_or_sample : DistName | NDArray | PlotDataSet, optional
+        dist_or_sample : DistName | np.ndarray | PlotDataSet, optional
             Specifies the distribution to compare with. If str, specifies a
-            theoretical distribution; if NDArray or PlotDataSet, specifies
+            theoretical distribution; if np.ndarray or PlotDataSet, specifies
             another real sample. By default 'normal'.
         dots : int, optional
             Number of dots, by default 30.
@@ -775,7 +773,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
     def ksplot(
         self,
-        dist_or_sample: "DistName | NDArray | PlotDataSet" = "normal",
+        dist_or_sample: "DistName | np.ndarray | PlotDataSet" = "normal",
         dots: int = 1000,
         edge_precision: float = 1e-6,
         fmt: str = "",
@@ -787,9 +785,9 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
         Parameters
         ----------
-        dist_or_sample : DistName | NDArray | PlotDataSet, optional
+        dist_or_sample : DistName | np.ndarray | PlotDataSet, optional
             Specifies the distribution to compare with. If str, specifies a
-            theoretical distribution; if NDArray or PlotDataSet, specifies
+            theoretical distribution; if np.ndarray or PlotDataSet, specifies
             another real sample. By default 'normal'.
         dots : int, optional
             Number of dots, by default 1000.

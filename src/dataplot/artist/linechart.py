@@ -9,12 +9,12 @@ NOTE: this module is private. All functions and objects are available in the mai
 from validating import dataclass
 from typing import TYPE_CHECKING, Optional
 
+import numpy as np
+
 from ..setting import PlotSettable
 from .base import Plotter
 
 if TYPE_CHECKING:
-    from numpy.typing import NDArray
-
     from ..container import AxesWrapper
     from ..dataset import PlotDataSet
 
@@ -28,7 +28,7 @@ class LineChart(Plotter):
 
     """
 
-    xticks: Optional["NDArray | PlotDataSet"]
+    xticks: Optional["np.ndarray | PlotDataSet"]
     fmt: str
     scatter: bool
     sorted: bool
