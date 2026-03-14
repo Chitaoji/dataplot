@@ -24,7 +24,16 @@ import pandas as pd
 from validating import attr, dataclass
 
 from ._typing import DistName, ResampleRule, SettingDict
-from .artist import Artist, CorrMap, Histogram, KSPlot, LineChart, PPPlot, QQPlot
+from .artist import (
+    Artist,
+    CorrMap,
+    Histogram,
+    KSPlot,
+    LineChart,
+    PPPlot,
+    QQPlot,
+    ScatterChart,
+)
 from .setting import PlotSettable, PlotSettings
 from .utils.multi import (
     REMAIN,
@@ -656,7 +665,6 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         fmt: str = "",
         scatter: bool = False,
         sorted: bool = False,
-        line: bool = True,
         ax: Optional["AxesWrapper"] = None,
         **kwargs: Unpack[SettingDict],
     ) -> Artist:
@@ -677,8 +685,6 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         sorted : bool, optional
             Determines whether to sort by x-ticks before drawing the chart, by
             default False.
-        line : bool, optional
-            Determines whether to include a line in the chart, by default True.
         ax : AxesWrapper, optional
             Specifies the axes-wrapper on which the plot should be painted If
             not specified, the histogram will be plotted on a new axes in a new
@@ -729,15 +735,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             An instance of Artist.
 
         """
-        return self.plot(
-            xticks=xticks,
-            fmt=fmt,
-            scatter=True,
-            sorted=sorted,
-            line=False,
-            ax=ax,
-            **kwargs,
-        )
+        return self._get_artist(ScatterChart, locals())
 
     def qqplot(
         self,

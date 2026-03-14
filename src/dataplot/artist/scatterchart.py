@@ -1,15 +1,15 @@
 """
-Contains a plotter class: LineChart.
+Contains a plotter class: ScatterChart.
 
 NOTE: this module is private. All functions and objects are available in the main
 `dataplot` namespace - use that instead.
 
 """
 
-from validating import dataclass
 from typing import TYPE_CHECKING, Optional
 
 import numpy as np
+from validating import dataclass
 
 from ..setting import PlotSettable
 from .base import Plotter
@@ -18,23 +18,22 @@ if TYPE_CHECKING:
     from ..container import AxesWrapper
     from ..dataset import PlotDataSet
 
-__all__ = ["LineChart"]
+__all__ = ["ScatterChart"]
 
 
 @dataclass(validate_methods=True)
-class LineChart(Plotter):
+class ScatterChart(Plotter):
     """
-    A plotter class that creates a line chart.
+    A plotter class that creates a scatter chart.
 
     """
 
     xticks: Optional["np.ndarray | PlotDataSet"]
     fmt: str
-    scatter: bool
     sorted: bool
 
     def paint(self, ax: "AxesWrapper", **_) -> None:
-        ax.set_default(title="Line Chart")
+        ax.set_default(title="Scatter Chart")
         ax.load(self.settings)
         self.__plot(ax)
 
@@ -57,6 +56,4 @@ class LineChart(Plotter):
         else:
             data = self.data
 
-        ax.ax.plot(xticks, data, self.fmt, label=self.label)
-        if self.scatter:
-            ax.ax.scatter(xticks, data, zorder=2.0)
+        ax.ax.plot(xticks, data, self.fmt, linestyle="None", label=self.label)
