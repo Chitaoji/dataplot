@@ -656,6 +656,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         fmt: str = "",
         scatter: bool = False,
         sorted: bool = False,
+        line: bool = True,
         ax: Optional["AxesWrapper"] = None,
         **kwargs: Unpack[SettingDict],
     ) -> Artist:
@@ -676,6 +677,8 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         sorted : bool, optional
             Determines whether to sort by x-ticks before drawing the chart, by
             default False.
+        line : bool, optional
+            Determines whether to include a line in the chart, by default True.
         ax : AxesWrapper, optional
             Specifies the axes-wrapper on which the plot should be painted If
             not specified, the histogram will be plotted on a new axes in a new
@@ -690,6 +693,51 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
         """
         return self._get_artist(LineChart, locals())
+
+    def scatter(
+        self,
+        xticks: Optional["np.ndarray | PlotDataSet"] = None,
+        fmt: str = "",
+        sorted: bool = False,
+        ax: Optional["AxesWrapper"] = None,
+        **kwargs: Unpack[SettingDict],
+    ) -> Artist:
+        """
+        Create a scatter chart for the data. If there are more than one datasets,
+        all of them should have the same length.
+
+        Parameters
+        ----------
+        xticks : np.ndarray | PlotDataSet, optional
+            Specifies the x-ticks for the chart. If not provided, the x-ticks will
+            be set to `range(len(data))`. By default None.
+        fmt : str, optional
+            A format string, e.g. 'ro' for red circles, by default ''.
+        sorted : bool, optional
+            Determines whether to sort by x-ticks before drawing the chart, by
+            default False.
+        ax : AxesWrapper, optional
+            Specifies the axes-wrapper on which the plot should be painted If
+            not specified, the histogram will be plotted on a new axes in a new
+            figure. By default None.
+        **kwargs : **SettingDict
+            Specifies the plot settings, see `.set_plot()` for more details.
+
+        Returns
+        -------
+        Artist
+            An instance of Artist.
+
+        """
+        return self.plot(
+            xticks=xticks,
+            fmt=fmt,
+            scatter=True,
+            sorted=sorted,
+            line=False,
+            ax=ax,
+            **kwargs,
+        )
 
     def qqplot(
         self,
@@ -890,6 +938,7 @@ class PlotDataSets(MultiObject[PlotDataSet]):
             case (
                 "hist"
                 | "plot"
+                | "scatter"
                 | "ppplot"
                 | "qqplot"
                 | "ksplot"

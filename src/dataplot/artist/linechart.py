@@ -32,6 +32,7 @@ class LineChart(Plotter):
     fmt: str
     scatter: bool
     sorted: bool
+    line: bool
 
     def paint(self, ax: "AxesWrapper", **_) -> None:
         ax.set_default(title="Line Chart")
@@ -57,6 +58,8 @@ class LineChart(Plotter):
         else:
             data = self.data
 
-        ax.ax.plot(xticks, data, self.fmt, label=self.label)
+        if self.line:
+            ax.ax.plot(xticks, data, self.fmt, label=self.label)
         if self.scatter:
-            ax.ax.scatter(xticks, data, zorder=2.0)
+            scatter_label = None if self.line else self.label
+            ax.ax.scatter(xticks, data, zorder=2.0, label=scatter_label)
