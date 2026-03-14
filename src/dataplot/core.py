@@ -6,6 +6,7 @@ NOTE: this module is private. All functions and objects are available in the mai
 
 """
 from math import ceil, sqrt
+import re
 import sys
 from typing import TYPE_CHECKING, Any, Optional, Unpack, overload
 
@@ -44,6 +45,33 @@ def _infer_var_names(*values: Any) -> list[Optional[str]]:
     finally:
         del search_frame
     return labels
+
+
+def _infer_assigned_name() -> Optional[str]:
+    """Try inferring assignment target name from call-site source code."""
+    try:
+        frame = sys._getframe(2)
+    except ValueError:
+        return None
+
+    try:
+        context = frame.f_code.co_filename
+        lineno = frame.f_lineno
+        with open(context, "r", encoding="utf-8") as f:
+            lines = f.readlines()
+        line = lines[lineno - 1].strip()
+    except (OSError, IndexError):
+        return None
+    finally:
+        del frame
+
+    if "=" not in line:
+        return None
+    lhs = line.split("=", 1)[0].strip()
+    if not lhs:
+        return None
+    m = re.match(r"([A-Za-z_][A-Za-z0-9_]*)", lhs)
+    return m.group(1) if m else None
 
 
 def figure(
@@ -123,7 +151,7 @@ def data(*x: Any, label: Optional[str | list[str]] = None) -> PlotDataSet:
             "the data has only one dimension"
         )
     if label is None:
-        label = _infer_var_names(x[0])[0]
+        label = _infer_assigned_name() or _infer_var_names(x[0])[0] or "x"
     return PlotDataSet(np.array(x[0]), label=label)
 
 
