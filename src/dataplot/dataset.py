@@ -7,7 +7,9 @@ NOTE: this module is private. All functions and objects are available in the mai
 """
 
 from abc import ABCMeta
-from dataclasses import dataclass, field
+from dataclasses import field
+
+from validating import dataclass
 from functools import partial
 from typing import (
     TYPE_CHECKING,
@@ -44,7 +46,7 @@ if TYPE_CHECKING:
 __all__ = ["PlotDataSet"]
 
 
-@dataclass(slots=True)
+@dataclass(validate_methods=True)
 class PlotDataSet(PlotSettable, metaclass=ABCMeta):
     """
     A dataset class providing methods for mathematical operations and plotting.

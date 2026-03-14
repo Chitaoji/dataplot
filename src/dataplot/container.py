@@ -7,7 +7,9 @@ NOTE: this module is private. All functions and objects are available in the mai
 """
 
 import logging
-from dataclasses import dataclass, field
+from dataclasses import field
+
+from validating import dataclass
 from typing import TYPE_CHECKING, Any, Self, Unpack
 
 import matplotlib.pyplot as plt
@@ -24,7 +26,7 @@ if TYPE_CHECKING:
 __all__ = ["FigWrapper", "AxesWrapper"]
 
 
-@dataclass(slots=True)
+@dataclass(validate_methods=True)
 class FigWrapper(PlotSettable):
     """
     A wrapper of figure.
@@ -128,7 +130,7 @@ class FigWrapper(PlotSettable):
             )
 
 
-@dataclass(slots=True)
+@dataclass(validate_methods=True)
 class AxesWrapper(PlotSettable):
     """
     Serves as a wrapper for creating and customizing axes in matplotlib.

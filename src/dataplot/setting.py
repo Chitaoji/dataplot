@@ -6,7 +6,9 @@ NOTE: this module is private. All functions and objects are available in the mai
 
 """
 
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, field
+
+from validating import dataclass
 from typing import TYPE_CHECKING, Any, Optional, Self, Unpack
 
 if TYPE_CHECKING:
@@ -24,7 +26,7 @@ if TYPE_CHECKING:
 __all__ = ["PlotSettings", "PlotSettable"]
 
 
-@dataclass(slots=True)
+@dataclass(validate_methods=True)
 class PlotSettings:
     """Stores and manages settings for plotting."""
 
@@ -84,7 +86,7 @@ class PlotSettings:
             self[k] = None
 
 
-@dataclass(slots=True, init=False)
+@dataclass(init=False, validate_methods=True)
 class PlotSettable:
     """Contains an attribute of plot settings, and provides methods for
     handling these settings.
