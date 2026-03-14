@@ -84,7 +84,7 @@ class PlotSettings:
             self[k] = None
 
 
-@dataclass(init=False, validate_methods=True)
+@dataclass(init=False)
 class PlotSettable:
     """Contains an attribute of plot settings, and provides methods for
     handling these settings.
