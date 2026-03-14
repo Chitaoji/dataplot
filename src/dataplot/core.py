@@ -6,6 +6,7 @@ NOTE: this module is private. All functions and objects are available in the mai
 
 """
 from math import ceil, sqrt
+import inspect
 from typing import TYPE_CHECKING, Any, Optional, Unpack, overload
 
 import numpy as np
@@ -19,6 +20,27 @@ if TYPE_CHECKING:
 
 
 __all__ = ["figure", "data", "show"]
+
+
+def _infer_var_names(*values: Any) -> list[Optional[str]]:
+    frame = inspect.currentframe()
+    caller = None if frame is None else frame.f_back
+    if caller is None:
+        return [None] * len(values)
+
+    labels: list[Optional[str]] = []
+    local_items = list(caller.f_locals.items())
+    global_items = list(caller.f_globals.items())
+    try:
+        for value in values:
+            name = next((k for k, v in local_items if v is value), None)
+            if name is None:
+                name = next((k for k, v in global_items if v is value), None)
+            labels.append(name)
+    finally:
+        del frame
+        del caller
+    return labels
 
 
 def figure(
@@ -77,7 +99,10 @@ def data(*x: Any, label: Optional[str | list[str]] = None) -> PlotDataSet:
 
     if len(x) > 1:
         if label is None:
-            label = [f"x{i}" for i in range(1, 1 + len(x))]
+            label = [
+                lb if lb is not None else f"x{i}"
+                for i, lb in enumerate(_infer_var_names(*x), start=1)
+            ]
         elif isinstance(label, str):
             raise ValueError(
                 "for multiple datasets, please provide labels as a list of strings"
@@ -94,6 +119,8 @@ def data(*x: Any, label: Optional[str | list[str]] = None) -> PlotDataSet:
             "it seems not necessary to provide a list of labels, since "
             "the data has only one dimension"
         )
+    if label is None:
+        label = _infer_var_names(x[0])[0]
     return PlotDataSet(np.array(x[0]), label=label)
 
 
