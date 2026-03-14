@@ -698,6 +698,11 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             An instance of Artist.
 
         """
+        if isinstance(xticks, PlotSettable) and "xlabel" not in kwargs:
+            if kwargs.get("format_label", True):
+                kwargs["xlabel"] = xticks.formatted_label()
+            else:
+                kwargs["xlabel"] = xticks.label
         return self._get_artist(LineChart, locals())
 
     def scatter(
@@ -735,6 +740,11 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             An instance of Artist.
 
         """
+        if isinstance(xticks, PlotSettable) and "xlabel" not in kwargs:
+            if kwargs.get("format_label", True):
+                kwargs["xlabel"] = xticks.formatted_label()
+            else:
+                kwargs["xlabel"] = xticks.label
         return self._get_artist(ScatterChart, locals())
 
     def qqplot(
