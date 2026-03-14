@@ -6,11 +6,11 @@ NOTE: this module is private. All functions and objects are available in the mai
 
 """
 
-from validating import dataclass
 from typing import TYPE_CHECKING, Optional
 
 import numpy as np
 from scipy import stats
+from validating import dataclass
 
 from .base import Plotter
 
@@ -38,7 +38,7 @@ class Histogram(Plotter):
         self,
         ax: "AxesWrapper",
         *,
-        __multi_prev_returned__: Optional[tuple[str, list[float]]] = None,
+        __multi_prev_returned__: Optional[tuple[str, np.ndarray]] = None,
         __multi_is_final__: bool = True,
     ) -> list[float]:
         ax.set_default(
@@ -63,7 +63,7 @@ class Histogram(Plotter):
 
     def __hist(
         self, ax: "AxesWrapper", bins: int | list[float] = 100
-    ) -> tuple[str, list[float]]:
+    ) -> tuple[str, np.ndarray]:
         _, bin_list, _ = ax.ax.hist(
             self.data,
             bins=bins,
