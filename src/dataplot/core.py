@@ -6,7 +6,7 @@ NOTE: this module is private. All functions and objects are available in the mai
 
 """
 from math import ceil, sqrt
-import inspect
+import sys
 from typing import TYPE_CHECKING, Any, Optional, Unpack, overload
 
 import numpy as np
@@ -23,23 +23,26 @@ __all__ = ["figure", "data", "show"]
 
 
 def _infer_var_names(*values: Any) -> list[Optional[str]]:
-    frame = inspect.currentframe()
-    caller = None if frame is None else frame.f_back
-    if caller is None:
+    try:
+        search_frame = sys._getframe(1)
+    except ValueError:
         return [None] * len(values)
 
     labels: list[Optional[str]] = []
-    local_items = list(caller.f_locals.items())
-    global_items = list(caller.f_globals.items())
     try:
         for value in values:
-            name = next((k for k, v in local_items if v is value), None)
-            if name is None:
-                name = next((k for k, v in global_items if v is value), None)
+            name = None
+            current = search_frame
+            while current is not None and name is None:
+                local_items = list(current.f_locals.items())
+                global_items = list(current.f_globals.items())
+                name = next((k for k, v in local_items if v is value), None)
+                if name is None:
+                    name = next((k for k, v in global_items if v is value), None)
+                current = current.f_back
             labels.append(name)
     finally:
-        del frame
-        del caller
+        del search_frame
     return labels
 
 
