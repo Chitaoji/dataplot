@@ -5,8 +5,8 @@ NOTE: this module is private. All functions and objects are available in the mai
 `dataplot` namespace - use that instead.
 
 """
+
 from abc import ABCMeta
-from validating import attr, dataclass
 from functools import partial
 from typing import (
     TYPE_CHECKING,
@@ -21,10 +21,11 @@ from typing import (
 
 import numpy as np
 import pandas as pd
+from validating import attr, dataclass
 
+from ._typing import DistName, ResampleRule, SettingDict
 from .artist import Artist, CorrMap, Histogram, KSPlot, LineChart, PPPlot, QQPlot
 from .setting import PlotSettable, PlotSettings
-from ._typing import DistName, ResampleRule, SettingDict
 from .utils.multi import (
     REMAIN,
     UNSUBSCRIPTABLE,
@@ -80,10 +81,10 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
     """
 
-    data: "NDArray"
+    data: np.ndarray
     label: Optional[str] = attr(default=None)
     fmt_: str = attr(init=False, default="{0}")
-    original_data: "NDArray" = attr(init=False)
+    original_data: np.ndarray = attr(init=False)
     settings: PlotSettings = attr(init=False, default_factory=PlotSettings)
     priority: int = attr(init=False, default=0)
 
@@ -98,7 +99,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         self.original_data = self.data
 
     def __create(
-        self, fmt: str, data: "NDArray", priority: int = 0, label: Optional[str] = None
+        self, fmt: str, data: np.ndarray, priority: int = 0, label: Optional[str] = None
     ) -> Self:
         obj = self.customize(
             self.__class__,
@@ -174,7 +175,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         self,
         other: "float | int | PlotDataSet | Any",
         sign: str,
-        func: Callable[[Any, Any], "NDArray"],
+        func: Callable[[Any, Any], np.ndarray],
         reverse: bool = False,
         priority: int = 10,
     ) -> Self:
@@ -856,7 +857,6 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             artist.load(local["kwargs"])
         artist.paint(local["ax"])
         return artist
-
 
 
 class PlotDataSets(MultiObject[PlotDataSet]):
