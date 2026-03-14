@@ -13,11 +13,11 @@ import numpy as np
 
 from .container import FigWrapper
 from .dataset import PlotDataSet, PlotDataSets
+from ._typing import FigureSettingDict
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
 
-    from ._typing import FigureSettingDict
     from .artist import Artist
 
 

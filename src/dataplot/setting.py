@@ -9,19 +9,17 @@ NOTE: this module is private. All functions and objects are available in the mai
 from dataclasses import asdict
 
 from validating import attr, dataclass
-from typing import TYPE_CHECKING, Any, Optional, Self, Unpack
+from typing import Any, Optional, Self, Unpack
 
-if TYPE_CHECKING:
-    from ._typing import (
-        DefaultVar,
-        FontDict,
-        PlotSettableVar,
-        SettingDict,
-        SettingKey,
-        StyleName,
-        SubplotDict,
-    )
-
+from ._typing import (
+    DefaultVar,
+    FontDict,
+    PlotSettableVar,
+    SettingDict,
+    SettingKey,
+    StyleName,
+    SubplotDict,
+)
 
 __all__ = ["PlotSettings", "PlotSettable"]
 
