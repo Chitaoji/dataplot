@@ -5,7 +5,6 @@ NOTE: this module is private. All functions and objects are available in the mai
 `dataplot` namespace - use that instead.
 
 """
-
 from abc import ABCMeta
 from validating import attr, dataclass
 from functools import partial
@@ -264,7 +263,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         """
         return PlotDataSets(self, *others)
 
-    def resample(self, n: int, rule: "ResampleRule" = "head") -> Self:
+    def resample(self, n: int, rule: ResampleRule = "head") -> Self:
         """
         Resample from the data.
 
@@ -526,14 +525,14 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
     @overload
     def set_plot(
-        self, *, inplace: Literal[False] = False, **kwargs: Unpack["SettingDict"]
+        self, *, inplace: Literal[False] = False, **kwargs: Unpack[SettingDict]
     ) -> Self: ...
     @overload
     def set_plot(
-        self, *, inplace: Literal[True] = True, **kwargs: Unpack["SettingDict"]
+        self, *, inplace: Literal[True] = True, **kwargs: Unpack[SettingDict]
     ) -> None: ...
     def set_plot(
-        self, *, inplace: bool = False, **kwargs: Unpack["SettingDict"]
+        self, *, inplace: bool = False, **kwargs: Unpack[SettingDict]
     ) -> Self | None:
         """
         Set the settings of a plot (whether a figure or an axes).
@@ -611,7 +610,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         same_bin: bool = True,
         stats: bool = True,
         ax: Optional["AxesWrapper"] = None,
-        **kwargs: Unpack["SettingDict"],
+        **kwargs: Unpack[SettingDict],
     ) -> Artist:
         """
         Create a histogram of the data.
@@ -659,7 +658,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         scatter: bool = False,
         sorted: bool = False,
         ax: Optional["AxesWrapper"] = None,
-        **kwargs: Unpack["SettingDict"],
+        **kwargs: Unpack[SettingDict],
     ) -> Artist:
         """
         Create a line chart for the data. If there are more than one datasets, all of
@@ -700,7 +699,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         edge_precision: float = 1e-2,
         fmt: str = "o",
         ax: Optional["AxesWrapper"] = None,
-        **kwargs: Unpack["SettingDict"],
+        **kwargs: Unpack[SettingDict],
     ) -> Artist:
         """
         Create a quantile-quantile plot.
@@ -740,7 +739,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         edge_precision: float = 1e-6,
         fmt: str = "o",
         ax: Optional["AxesWrapper"] = None,
-        **kwargs: Unpack["SettingDict"],
+        **kwargs: Unpack[SettingDict],
     ) -> Artist:
         """
         Create a probability-probability plot.
@@ -780,7 +779,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         edge_precision: float = 1e-6,
         fmt: str = "",
         ax: Optional["AxesWrapper"] = None,
-        **kwargs: Unpack["SettingDict"],
+        **kwargs: Unpack[SettingDict],
     ) -> Artist:
         """
         Create a kolmogorov-smirnov plot.
@@ -817,7 +816,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         self,
         annot: bool = True,
         ax: Optional["AxesWrapper"] = None,
-        **kwargs: Unpack["SettingDict"],
+        **kwargs: Unpack[SettingDict],
     ) -> Artist:
         """
         Create a correlation heatmap.
@@ -880,7 +879,7 @@ class PlotDataSets(MultiObject[PlotDataSet]):
         data_info = "\n- ".join([x.data_info() for x in self.__multiobjects__])
         return f"{PlotDataSet.__name__}\n- {data_info}"
 
-    def batched(self, n: int = 1) -> "MultiObject":
+    def batched(self, n: int = 1) -> MultiObject:
         """Overrides `PlotDataSet.batched()`."""
         PlotDataSet.batched(self, n)
         m = MultiObject()
