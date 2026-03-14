@@ -17,7 +17,6 @@ This project falls under the BSD 3-Clause License.
 import lazyr
 
 with lazyr.setverbose(0):
-    lazyr.register("matplotlib.pyplot")
     lazyr.register("pandas")
     lazyr.register("scipy.stats")
     lazyr.register("seaborn")
