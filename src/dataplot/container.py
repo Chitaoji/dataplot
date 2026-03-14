@@ -7,18 +7,16 @@ NOTE: this module is private. All functions and objects are available in the mai
 """
 
 import logging
-from typing import TYPE_CHECKING, Any, Self, Unpack
+from typing import Any, Self, Unpack
 
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.figure import Figure
+from matplotlib.pyplot import Axes
 from validating import attr, dataclass
 
 from ._typing import AxesSettingDict, FigureSettingDict, SettingKey
 from .setting import PlotSettable
-
-if TYPE_CHECKING:
-    from matplotlib.figure import Figure
-    from matplotlib.pyplot import Axes
 
 __all__ = ["FigWrapper", "AxesWrapper"]
 
@@ -33,7 +31,7 @@ class AxesWrapper(PlotSettable):
 
     """
 
-    ax: "Axes"
+    ax: Axes
 
     def set_axes(self, **kwargs: Unpack[AxesSettingDict]) -> None:
         """
@@ -96,7 +94,7 @@ class FigWrapper(PlotSettable):
     ncols: int = 1
     active: bool = attr(repr=False, default=True)
     entered: bool = attr(init=False, repr=False, default=False)
-    fig: "Figure" = attr(init=False, repr=False)
+    fig: Figure = attr(init=False, repr=False)
     axes: list[AxesWrapper] = attr(init=False, repr=False)
 
     def __enter__(self) -> Self:
