@@ -7,9 +7,7 @@ NOTE: this module is private. All functions and objects are available in the mai
 """
 
 import logging
-from dataclasses import field
-
-from validating import dataclass
+from validating import attr, dataclass
 from typing import TYPE_CHECKING, Any, Self, Unpack
 
 import matplotlib.pyplot as plt
@@ -38,10 +36,10 @@ class FigWrapper(PlotSettable):
 
     nrows: int = 1
     ncols: int = 1
-    active: bool = field(repr=False, default=True)
-    entered: bool = field(init=False, repr=False, default=False)
-    fig: "Figure" = field(init=False, repr=False)
-    axes: list["AxesWrapper"] = field(init=False, repr=False)
+    active: bool = attr(repr=False, default=True)
+    entered: bool = attr(init=False, repr=False, default=False)
+    fig: "Figure" = attr(init=False, repr=False)
+    axes: list["AxesWrapper"] = attr(init=False, repr=False)
 
     def __enter__(self) -> Self:
         """

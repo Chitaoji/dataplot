@@ -24,7 +24,6 @@ lazyr.register("pandas", verbose=VERBOSE)
 lazyr.register("scipy.stats", verbose=VERBOSE)
 lazyr.register("seaborn", verbose=VERBOSE)
 
-# pylint: disable=wrong-import-position
 from . import container, core, dataset, setting
 from .container import *
 from .core import *

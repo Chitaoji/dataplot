@@ -6,9 +6,9 @@ NOTE: this module is private. All functions and objects are available in the mai
 
 """
 
-from dataclasses import asdict, field
+from dataclasses import asdict
 
-from validating import dataclass
+from validating import attr, dataclass
 from typing import TYPE_CHECKING, Any, Optional, Self, Unpack
 
 if TYPE_CHECKING:
@@ -93,7 +93,7 @@ class PlotSettable:
 
     """
 
-    settings: PlotSettings = field(default_factory=PlotSettings, init=False)
+    settings: PlotSettings = attr(default_factory=PlotSettings, init=False)
 
     def _set(
         self, *, inplace: bool = False, **kwargs: Unpack["SettingDict"]

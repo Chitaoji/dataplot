@@ -7,9 +7,7 @@ NOTE: this module is private. All functions and objects are available in the mai
 """
 
 from abc import ABCMeta
-from dataclasses import field
-
-from validating import dataclass
+from validating import attr, dataclass
 from functools import partial
 from typing import (
     TYPE_CHECKING,
@@ -84,11 +82,11 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
     """
 
     data: "NDArray"
-    label: Optional[str] = field(default=None)
-    fmt_: str = field(init=False, default="{0}")
-    original_data: "NDArray" = field(init=False)
-    settings: PlotSettings = field(init=False, default_factory=PlotSettings)
-    priority: int = field(init=False, default=0)
+    label: Optional[str] = attr(default=None)
+    fmt_: str = attr(init=False, default="{0}")
+    original_data: "NDArray" = attr(init=False)
+    settings: PlotSettings = attr(init=False, default_factory=PlotSettings)
+    priority: int = attr(init=False, default=0)
 
     @classmethod
     def __subclasshook__(cls, __subclass: type) -> bool:
@@ -604,7 +602,6 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             raise ValueError(f"batch size should be greater than 0, got {n} instead")
         return MultiObject([self])
 
-    # pylint: disable=unused-argument
     def hist(
         self,
         bins: int | list[float] = 100,
@@ -861,7 +858,6 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         artist.paint(local["ax"])
         return artist
 
-    # pylint: enable=unused-argument
 
 
 class PlotDataSets(MultiObject[PlotDataSet]):
