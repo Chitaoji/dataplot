@@ -5,7 +5,6 @@ NOTE: this module is private. All functions and objects are available in the mai
 `dataplot` namespace - use that instead.
 
 """
-
 import logging
 from validating import attr, dataclass
 from typing import TYPE_CHECKING, Any, Self, Unpack
@@ -93,7 +92,7 @@ class FigWrapper(PlotSettable):
         plt.close(self.fig)
         plt.style.use("default")
 
-    def set_figure(self, **kwargs: Unpack["FigureSettingDict"]) -> None:
+    def set_figure(self, **kwargs: Unpack[FigureSettingDict]) -> None:
         """
         Set the settings of figure.
 
@@ -118,7 +117,7 @@ class FigWrapper(PlotSettable):
         """
         self._set(inplace=True, **kwargs)
 
-    def setting_check(self, key: "SettingKey", value: Any) -> None:
+    def setting_check(self, key: SettingKey, value: Any) -> None:
         if self.entered and key == "style":
             logging.warning(
                 "setting the '%s' of a figure has no effect unless it's done "
@@ -139,7 +138,7 @@ class AxesWrapper(PlotSettable):
 
     ax: "Axes"
 
-    def set_axes(self, **kwargs: Unpack["AxesSettingDict"]) -> None:
+    def set_axes(self, **kwargs: Unpack[AxesSettingDict]) -> None:
         """
         Set the settings of axes.
 

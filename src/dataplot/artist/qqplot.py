@@ -5,7 +5,6 @@ NOTE: this module is private. All functions and objects are available in the mai
 `dataplot` namespace - use that instead.
 
 """
-
 from validating import dataclass
 from typing import TYPE_CHECKING
 

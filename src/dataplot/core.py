@@ -5,7 +5,6 @@ NOTE: this module is private. All functions and objects are available in the mai
 `dataplot` namespace - use that instead.
 
 """
-
 from math import ceil, sqrt
 from typing import TYPE_CHECKING, Any, Optional, Unpack, overload
 
@@ -25,7 +24,7 @@ __all__ = ["figure", "data", "show"]
 
 
 def figure(
-    nrows: int = 1, ncols: int = 1, **kwargs: Unpack["FigureSettingDict"]
+    nrows: int = 1, ncols: int = 1, **kwargs: Unpack[FigureSettingDict]
 ) -> FigWrapper:
     """
     Provides a context manager interface (`__enter__` and `__exit__` methods) for
@@ -103,7 +102,7 @@ def data(*x: Any, label: Optional[str | list[str]] = None) -> PlotDataSet:
 def show(
     artist: "Artist | list[Artist]",
     ncols: Optional[int] = None,
-    **kwargs: Unpack["FigureSettingDict"],
+    **kwargs: Unpack[FigureSettingDict],
 ) -> None:
     """
     Paint the artist(a) on a new figure.
