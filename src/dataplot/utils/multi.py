@@ -3,8 +3,9 @@ The core of multi: multi(), multipartial(), etc.
 
 """
 
-from validating import dataclass
 from typing import Any, Callable, Generic, Iterable, LiteralString, Optional, TypeVar
+
+from validating import dataclass
 
 T = TypeVar("T")
 S = TypeVar("S", bound=LiteralString)
@@ -163,12 +164,12 @@ def repr_not_none(x: MultiObject) -> str:
 
 
 @dataclass(validate_methods=True)
-class MultiFlag(Generic[S]):
+class MultiFlag:
     """Flag for MultiObjects."""
 
     flag: int
-    name: S
-    err: Optional[type[Exception]] = None
+    name: str
+    err: type | None = None
     errmsg: str = ""
 
     def __repr__(self) -> str:

@@ -5,10 +5,11 @@ NOTE: this module is private. All functions and objects are available in the mai
 `dataplot` namespace - use that instead.
 
 """
+
 from dataclasses import asdict
+from typing import Any, Optional, Self, Unpack
 
 from validating import attr, dataclass
-from typing import Any, Optional, Self, Unpack
 
 from ._typing import (
     DefaultVar,
