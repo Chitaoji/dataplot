@@ -64,7 +64,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
     data : np.ndarray
         Input data.
     label : str, optional
-        Label of the data. If set to None, use "x1" as the label. By default None.
+        Label of the data. If set to None, use "x" as the label. By default None.
 
     Properties
     ----------
@@ -102,7 +102,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         return False
 
     def __post_init__(self) -> None:
-        self.label = "x1" if self.label is None else self.label
+        self.label = "x" if self.label is None else self.label
         self.original_data = self.data
 
     def __create(
