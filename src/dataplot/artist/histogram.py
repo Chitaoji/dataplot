@@ -6,7 +6,7 @@ NOTE: this module is private. All functions and objects are available in the mai
 
 """
 
-from dataclasses import dataclass
+from validating import dataclass
 from typing import TYPE_CHECKING, Optional
 
 import numpy as np
@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 __all__ = ["Histogram"]
 
 
-@dataclass(slots=True)
+@dataclass(validate_methods=True)
 class Histogram(Plotter):
     """
     A plotter class that creates a histogram.
