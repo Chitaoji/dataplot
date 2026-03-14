@@ -29,7 +29,6 @@ from .utils.multi import (
     REMAIN,
     UNSUBSCRIPTABLE,
     MultiObject,
-    multi,
     multipartial,
     single,
 )
@@ -126,7 +125,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
         """
         not_none = self.settings.repr_not_none()
-        return f"{self.formatted_label()}{': 'if not_none else ''}{not_none}"
+        return f"{self.formatted_label()}{': ' if not_none else ''}{not_none}"
 
     def __getitem__(self, __key: int) -> Self | Any:
         return UNSUBSCRIPTABLE
@@ -888,7 +887,7 @@ class PlotDataSets(MultiObject[PlotDataSet]):
     def batched(self, n: int = 1) -> "MultiObject":
         """Overrides `PlotDataSet.batched()`."""
         PlotDataSet.batched(self, n)
-        m = multi()
+        m = MultiObject()
         for i in range(0, len(self.__multiobjects__), n):
             m.__multiobjects__.append(PlotDataSets(*self.__multiobjects__[i : i + n]))
         return m

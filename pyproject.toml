@@ -4,9 +4,9 @@ build-backend = "hatchling.build"
 
 [project]
 name = "dataplot"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
-    "hintwith",
+    "validating",
     "lazyr",
     "matplotlib",
     "numpy",

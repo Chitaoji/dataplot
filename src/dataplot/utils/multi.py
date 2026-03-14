@@ -6,15 +6,12 @@ The core of multi: multi(), multipartial(), etc.
 from dataclasses import dataclass
 from typing import Any, Callable, Generic, Iterable, LiteralString, Optional, TypeVar
 
-from hintwith import hintwith
-
 T = TypeVar("T")
 S = TypeVar("S", bound=LiteralString)
 
 
 __all__ = [
     "MultiObject",
-    "multi",
     "multipartial",
     "single",
     "multiple",
@@ -100,6 +97,7 @@ class MultiObject(Generic[T]):
     def __call__(self, *args: Any, **kwargs: Any) -> "MultiObject | Any":
         returns = []
         len_items = len(self.__items)
+        r = None
         for i, obj in enumerate(self.__items):
             a = [single(x, n=i) for x in args]
             kwd = {k: single(v, n=i) for k, v in kwargs.items()}
@@ -188,12 +186,6 @@ REMAIN = MultiFlag(0, "REMAIN")
 UNSUBSCRIPTABLE = MultiFlag(
     -1, "UNSUBSCRIPTABLE", TypeError, "object is not subscriptable"
 )
-
-
-@hintwith(MultiObject)
-def multi(*args, **kwargs) -> MultiObject:
-    """Same to `MultiObject()`"""
-    return MultiObject(*args, **kwargs)
 
 
 def multipartial(**kwargs) -> Callable[[list], MultiObject]:
