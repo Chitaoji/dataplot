@@ -16,13 +16,11 @@ This project falls under the BSD 3-Clause License.
 
 import lazyr
 
-VERBOSE = 0
-
-lazyr.register("matplotlib.pyplot", verbose=VERBOSE)
-lazyr.register("numpy", verbose=VERBOSE)
-lazyr.register("pandas", verbose=VERBOSE)
-lazyr.register("scipy.stats", verbose=VERBOSE)
-lazyr.register("seaborn", verbose=VERBOSE)
+with lazyr.setverbose(0):
+    lazyr.register("matplotlib.pyplot")
+    lazyr.register("pandas")
+    lazyr.register("scipy.stats")
+    lazyr.register("seaborn")
 
 from . import container, core, dataset, setting
 from .container import *
