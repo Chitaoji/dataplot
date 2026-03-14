@@ -15,8 +15,6 @@ from .dataset import PlotDataSet, PlotDataSets
 from ._typing import FigureSettingDict
 
 if TYPE_CHECKING:
-    from numpy.typing import NDArray
-
     from .artist import Artist
 
 
@@ -59,7 +57,7 @@ def data(*x: Any, label: Optional[str | list[str]] = None) -> PlotDataSet:
 
     Parameters
     ----------
-    *x : NDArray | Any
+    *x : np.ndarray | Any
         Input values, this takes one or multiple arrays, with each array
         representing a dataset.
     label : str | list[str], optional

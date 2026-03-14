@@ -17,8 +17,6 @@ from ..utils.math import get_quantile, linear_regression_1d
 from .base import Plotter
 
 if TYPE_CHECKING:
-    from numpy.typing import NDArray
-
     from ..container import AxesWrapper
     from ..dataset import PlotDataSet
 
@@ -32,7 +30,7 @@ class QQPlot(Plotter):
 
     """
 
-    dist_or_sample: "DistName | NDArray | PlotDataSet"
+    dist_or_sample: "DistName | np.ndarray | PlotDataSet"
     dots: int
     edge_precision: float
     fmt: str
@@ -52,7 +50,7 @@ class QQPlot(Plotter):
         ax.ax.plot(q1, q2, self.fmt, zorder=2.1, label=f"{self.label} & {xlabel}")
         self._plot_fitted_line(ax, q1, q2)
 
-    def _generate_dist(self) -> tuple[str, "NDArray", "NDArray"]:
+    def _generate_dist(self) -> tuple[str, "np.ndarray", "np.ndarray"]:
         if not 0 <= self.edge_precision < 0.5:
             raise ValueError(
                 "'edge_precision' should be on the interval [0, 0.5), got "
@@ -75,7 +73,7 @@ class QQPlot(Plotter):
         return xlabel, p, q
 
     @staticmethod
-    def _plot_fitted_line(ax: "AxesWrapper", x: "NDArray", y: "NDArray") -> None:
+    def _plot_fitted_line(ax: "AxesWrapper", x: "np.ndarray", y: "np.ndarray") -> None:
         a, b = linear_regression_1d(y, x)
         l, r = x.min(), x.max()
         ax.ax.plot(
@@ -83,7 +81,7 @@ class QQPlot(Plotter):
         )
 
     @staticmethod
-    def _get_ppf(dist: str, p: "NDArray") -> "NDArray":
+    def _get_ppf(dist: str, p: "np.ndarray") -> "np.ndarray":
         match dist:
             case "normal":
                 return stats.norm.ppf(p)

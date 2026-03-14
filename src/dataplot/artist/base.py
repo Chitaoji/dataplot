@@ -10,13 +10,13 @@ from collections import Counter
 from validating import attr, dataclass
 from typing import TYPE_CHECKING, Any, Optional
 
+import numpy as np
+
 from ..container import FigWrapper
 from ..setting import PlotSettable
 from ..utils.multi import multiple
 
 if TYPE_CHECKING:
-    from numpy.typing import NDArray
-
     from ..container import AxesWrapper
 
 __all__ = ["Artist", "Plotter"]
@@ -63,7 +63,7 @@ class Plotter(PlotSettable):
 
     """
 
-    data: Optional["NDArray"] = attr(repr=False, default=None, init=False)
+    data: Optional["np.ndarray"] = attr(repr=False, default=None, init=False)
     label: Optional[str] = attr(default=None, init=False)
 
     def paint(
