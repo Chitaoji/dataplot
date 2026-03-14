@@ -7,12 +7,9 @@ NOTE: this module is not intended to be imported at runtime.
 
 from typing import TYPE_CHECKING, Literal, NotRequired, Optional, TypedDict, TypeVar
 
-import loggings
-
 if TYPE_CHECKING:
     from .setting import PlotSettable
 
-loggings.warning("this module is not intended to be imported at runtime")
 
 PlotSettableVar = TypeVar("PlotSettableVar", bound="PlotSettable")
 DefaultVar = TypeVar("DefaultVar")
