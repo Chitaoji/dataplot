@@ -25,6 +25,7 @@ import pandas as pd
 
 from .artist import Artist, CorrMap, Histogram, KSPlot, LineChart, PPPlot, QQPlot
 from .setting import PlotSettable, PlotSettings
+from ._typing import DistName, ResampleRule, SettingDict
 from .utils.multi import (
     REMAIN,
     UNSUBSCRIPTABLE,
@@ -36,7 +37,6 @@ from .utils.multi import (
 if TYPE_CHECKING:
     from numpy.typing import NDArray
 
-    from ._typing import DistName, ResampleRule, SettingDict
     from .artist import Plotter
     from .container import AxesWrapper
 

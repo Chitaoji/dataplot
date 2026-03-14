@@ -14,12 +14,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from .setting import PlotSettable
+from ._typing import AxesSettingDict, FigureSettingDict, SettingKey
 
 if TYPE_CHECKING:
     from matplotlib.figure import Figure
     from matplotlib.pyplot import Axes
-
-    from ._typing import AxesSettingDict, FigureSettingDict, SettingKey
 
 __all__ = ["FigWrapper", "AxesWrapper"]
 

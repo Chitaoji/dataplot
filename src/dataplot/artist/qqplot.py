@@ -13,13 +13,13 @@ import numpy as np
 from scipy import stats
 
 from ..setting import PlotSettable
+from .._typing import DistName
 from ..utils.math import get_quantile, linear_regression_1d
 from .base import Plotter
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
 
-    from .._typing import DistName
     from ..container import AxesWrapper
     from ..dataset import PlotDataSet
 
