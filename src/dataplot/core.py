@@ -198,6 +198,5 @@ def figure(
         nrows = ceil(len_a / ncols)
     figw = FigWrapper(nrows=nrows, ncols=ncols)
     figw.set_figure(**kwargs)
-    with figw as fig:
-        for a, ax in zip(artist, fig.axes[:len_a]):
-            a.paint(ax)
+    figw.artists = artist
+    return figw
