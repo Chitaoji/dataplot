@@ -96,7 +96,6 @@ class FigWrapper(PlotSettable):
     nrows: int = 1
     ncols: int = 1
     active: bool = attr(repr=False, default=True)
-    entered: bool = attr(init=False, repr=False, default=False)
     fig: Figure = attr(init=False, repr=False)
     axes: list[AxesWrapper] = attr(init=False, repr=False)
     artists: "list[Artist]" = attr(default_factory=list, init=False, repr=False)
@@ -132,7 +131,6 @@ class FigWrapper(PlotSettable):
         plt.style.use(figw.settings.style)
         figw.fig, axes = plt.subplots(figw.nrows, figw.ncols)
         figw.axes = [AxesWrapper(x) for x in np.reshape(axes, -1)]
-        figw.entered = True
         self._entered_copy = figw
         return figw
 
@@ -167,7 +165,6 @@ class FigWrapper(PlotSettable):
         plt.close(figw.fig)
         plt.style.use("default")
 
-        figw.entered = False
         self._entered_copy = None
 
     def __repr__(self) -> str:
@@ -202,7 +199,7 @@ class FigWrapper(PlotSettable):
         self._set(inplace=True, **kwargs)
 
     def setting_check(self, key: SettingKey, value: Any) -> None:
-        entered = self._entered_copy is not None or self.entered
+        entered = self._entered_copy is not None
         if entered and key == "style":
             logging.warning(
                 "setting the '%s' of a figure has no effect unless it's done "
@@ -217,7 +214,6 @@ class FigWrapper(PlotSettable):
             ncols=self.ncols,
             active=self.active,
         )
-        obj.entered = self.entered
         obj.artists = list(self.artists)
         obj._entered_copy = None
         return obj
