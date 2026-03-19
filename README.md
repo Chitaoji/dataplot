@@ -29,6 +29,11 @@ This project falls under the BSD 3-Clause License.
 
 ## History
 ### v0.1.6
+* New method `PlotDataSet.scatter()` to draw true scatter charts while keeping `PlotDataSet.plot()` as line chart behavior.
+* Improved automatic label inference for `dp.data(...)`, plotting labels, and x-axis labels in interactive contexts.
+* Plot builders now use deferred drawing; removed `dp.show()` and improved axis/figure rendering in object representations.
+* Refined rendering stability with fixes for empty-axis cleanup and figure re-rendering in `FigWrapper.__repr__`.
+* Updated minimum required Python version to >=3.13.
 
 ### v0.1.5
 * Fixed issue: unworking figure settings in the artist methods.
