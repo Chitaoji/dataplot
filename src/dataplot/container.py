@@ -146,7 +146,7 @@ class FigWrapper(PlotSettable):
 
         for ax in self.axes:
             ax.exit()
-            if True:  # ax没有绘制任何东西
+            if not ax.ax.has_data():  # ax没有绘制任何东西
                 self.fig.delaxes(ax.ax)
         plt.show()
         plt.close(self.fig)
