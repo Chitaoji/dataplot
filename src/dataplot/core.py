@@ -126,10 +126,15 @@ def data(*x: Any, label: Optional[str | list[str]] = None) -> PlotDataSet:
     if not x:
         raise ValueError("at least one dataset should be provided")
 
-    def _normalize_dataset_input(value: Any) -> tuple[np.ndarray, Optional[str]]:
+    normalized_data: list[np.ndarray] = []
+    original_labels: list[Optional[str]] = []
+    for value in x:
         if isinstance(value, PlotDataSet):
-            return np.array(value.data), value.label
-        return np.array(value), None
+            normalized_data.append(np.array(value.data))
+            original_labels.append(value.label)
+        else:
+            normalized_data.append(np.array(value))
+            original_labels.append(None)
 
     if len(x) > 1:
         if label is None:
@@ -148,7 +153,7 @@ def data(*x: Any, label: Optional[str | list[str]] = None) -> PlotDataSet:
             raise ValueError(
                 f"label should have the same length as x ({len(x)}), got {len(label)}"
             )
-        datas = [PlotDataSet(_normalize_dataset_input(d)[0], lb) for d, lb in zip(x, label)]
+        datas = [PlotDataSet(d, lb) for d, lb in zip(normalized_data, label)]
         return PlotDataSets(*datas)
 
     if isinstance(label, list):
@@ -157,9 +162,9 @@ def data(*x: Any, label: Optional[str | list[str]] = None) -> PlotDataSet:
             "the data has only one dimension"
         )
     if label is None:
-        _, original_label = _normalize_dataset_input(x[0])
+        original_label = original_labels[0]
         label = original_label or _infer_assigned_name() or _infer_var_names(x[0])[0] or "x1"
-    return PlotDataSet(_normalize_dataset_input(x[0])[0], label=label)
+    return PlotDataSet(normalized_data[0], label=label)
 
 
 def figure(
