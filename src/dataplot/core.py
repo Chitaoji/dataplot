@@ -126,18 +126,30 @@ def data(*x: Any, label: Optional[str | list[str]] = None) -> PlotDataSet:
     if not x:
         raise ValueError("at least one dataset should be provided")
 
+    expanded_data: list[Any] = []
+    expanded_names: list[Optional[str]] = []
+    inferred_names = _infer_var_names(*x)
+    for i, value in enumerate(x):
+        if isinstance(value, PlotDataSets):
+            expanded_data.extend(value.__multiobjects__)
+            expanded_names.extend([None] * len(value.__multiobjects__))
+        else:
+            expanded_data.append(value)
+            expanded_names.append(inferred_names[i])
+
     normalized_data: list[np.ndarray] = []
-    for value in x:
+    for value in expanded_data:
         if isinstance(value, PlotDataSet):
             normalized_data.append(np.array(value.data))
         else:
             normalized_data.append(np.array(value))
 
-    if len(x) > 1:
+    if len(expanded_data) > 1:
         if label is None:
-            inferred_names = _infer_var_names(*x)
             label = []
-            for i, (d, inferred_name) in enumerate(zip(x, inferred_names), start=1):
+            for i, (d, inferred_name) in enumerate(
+                zip(expanded_data, expanded_names), start=1
+            ):
                 if isinstance(d, PlotDataSet):
                     label.append(d.formatted_label())
                 else:
@@ -148,9 +160,10 @@ def data(*x: Any, label: Optional[str | list[str]] = None) -> PlotDataSet:
             raise ValueError(
                 "for multiple datasets, please provide labels as a list of strings"
             )
-        elif len(label) != len(x):
+        elif len(label) != len(expanded_data):
             raise ValueError(
-                f"label should have the same length as x ({len(x)}), got {len(label)}"
+                "label should have the same length as x "
+                f"({len(expanded_data)}), got {len(label)}"
             )
         datas = [PlotDataSet(d, lb) for d, lb in zip(normalized_data, label)]
         return PlotDataSets(*datas)
@@ -161,11 +174,13 @@ def data(*x: Any, label: Optional[str | list[str]] = None) -> PlotDataSet:
             "the data has only one dimension"
         )
     if label is None:
-        original_label = x.label if isinstance(x, PlotDataSet) else None
+        original_label = (
+            expanded_data[0].label if isinstance(expanded_data[0], PlotDataSet) else None
+        )
         label = (
             original_label
             or _infer_assigned_name()
-            or _infer_var_names(x[0])[0]
+            or expanded_names[0]
             or "x1"
         )
     return PlotDataSet(normalized_data[0], label=label)
