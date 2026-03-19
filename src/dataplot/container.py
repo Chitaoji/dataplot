@@ -214,7 +214,7 @@ class FigWrapper(PlotSettable):
             ncols=self.ncols,
             active=self.active,
         )
-        obj.artists = list(self.artists)
+        obj.artists = self.artists
         obj._entered_copy = None
         return obj
 
