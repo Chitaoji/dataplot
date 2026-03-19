@@ -90,7 +90,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
     data: np.ndarray
     label: Optional[str] = attr(default=None)
-    fmt_: str = attr(init=False, default="{0}")
+    fmt_b: str = attr(init=False, default="{0}")
     original_data: np.ndarray = attr(init=False)
     settings: PlotSettings = attr(init=False, default_factory=PlotSettings)
     priority: int = attr(init=False, default=0)
@@ -112,7 +112,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             self.__class__,
             self.original_data,
             self.label if label is None else label,
-            fmt_=fmt,
+            fmt_b=fmt,
             priority=priority,
         )
         obj.data = data
@@ -138,7 +138,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         return UNSUBSCRIPTABLE
 
     def __neg__(self) -> Self:
-        new_fmt = f"(-{self.__auto_remove_brackets(self.fmt_, priority=28)})"
+        new_fmt = f"(-{self.__remove_brackets(self.fmt_b, priority=28)})"
         new_data = -self.data
         return self.__create(new_fmt, new_data, priority=40)
 
@@ -187,12 +187,12 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         priority: int = 10,
     ) -> Self:
         if reverse:
-            this_fmt = self.__auto_remove_brackets(self.fmt_, priority=priority)
+            this_fmt = self.__remove_brackets(self.fmt_b, priority=priority)
             new_fmt = f"({other}{sign}{this_fmt})"
             new_data = func(other, self.data)
             return self.__create(new_fmt, new_data, priority=priority)
 
-        this_fmt = self.__auto_remove_brackets(self.fmt_, priority=priority + 1)
+        this_fmt = self.__remove_brackets(self.fmt_b, priority=priority + 1)
         if isinstance(other, (float, int)):
             new_fmt = f"({this_fmt}{sign}{other})"
             new_data = func(self.data, other)
@@ -207,15 +207,10 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             )
         return self.__create(new_fmt, new_data, priority=priority)
 
-    def __auto_remove_brackets(self, string: str, priority: int = 0):
+    def __remove_brackets(self, string: str, priority: int = 0):
         if priority == 0 or self.priority <= priority:
-            return self.__remove_brackets(string)
-        return string
-
-    @staticmethod
-    def __remove_brackets(string: str):
-        if string.startswith("(") and string.endswith(")"):
-            return string[1:-1]
+            if string.startswith("(") and string.endswith(")"):
+                return string[1:-1]
         return string
 
     @property
@@ -230,7 +225,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             Formatted label.
 
         """
-        return self.__remove_brackets(self.fmt_)
+        return self.__remove_brackets(self.fmt_b)
 
     def formatted_label(self, priority: int = 0) -> str:
         """
@@ -250,9 +245,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         """
         if priority == self.priority and priority in (19, 29):
             priority -= 1
-        return self.__auto_remove_brackets(
-            self.fmt_.format(self.label), priority=priority
-        )
+        return self.__remove_brackets(self.fmt_b.format(self.label), priority=priority)
 
     def join(self, *others: "PlotDataSet") -> Self:
         """
@@ -471,7 +464,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         return self.__create(new_fmt, new_data)
 
     def copy(self) -> Self:
-        return self.__create(self.fmt_, self.data, priority=self.priority)
+        return self.__create(self.fmt_b, self.data, priority=self.priority)
 
     def reset(self) -> Self:
         """
@@ -492,7 +485,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         Undo all the operations performed on the data and clean the records.
 
         """
-        self.fmt_ = "{0}"
+        self.fmt_b = "{0}"
         self.data = self.original_data
 
     def set_label(
@@ -525,7 +518,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         else:
             new_label = self.label
         return self.__create(
-            "{0}" if reset_format else self.fmt_,
+            "{0}" if reset_format else self.fmt_b,
             self.data,
             priority=self.priority,
             label=new_label,
