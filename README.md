@@ -29,8 +29,8 @@ This project falls under the BSD 3-Clause License.
 
 ## History
 ### v0.1.7
-* Improved `dp.data(...)` input normalization to better handle `PlotDataSets` flattening and reduce redundant preprocessing calls.
-* New features: `dp.data(...)` now accepts `PlotDataSet`, and `FigWrapper.__enter__()` now returns a copy safely via `_entered_copy`.
+* `dp.data(...)` can accept `PlotDataSet` objects now.
+* `FigWrapper.__enter__()` now returns a copy safely via `_entered_copy`.
 * Internal maintenance and stability refinements.
 
 ### v0.1.6
