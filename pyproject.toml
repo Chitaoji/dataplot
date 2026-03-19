@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "dataplot"
-version = "0.1.6"
+version = "0.1.7"
 dependencies = [
     "validating",
     "lazyr",
@@ -28,7 +28,7 @@ license-files = ["LICENSE"]
 keywords = ["plot"]
 classifiers = [
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.12"
+  "Programming Language :: Python :: 3.13"
 ]
 
 [project.urls]

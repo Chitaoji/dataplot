@@ -96,10 +96,10 @@ class FigWrapper(PlotSettable):
     nrows: int = 1
     ncols: int = 1
     active: bool = attr(repr=False, default=True)
-    entered: bool = attr(init=False, repr=False, default=False)
     fig: Figure = attr(init=False, repr=False)
     axes: list[AxesWrapper] = attr(init=False, repr=False)
     artists: "list[Artist]" = attr(default_factory=list, init=False, repr=False)
+    _entered_copy: "FigWrapper | None" = attr(init=False, repr=False, default=None)
 
     def __enter__(self) -> Self:
         """
@@ -111,53 +111,61 @@ class FigWrapper(PlotSettable):
             An instance of self.
 
         """
-        if not self.active:
-            return self
-        if self.entered:
+        if self._entered_copy is not None:
             raise DoubleEnteredError(
                 f"can't enter an instance of {self.__class__.__name__!r} for twice; "
                 "please do all the operations in one single context manager"
             )
 
-        self.set_default(
+        figw = self.copy()
+        if not figw.active:
+            self._entered_copy = figw
+            return figw
+
+        figw.set_default(
             style="seaborn-v0_8-darkgrid",
-            figsize=(10 * self.ncols, 5 * self.nrows),
+            figsize=(10 * figw.ncols, 5 * figw.nrows),
             subplots_adjust={"hspace": 0.5},
             fontdict={"fontsize": "x-large"},
         )
-        plt.style.use(self.settings.style)
-        self.fig, axes = plt.subplots(self.nrows, self.ncols)
-        self.axes: list[AxesWrapper] = [AxesWrapper(x) for x in np.reshape(axes, -1)]
-        self.entered = True
-        return self
+        plt.style.use(figw.settings.style)
+        figw.fig, axes = plt.subplots(figw.nrows, figw.ncols)
+        figw.axes = [AxesWrapper(x) for x in np.reshape(axes, -1)]
+        self._entered_copy = figw
+        return figw
 
     def __exit__(self, *args) -> None:
         """
         Set various properties for the figure and paint it.
 
         """
-        if not self.active:
+        figw = self._entered_copy
+        if figw is None:
+            figw = self
+
+        if not figw.active:
+            self._entered_copy = None
             return
 
-        if len(self.axes) > 1:
-            self.fig.suptitle(self.settings.title, **self.settings.fontdict)
+        if len(figw.axes) > 1:
+            figw.fig.suptitle(figw.settings.title, **figw.settings.fontdict)
         else:
-            self.axes[0].ax.set_title(self.settings.title, **self.settings.fontdict)
+            figw.axes[0].ax.set_title(figw.settings.title, **figw.settings.fontdict)
 
-        self.fig.set_size_inches(*self.settings.figsize)
-        self.fig.subplots_adjust(**self.settings.subplots_adjust)
-        self.fig.set_dpi(self.get_setting("dpi", 100))
+        figw.fig.set_size_inches(*figw.settings.figsize)
+        figw.fig.subplots_adjust(**figw.settings.subplots_adjust)
+        figw.fig.set_dpi(figw.get_setting("dpi", 100))
 
-        for ax in self.axes:
+        for ax in figw.axes:
             ax.exit()
             if not ax.ax.has_data():
-                self.fig.delaxes(ax.ax)
+                figw.fig.delaxes(ax.ax)
 
         plt.show()
-        plt.close(self.fig)
+        plt.close(figw.fig)
         plt.style.use("default")
 
-        self.entered = False
+        self._entered_copy = None
 
     def __repr__(self) -> str:
         with self as fig:
@@ -191,12 +199,24 @@ class FigWrapper(PlotSettable):
         self._set(inplace=True, **kwargs)
 
     def setting_check(self, key: SettingKey, value: Any) -> None:
-        if self.entered and key == "style":
+        entered = self._entered_copy is not None
+        if entered and key == "style":
             logging.warning(
                 "setting the '%s' of a figure has no effect unless it's done "
                 "before invoking context manager",
                 key,
             )
+
+    def copy(self) -> Self:
+        obj = self.customize(
+            self.__class__,
+            nrows=self.nrows,
+            ncols=self.ncols,
+            active=self.active,
+        )
+        obj.artists = self.artists
+        obj._entered_copy = None
+        return obj
 
 
 class DoubleEnteredError(Exception):
