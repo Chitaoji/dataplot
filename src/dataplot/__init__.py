@@ -16,17 +16,12 @@ This project falls under the BSD 3-Clause License.
 
 import lazyr
 
-VERBOSE = 0
+with lazyr.setverbose(0):
+    lazyr.register("pandas")
+    lazyr.register("scipy.stats")
+    lazyr.register("seaborn")
 
-lazyr.register("matplotlib.pyplot", verbose=VERBOSE)
-lazyr.register("numpy", verbose=VERBOSE)
-lazyr.register("pandas", verbose=VERBOSE)
-lazyr.register("scipy.stats", verbose=VERBOSE)
-lazyr.register("seaborn", verbose=VERBOSE)
-
-# pylint: disable=wrong-import-position
 from . import container, core, dataset, setting
-from .__version__ import __version__
 from .container import *
 from .core import *
 from .dataset import *

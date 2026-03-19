@@ -6,25 +6,25 @@ NOTE: this module is private. All functions and objects are available in the mai
 
 """
 
-from dataclasses import asdict, dataclass, field
-from typing import TYPE_CHECKING, Any, Optional, Self, Unpack
+from dataclasses import asdict
+from typing import Any, Optional, Self, Unpack
 
-if TYPE_CHECKING:
-    from ._typing import (
-        DefaultVar,
-        FontDict,
-        PlotSettableVar,
-        SettingDict,
-        SettingKey,
-        StyleName,
-        SubplotDict,
-    )
+from validating import attr, dataclass
 
+from ._typing import (
+    DefaultVar,
+    FontDict,
+    PlotSettableVar,
+    SettingDict,
+    SettingKey,
+    StyleName,
+    SubplotDict,
+)
 
 __all__ = ["PlotSettings", "PlotSettable"]
 
 
-@dataclass(slots=True)
+@dataclass(validate_methods=True)
 class PlotSettings:
     """Stores and manages settings for plotting."""
 
@@ -35,16 +35,16 @@ class PlotSettings:
     dpi: Optional[float] = None
     grid: Optional[bool] = None
     grid_alpha: Optional[float] = None
-    style: Optional["StyleName"] = None
+    style: Optional[StyleName] = None
     figsize: Optional[tuple[int, int]] = None
-    fontdict: Optional["FontDict"] = None
+    fontdict: Optional[FontDict] = None
     legend_loc: Optional[str] = None
-    subplots_adjust: Optional["SubplotDict"] = None
+    subplots_adjust: Optional[SubplotDict] = None
 
-    def __getitem__(self, __key: "SettingKey") -> Any:
+    def __getitem__(self, __key: SettingKey) -> Any:
         return getattr(self, __key)
 
-    def __setitem__(self, __key: "SettingKey", __value: Any) -> None:
+    def __setitem__(self, __key: SettingKey, __value: Any) -> None:
         setattr(self, __key, __value)
 
     def __repr__(self) -> str:
@@ -63,7 +63,7 @@ class PlotSettings:
         diff = [f"{k}={repr(v)}" for k, v in asdict(self).items() if v is not None]
         return ", ".join(diff)
 
-    def keys(self) -> list["SettingKey"]:
+    def keys(self) -> list[SettingKey]:
         """
         Keys of settings.
 
@@ -84,17 +84,17 @@ class PlotSettings:
             self[k] = None
 
 
-@dataclass(slots=True, init=False)
+@dataclass(init=False)
 class PlotSettable:
     """Contains an attribute of plot settings, and provides methods for
     handling these settings.
 
     """
 
-    settings: PlotSettings = field(default_factory=PlotSettings, init=False)
+    settings: PlotSettings = attr(default_factory=PlotSettings, init=False)
 
     def _set(
-        self, *, inplace: bool = False, **kwargs: Unpack["SettingDict"]
+        self, *, inplace: bool = False, **kwargs: Unpack[SettingDict]
     ) -> Self | None:
         obj = self if inplace else self.copy()
         keys = obj.settings.keys()
@@ -109,7 +109,7 @@ class PlotSettable:
         if not inplace:
             return obj
 
-    def setting_check(self, key: "SettingKey", value: Any) -> None:
+    def setting_check(self, key: SettingKey, value: Any) -> None:
         """
         Checks if a new setting is legal.
 
@@ -122,7 +122,7 @@ class PlotSettable:
 
         """
 
-    def set_default(self, **kwargs: Unpack["SettingDict"]) -> None:
+    def set_default(self, **kwargs: Unpack[SettingDict]) -> None:
         """
         Sets the default settings.
 
@@ -156,7 +156,7 @@ class PlotSettable:
         self._set(inplace=True, **settings)
 
     def get_setting(
-        self, key: "SettingKey", default: Optional["DefaultVar"] = None
+        self, key: SettingKey, default: Optional[DefaultVar] = None
     ) -> "DefaultVar | Any":
         """
         Returns the value of a setting if it is not None, otherwise returns the

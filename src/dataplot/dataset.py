@@ -7,7 +7,6 @@ NOTE: this module is private. All functions and objects are available in the mai
 """
 
 from abc import ABCMeta
-from dataclasses import dataclass, field
 from functools import partial
 from typing import (
     TYPE_CHECKING,
@@ -22,22 +21,29 @@ from typing import (
 
 import numpy as np
 import pandas as pd
+from validating import attr, dataclass
 
-from .artist import Artist, CorrMap, Histogram, KSPlot, LineChart, PPPlot, QQPlot
+from ._typing import DistName, ResampleRule, SettingDict
+from .artist import (
+    Artist,
+    CorrMap,
+    Histogram,
+    KSPlot,
+    LineChart,
+    PPPlot,
+    QQPlot,
+    ScatterChart,
+)
 from .setting import PlotSettable, PlotSettings
 from .utils.multi import (
     REMAIN,
     UNSUBSCRIPTABLE,
     MultiObject,
-    multi,
     multipartial,
     single,
 )
 
 if TYPE_CHECKING:
-    from numpy.typing import NDArray
-
-    from ._typing import DistName, ResampleRule, SettingDict
     from .artist import Plotter
     from .container import AxesWrapper
 
@@ -45,7 +51,7 @@ if TYPE_CHECKING:
 __all__ = ["PlotDataSet"]
 
 
-@dataclass(slots=True)
+@dataclass(validate_methods=True)
 class PlotDataSet(PlotSettable, metaclass=ABCMeta):
     """
     A dataset class providing methods for mathematical operations and plotting.
@@ -55,16 +61,16 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
     Parameters
     ----------
-    data : NDArray
+    data : np.ndarray
         Input data.
     label : str, optional
-        Label of the data. If set to None, use "x1" as the label. By default None.
+        Label of the data. If set to None, use "x" as the label. By default None.
 
     Properties
     ----------
     fmt : str
         A string recording the mathmatical operations done on the data.
-    original_data : NDArray
+    original_data : np.ndarray
         Original input data.
     settings : PlotSettings
         Settings for plot (whether a figure or an axes).
@@ -82,12 +88,12 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
     """
 
-    data: "NDArray"
-    label: Optional[str] = field(default=None)
-    fmt_: str = field(init=False, default="{0}")
-    original_data: "NDArray" = field(init=False)
-    settings: PlotSettings = field(init=False, default_factory=PlotSettings)
-    priority: int = field(init=False, default=0)
+    data: np.ndarray
+    label: Optional[str] = attr(default=None)
+    fmtb: str = attr(init=False, default="{0}")
+    original_data: np.ndarray = attr(init=False)
+    settings: PlotSettings = attr(init=False, default_factory=PlotSettings)
+    priority: int = attr(init=False, default=0)
 
     @classmethod
     def __subclasshook__(cls, __subclass: type) -> bool:
@@ -96,17 +102,17 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         return False
 
     def __post_init__(self) -> None:
-        self.label = "x1" if self.label is None else self.label
+        self.label = "x" if self.label is None else self.label
         self.original_data = self.data
 
     def __create(
-        self, fmt: str, data: "NDArray", priority: int = 0, label: Optional[str] = None
+        self, fmt: str, data: np.ndarray, priority: int = 0, label: Optional[str] = None
     ) -> Self:
         obj = self.customize(
             self.__class__,
             self.original_data,
             self.label if label is None else label,
-            fmt_=fmt,
+            fmtb=fmt,
             priority=priority,
         )
         obj.data = data
@@ -126,13 +132,13 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
         """
         not_none = self.settings.repr_not_none()
-        return f"{self.formatted_label()}{': 'if not_none else ''}{not_none}"
+        return f"{self.formatted_label()}{': ' if not_none else ''}{not_none}"
 
     def __getitem__(self, __key: int) -> Self | Any:
         return UNSUBSCRIPTABLE
 
     def __neg__(self) -> Self:
-        new_fmt = f"(-{self.__auto_remove_brackets(self.fmt_, priority=28)})"
+        new_fmt = f"(-{self.__remove_brackets(self.fmtb, priority=28)})"
         new_data = -self.data
         return self.__create(new_fmt, new_data, priority=40)
 
@@ -176,17 +182,17 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         self,
         other: "float | int | PlotDataSet | Any",
         sign: str,
-        func: Callable[[Any, Any], "NDArray"],
+        func: Callable[[Any, Any], np.ndarray],
         reverse: bool = False,
         priority: int = 10,
     ) -> Self:
         if reverse:
-            this_fmt = self.__auto_remove_brackets(self.fmt_, priority=priority)
+            this_fmt = self.__remove_brackets(self.fmtb, priority=priority)
             new_fmt = f"({other}{sign}{this_fmt})"
             new_data = func(other, self.data)
             return self.__create(new_fmt, new_data, priority=priority)
 
-        this_fmt = self.__auto_remove_brackets(self.fmt_, priority=priority + 1)
+        this_fmt = self.__remove_brackets(self.fmtb, priority=priority + 1)
         if isinstance(other, (float, int)):
             new_fmt = f"({this_fmt}{sign}{other})"
             new_data = func(self.data, other)
@@ -201,30 +207,24 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             )
         return self.__create(new_fmt, new_data, priority=priority)
 
-    def __auto_remove_brackets(self, string: str, priority: int = 0):
+    def __remove_brackets(self, string: str, priority: int = 0):
         if priority == 0 or self.priority <= priority:
-            return self.__remove_brackets(string)
-        return string
-
-    @staticmethod
-    def __remove_brackets(string: str):
-        if string.startswith("(") and string.endswith(")"):
-            return string[1:-1]
+            if string.startswith("(") and string.endswith(")"):
+                return string[1:-1]
         return string
 
     @property
-    def fmt(self) -> str:
+    def format(self) -> str:
         """
-        Return the format, but remove the pair of brackets at both ends of the
-        string (if exists).
+        Return the label format.
 
         Returns
         -------
         str
-            Formatted label.
+            Label format.
 
         """
-        return self.__remove_brackets(self.fmt_)
+        return self.__remove_brackets(self.fmtb)
 
     def formatted_label(self, priority: int = 0) -> str:
         """
@@ -244,9 +244,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         """
         if priority == self.priority and priority in (19, 29):
             priority -= 1
-        return self.__auto_remove_brackets(
-            self.fmt_.format(self.label), priority=priority
-        )
+        return self.__remove_brackets(self.fmtb.format(self.label), priority=priority)
 
     def join(self, *others: "PlotDataSet") -> Self:
         """
@@ -265,7 +263,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         """
         return PlotDataSets(self, *others)
 
-    def resample(self, n: int, rule: "ResampleRule" = "head") -> Self:
+    def resample(self, n: int, rule: ResampleRule = "head") -> Self:
         """
         Resample from the data.
 
@@ -287,7 +285,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             Raised when receiving illegal rule.
 
         """
-        new_fmt = f"resample({self.fmt}, {n})"
+        new_fmt = f"resample({self.format}, {n})"
         match rule:
             case "random":
                 idx = np.random.randint(0, len(self.data), n)
@@ -310,7 +308,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             A new instance of self.__class__.
 
         """
-        new_fmt = f"log({self.fmt})"
+        new_fmt = f"log({self.format})"
         new_data = np.log(np.where(self.data > 0, self.data, np.nan))
         return self.__create(new_fmt, new_data)
 
@@ -324,7 +322,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             A new instance of self.__class__.
 
         """
-        new_fmt = f"log10({self.fmt})"
+        new_fmt = f"log10({self.format})"
         new_data = np.log10(np.where(self.data > 0, self.data, np.nan))
         return self.__create(new_fmt, new_data)
 
@@ -344,7 +342,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             A new instance of self.__class__.
 
         """
-        new_fmt = f"signedlog({self.fmt})"
+        new_fmt = f"signedlog({self.format})"
         new_data = np.log(np.where(self.data > 0, self.data, np.nan))
         new_data[self.data < 0] = np.log(-self.data[self.data < 0])
         new_data[self.data == 0] = 0
@@ -366,7 +364,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             A new instance of self.__class__.
 
         """
-        new_fmt = f"signedpow({self.fmt})"
+        new_fmt = f"signedpow({self.format})"
         new_data = np.where(self.data > 0, self.data, np.nan) ** n
         new_data[self.data < 0] = -((-self.data[self.data < 0]) ** n)
         new_data[self.data == 0] = 0
@@ -388,7 +386,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             A new instance of self.__class__.
 
         """
-        new_fmt = f"rolling({self.fmt}, {n})"
+        new_fmt = f"rolling({self.format}, {n})"
         new_data = pd.Series(self.data).rolling(n).mean().values
         return self.__create(new_fmt, new_data)
 
@@ -402,7 +400,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             A new instance of self.__class__.
 
         """
-        new_fmt = f"exp({self.fmt})"
+        new_fmt = f"exp({self.format})"
         new_data = np.exp(self.data)
         return self.__create(new_fmt, new_data)
 
@@ -416,7 +414,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             A new instance of self.__class__.
 
         """
-        new_fmt = f"abs({self.fmt})"
+        new_fmt = f"abs({self.format})"
         new_data = np.abs(self.data)
         return self.__create(new_fmt, new_data)
 
@@ -430,7 +428,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             A new instance of self.__class__.
 
         """
-        new_fmt = f"({self.fmt}-mean({self.fmt}))"
+        new_fmt = f"({self.format}-mean({self.format}))"
         new_data = self.data - np.nanmean(self.data)
         return self.__create(new_fmt, new_data)
 
@@ -445,7 +443,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             A new instance of self.__class__.
 
         """
-        new_fmt = f"zscore({self.fmt})"
+        new_fmt = f"zscore({self.format})"
         new_data = (self.data - np.nanmean(self.data)) / np.nanstd(self.data)
         return self.__create(new_fmt, new_data)
 
@@ -460,12 +458,12 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             A new instance of self.__class__.
 
         """
-        new_fmt = f"csum({self.fmt})"
+        new_fmt = f"csum({self.format})"
         new_data = np.cumsum(self.data)
         return self.__create(new_fmt, new_data)
 
     def copy(self) -> Self:
-        return self.__create(self.fmt_, self.data, priority=self.priority)
+        return self.__create(self.fmtb, self.data, priority=self.priority)
 
     def reset(self) -> Self:
         """
@@ -486,7 +484,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         Undo all the operations performed on the data and clean the records.
 
         """
-        self.fmt_ = "{0}"
+        self.fmtb = "{0}"
         self.data = self.original_data
 
     def set_label(
@@ -519,7 +517,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         else:
             new_label = self.label
         return self.__create(
-            "{0}" if reset_format else self.fmt_,
+            "{0}" if reset_format else self.fmtb,
             self.data,
             priority=self.priority,
             label=new_label,
@@ -527,14 +525,14 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
     @overload
     def set_plot(
-        self, *, inplace: Literal[False] = False, **kwargs: Unpack["SettingDict"]
+        self, *, inplace: Literal[False] = False, **kwargs: Unpack[SettingDict]
     ) -> Self: ...
     @overload
     def set_plot(
-        self, *, inplace: Literal[True] = True, **kwargs: Unpack["SettingDict"]
+        self, *, inplace: Literal[True] = True, **kwargs: Unpack[SettingDict]
     ) -> None: ...
     def set_plot(
-        self, *, inplace: bool = False, **kwargs: Unpack["SettingDict"]
+        self, *, inplace: bool = False, **kwargs: Unpack[SettingDict]
     ) -> Self | None:
         """
         Set the settings of a plot (whether a figure or an axes).
@@ -603,7 +601,6 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             raise ValueError(f"batch size should be greater than 0, got {n} instead")
         return MultiObject([self])
 
-    # pylint: disable=unused-argument
     def hist(
         self,
         bins: int | list[float] = 100,
@@ -612,9 +609,8 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         log: bool = False,
         same_bin: bool = True,
         stats: bool = True,
-        *,
         ax: Optional["AxesWrapper"] = None,
-        **kwargs: Unpack["SettingDict"],
+        **kwargs: Unpack[SettingDict],
     ) -> Artist:
         """
         Create a histogram of the data.
@@ -657,12 +653,12 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
     def plot(
         self,
-        xticks: Optional["NDArray | PlotDataSet"] = None,
+        xticks: Optional["np.ndarray | PlotDataSet"] = None,
         fmt: str = "",
         scatter: bool = False,
-        *,
+        sorted: bool = False,
         ax: Optional["AxesWrapper"] = None,
-        **kwargs: Unpack["SettingDict"],
+        **kwargs: Unpack[SettingDict],
     ) -> Artist:
         """
         Create a line chart for the data. If there are more than one datasets, all of
@@ -670,7 +666,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
         Parameters
         ----------
-        xticks : NDArray | PlotDataSet, optional
+        xticks : np.ndarray | PlotDataSet, optional
             Specifies the x-ticks for the line chart. If not provided, the x-ticks will
             be set to `range(len(data))`. By default None.
         fmt : str, optional
@@ -678,6 +674,9 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         scatter : bool, optional
             Determines whether to include scatter points in the line chart, by default
             False.
+        sorted : bool, optional
+            Determines whether to sort by x-ticks before drawing the chart, by
+            default False.
         ax : AxesWrapper, optional
             Specifies the axes-wrapper on which the plot should be painted If
             not specified, the histogram will be plotted on a new axes in a new
@@ -691,26 +690,72 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             An instance of Artist.
 
         """
+        if isinstance(xticks, PlotSettable) and "xlabel" not in kwargs:
+            if kwargs.get("format_label", True):
+                kwargs["xlabel"] = xticks.formatted_label()
+            else:
+                kwargs["xlabel"] = xticks.label
         return self._get_artist(LineChart, locals())
+
+    def scatter(
+        self,
+        xticks: Optional["np.ndarray | PlotDataSet"] = None,
+        fmt: str = "",
+        sorted: bool = False,
+        ax: Optional["AxesWrapper"] = None,
+        **kwargs: Unpack[SettingDict],
+    ) -> Artist:
+        """
+        Create a scatter chart for the data. If there are more than one datasets,
+        all of them should have the same length.
+
+        Parameters
+        ----------
+        xticks : np.ndarray | PlotDataSet, optional
+            Specifies the x-ticks for the chart. If not provided, the x-ticks will
+            be set to `range(len(data))`. By default None.
+        fmt : str, optional
+            A format string, e.g. 'ro' for red circles, by default ''.
+        sorted : bool, optional
+            Determines whether to sort by x-ticks before drawing the chart, by
+            default False.
+        ax : AxesWrapper, optional
+            Specifies the axes-wrapper on which the plot should be painted If
+            not specified, the histogram will be plotted on a new axes in a new
+            figure. By default None.
+        **kwargs : **SettingDict
+            Specifies the plot settings, see `.set_plot()` for more details.
+
+        Returns
+        -------
+        Artist
+            An instance of Artist.
+
+        """
+        if isinstance(xticks, PlotSettable) and "xlabel" not in kwargs:
+            if kwargs.get("format_label", True):
+                kwargs["xlabel"] = xticks.formatted_label()
+            else:
+                kwargs["xlabel"] = xticks.label
+        return self._get_artist(ScatterChart, locals())
 
     def qqplot(
         self,
-        dist_or_sample: "DistName | NDArray | PlotDataSet" = "normal",
+        dist_or_sample: "DistName | np.ndarray | PlotDataSet" = "normal",
         dots: int = 30,
         edge_precision: float = 1e-2,
         fmt: str = "o",
-        *,
         ax: Optional["AxesWrapper"] = None,
-        **kwargs: Unpack["SettingDict"],
+        **kwargs: Unpack[SettingDict],
     ) -> Artist:
         """
         Create a quantile-quantile plot.
 
         Parameters
         ----------
-        dist_or_sample : DistName | NDArray | PlotDataSet, optional
+        dist_or_sample : DistName | np.ndarray | PlotDataSet, optional
             Specifies the distribution to compare with. If str, specifies a
-            theoretical distribution; if NDArray or PlotDataSet, specifies
+            theoretical distribution; if np.ndarray or PlotDataSet, specifies
             another real sample. By default 'normal'.
         dots : int, optional
             Number of dots, by default 30.
@@ -736,22 +781,21 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
     def ppplot(
         self,
-        dist_or_sample: "DistName | NDArray | PlotDataSet" = "normal",
+        dist_or_sample: "DistName | np.ndarray | PlotDataSet" = "normal",
         dots: int = 30,
         edge_precision: float = 1e-6,
         fmt: str = "o",
-        *,
         ax: Optional["AxesWrapper"] = None,
-        **kwargs: Unpack["SettingDict"],
+        **kwargs: Unpack[SettingDict],
     ) -> Artist:
         """
         Create a probability-probability plot.
 
         Parameters
         ----------
-        dist_or_sample : DistName | NDArray | PlotDataSet, optional
+        dist_or_sample : DistName | np.ndarray | PlotDataSet, optional
             Specifies the distribution to compare with. If str, specifies a
-            theoretical distribution; if NDArray or PlotDataSet, specifies
+            theoretical distribution; if np.ndarray or PlotDataSet, specifies
             another real sample. By default 'normal'.
         dots : int, optional
             Number of dots, by default 30.
@@ -777,22 +821,21 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
     def ksplot(
         self,
-        dist_or_sample: "DistName | NDArray | PlotDataSet" = "normal",
+        dist_or_sample: "DistName | np.ndarray | PlotDataSet" = "normal",
         dots: int = 1000,
         edge_precision: float = 1e-6,
         fmt: str = "",
-        *,
         ax: Optional["AxesWrapper"] = None,
-        **kwargs: Unpack["SettingDict"],
+        **kwargs: Unpack[SettingDict],
     ) -> Artist:
         """
         Create a kolmogorov-smirnov plot.
 
         Parameters
         ----------
-        dist_or_sample : DistName | NDArray | PlotDataSet, optional
+        dist_or_sample : DistName | np.ndarray | PlotDataSet, optional
             Specifies the distribution to compare with. If str, specifies a
-            theoretical distribution; if NDArray or PlotDataSet, specifies
+            theoretical distribution; if np.ndarray or PlotDataSet, specifies
             another real sample. By default 'normal'.
         dots : int, optional
             Number of dots, by default 1000.
@@ -819,9 +862,8 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
     def corrmap(
         self,
         annot: bool = True,
-        *,
         ax: Optional["AxesWrapper"] = None,
-        **kwargs: Unpack["SettingDict"],
+        **kwargs: Unpack[SettingDict],
     ) -> Artist:
         """
         Create a correlation heatmap.
@@ -855,14 +897,11 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         else:
             label = self.formatted_label()
         plotter = self.customize(cls, data=self.data, label=label, **params)
-        artist = single(self.customize)(Artist, plotter=plotter)
+        artist = single(self.customize)(Artist, plotter=plotter, ax=local["ax"])
         if local["kwargs"]:
             artist.plotter.load(local["kwargs"])
             artist.load(local["kwargs"])
-        artist.paint(local["ax"])
         return artist
-
-    # pylint: enable=unused-argument
 
 
 class PlotDataSets(MultiObject[PlotDataSet]):
@@ -885,10 +924,10 @@ class PlotDataSets(MultiObject[PlotDataSet]):
         data_info = "\n- ".join([x.data_info() for x in self.__multiobjects__])
         return f"{PlotDataSet.__name__}\n- {data_info}"
 
-    def batched(self, n: int = 1) -> "MultiObject":
+    def batched(self, n: int = 1) -> MultiObject:
         """Overrides `PlotDataSet.batched()`."""
         PlotDataSet.batched(self, n)
-        m = multi()
+        m = MultiObject()
         for i in range(0, len(self.__multiobjects__), n):
             m.__multiobjects__.append(PlotDataSets(*self.__multiobjects__[i : i + n]))
         return m
@@ -898,6 +937,7 @@ class PlotDataSets(MultiObject[PlotDataSet]):
             case (
                 "hist"
                 | "plot"
+                | "scatter"
                 | "ppplot"
                 | "qqplot"
                 | "ksplot"
