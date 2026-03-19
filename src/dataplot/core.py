@@ -126,12 +126,20 @@ def data(*x: Any, label: Optional[str | list[str]] = None) -> PlotDataSet:
     if not x:
         raise ValueError("at least one dataset should be provided")
 
+    def _normalize_dataset_input(value: Any) -> tuple[np.ndarray, Optional[str]]:
+        if isinstance(value, PlotDataSet):
+            return np.array(value.data), value.label
+        return np.array(value), None
+
     if len(x) > 1:
         if label is None:
-            label = [
-                lb if lb is not None else f"x{i}"
-                for i, lb in enumerate(_infer_var_names(*x), start=1)
-            ]
+            inferred_names = _infer_var_names(*x)
+            label = []
+            for i, (d, inferred_name) in enumerate(zip(x, inferred_names), start=1):
+                if isinstance(d, PlotDataSet):
+                    label.append(d.label)
+                else:
+                    label.append(inferred_name if inferred_name is not None else f"x{i}")
         elif isinstance(label, str):
             raise ValueError(
                 "for multiple datasets, please provide labels as a list of strings"
@@ -140,7 +148,7 @@ def data(*x: Any, label: Optional[str | list[str]] = None) -> PlotDataSet:
             raise ValueError(
                 f"label should have the same length as x ({len(x)}), got {len(label)}"
             )
-        datas = [PlotDataSet(np.array(d), lb) for d, lb in zip(x, label)]
+        datas = [PlotDataSet(_normalize_dataset_input(d)[0], lb) for d, lb in zip(x, label)]
         return PlotDataSets(*datas)
 
     if isinstance(label, list):
@@ -149,8 +157,9 @@ def data(*x: Any, label: Optional[str | list[str]] = None) -> PlotDataSet:
             "the data has only one dimension"
         )
     if label is None:
-        label = _infer_assigned_name() or _infer_var_names(x[0])[0] or "x1"
-    return PlotDataSet(np.array(x[0]), label=label)
+        _, original_label = _normalize_dataset_input(x[0])
+        label = original_label or _infer_assigned_name() or _infer_var_names(x[0])[0] or "x1"
+    return PlotDataSet(_normalize_dataset_input(x[0])[0], label=label)
 
 
 def figure(
