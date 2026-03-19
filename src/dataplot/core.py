@@ -186,7 +186,7 @@ def figure(
     """
     if not isinstance(artist, list):
         artist = [artist]
-    len_a = len(artist)
+    len_a = max(len(artist), 1)
     if nrows is None and ncols is None:
         ncols = int(sqrt(len_a))
         nrows = ceil(len_a / ncols)

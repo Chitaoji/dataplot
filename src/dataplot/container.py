@@ -7,7 +7,7 @@ NOTE: this module is private. All functions and objects are available in the mai
 """
 
 import logging
-from typing import Any, Self, Unpack
+from typing import TYPE_CHECKING, Any, Self, Unpack
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -17,6 +17,9 @@ from validating import attr, dataclass
 
 from ._typing import AxesSettingDict, FigureSettingDict, SettingKey
 from .setting import PlotSettable
+
+if TYPE_CHECKING:
+    from .artist import Artist
 
 __all__ = ["FigWrapper", "AxesWrapper"]
 
@@ -96,7 +99,7 @@ class FigWrapper(PlotSettable):
     entered: bool = attr(init=False, repr=False, default=False)
     fig: Figure = attr(init=False, repr=False)
     axes: list[AxesWrapper] = attr(init=False, repr=False)
-    artists: list[Any] = attr(init=False, repr=False, factory=list)
+    artists: "list[Artist]" = attr(default_factory=list, init=False, repr=False)
 
     def __enter__(self) -> Self:
         """
@@ -149,23 +152,18 @@ class FigWrapper(PlotSettable):
             ax.exit()
             if not ax.ax.has_data():
                 self.fig.delaxes(ax.ax)
-        if not self.artists:
-            plt.show()
-            plt.close(self.fig)
-            plt.style.use("default")
+
+        plt.show()
+        plt.close(self.fig)
+        plt.style.use("default")
+
         self.entered = False
 
     def __repr__(self) -> str:
         with self as fig:
             for artist, ax in zip(self.artists, fig.axes[: len(self.artists)]):
                 artist.paint(ax)
-        plt.show()
-        plt.close(self.fig)
-        plt.style.use("default")
-        return (
-            f"<{self.__class__.__name__}"
-            f"(nrows={self.nrows}, ncols={self.ncols}, active={self.active})>"
-        )
+        return f"<{self.__class__.__name__}(nrows={self.nrows}, ncols={self.ncols})>"
 
     def set_figure(self, **kwargs: Unpack[FigureSettingDict]) -> None:
         """
