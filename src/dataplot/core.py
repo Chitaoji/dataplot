@@ -22,7 +22,7 @@ if TYPE_CHECKING:
     from .artist import Artist
 
 
-__all__ = ["figure", "data", "show"]
+__all__ = ["data", "figure"]
 
 
 def _infer_var_names(*values: Any) -> list[Optional[str]]:
@@ -101,35 +101,6 @@ def _infer_assigned_name() -> Optional[str]:
     return m.group(1) if m else None
 
 
-def figure(
-    nrows: int = 1, ncols: int = 1, **kwargs: Unpack[FigureSettingDict]
-) -> FigWrapper:
-    """
-    Provides a context manager interface (`__enter__` and `__exit__` methods) for
-    creating a figure with subplots and setting various properties for the figure.
-
-    Parameters
-    ----------
-    nrows : int, optional
-        Determines how many subplots can be arranged vertically in the figure,
-        by default 1.
-    ncols : int, optional
-        Determines how many subplots can be arranged horizontally in the figure,
-        by default 1.
-    **kwargs : **FigureSettingDict
-        Specifies the figure settings, see `FigWrapper.set_figure()` for more details.
-
-    Returns
-    -------
-    FigWrapper
-        A wrapper of figure.
-
-    """
-    fig = FigWrapper(nrows=nrows, ncols=ncols)
-    fig.set_figure(**kwargs)
-    return fig
-
-
 def data(*x: Any, label: Optional[str | list[str]] = None) -> PlotDataSet:
     """
     Initializes a dataset interface which provides methods for mathematical
@@ -182,30 +153,52 @@ def data(*x: Any, label: Optional[str | list[str]] = None) -> PlotDataSet:
     return PlotDataSet(np.array(x[0]), label=label)
 
 
-def show(
+def figure(
     artist: "Artist | list[Artist]",
-    ncols: Optional[int] = None,
+    nrows: int | None = None,
+    ncols: int | None = None,
     **kwargs: Unpack[FigureSettingDict],
-) -> None:
+) -> FigWrapper:
     """
-    Paint the artist(a) on a new figure.
+    Provides a context manager interface (`__enter__` and `__exit__` methods) for
+    creating a figure with subplots and setting various properties for the figure.
 
     Parameters
     ----------
     artist : Artist | list[Artist]
         Artist or list of artists.
-    ncols : Optional[int], optional
-        Number of columns. If None, will be set to `floor(sqrt(n))`, where `n`
-        is the number of artist(s). By default None.
+    nrows : int, optional
+        Determines how many subplots can be arranged vertically in the figure,
+        If None, will be automatically set according to ``len(artist)``. By default
+        None.
+    ncols : int, optional
+        Determines how many subplots can be arranged horizontally in the figure.
+        If None, will be automatically set according to ``len(artist)``. By default
+        None.
     **kwargs : **FigureSettingDict
         Specifies the figure settings, see `FigWrapper.set_figure()` for more details.
+
+    Returns
+    -------
+    FigWrapper
+        A wrapper of figure.
 
     """
     if not isinstance(artist, list):
         artist = [artist]
     len_a = len(artist)
-    ncols = int(sqrt(len_a)) if ncols is None else min(ncols, len_a)
-    with figure(ceil(len_a / ncols), ncols, **kwargs) as fig:
+    if nrows is None and ncols is None:
+        ncols = int(sqrt(len_a))
+        nrows = ceil(len_a / ncols)
+    elif ncols is None:
+        nrows = min(nrows, len_a)
+        ncols = ceil(len_a / ncols)
+    else:
+        ncols = min(ncols, len_a)
+        nrows = ceil(len_a / ncols)
+    figw = FigWrapper(nrows=nrows, ncols=ncols)
+    figw.set_figure(**kwargs)
+    with figw as fig:
         for a, ax in zip(artist, fig.axes[:len_a]):
             a.paint(ax)
         for ax in fig.axes[len_a:]:
