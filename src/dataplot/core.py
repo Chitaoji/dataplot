@@ -181,7 +181,7 @@ def data(*x: Any, label: Optional[str | list[str]] = None) -> PlotDataSet:
 
 
 def figure(
-    artist: "Artist | list[Artist]",
+    *artists: "Artist",
     nrows: int | None = None,
     ncols: int | None = None,
     **kwargs: Unpack[FigureSettingDict],
@@ -192,8 +192,8 @@ def figure(
 
     Parameters
     ----------
-    artist : Artist | list[Artist]
-        Artist or list of artists.
+    *artist : Artist
+        List of artists.
     nrows : int, optional
         Determines how many subplots can be arranged vertically in the figure,
         If None, will be automatically set according to ``len(artist)``. By default
@@ -211,9 +211,7 @@ def figure(
         A wrapper of figure.
 
     """
-    if not isinstance(artist, list):
-        artist = [artist]
-    len_a = max(len(artist), 1)
+    len_a = max(len(artists), 1)
     if nrows is None and ncols is None:
         ncols = int(sqrt(len_a))
         nrows = ceil(len_a / ncols)
@@ -225,5 +223,5 @@ def figure(
         nrows = ceil(len_a / ncols)
     figw = FigWrapper(nrows=nrows, ncols=ncols)
     figw.set_figure(**kwargs)
-    figw.artists = artist
+    figw.set_artists(*artists)
     return figw

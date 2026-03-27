@@ -208,6 +208,7 @@ class FigWrapper(PlotSettable):
             )
 
     def copy(self) -> Self:
+        """Get a copy of self."""
         obj = self.customize(
             self.__class__,
             nrows=self.nrows,
@@ -217,6 +218,10 @@ class FigWrapper(PlotSettable):
         obj.artists = self.artists
         obj._entered_copy = None
         return obj
+
+    def set_artists(self, *artist: "Artist") -> None:
+        """Set artists."""
+        self.artists = list(artist)
 
 
 class DoubleEnteredError(Exception):
