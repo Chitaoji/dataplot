@@ -10,9 +10,11 @@ import dis
 import re
 import sys
 from math import ceil, sqrt
+from types import FrameType
 from typing import TYPE_CHECKING, Any, Optional, Unpack
 
 import numpy as np
+from validating import validate
 
 from ._typing import FigureSettingDict
 from .container import FigWrapper
@@ -25,10 +27,32 @@ if TYPE_CHECKING:
 __all__ = ["data", "figure"]
 
 
-def _infer_var_names(*values: Any) -> list[Optional[str]]:
+def _find_user_frame(start_depth: int = 1) -> FrameType | None:
+    """
+    Find the nearest frame belonging to user code.
+
+    This skips internal dataplot core frames and validating wrappers so helper
+    functions keep working when `data()`/`figure()` are decorated.
+    """
     try:
-        search_frame = sys._getframe(1)
+        current = sys._getframe(start_depth)
     except ValueError:
+        return None
+
+    try:
+        while current is not None:
+            module_name = str(current.f_globals.get("__name__", ""))
+            if module_name != __name__ and not module_name.startswith("validating"):
+                return current
+            current = current.f_back
+        return None
+    finally:
+        del current
+
+
+def _infer_var_names(*values: Any) -> list[Optional[str]]:
+    search_frame = _find_user_frame(start_depth=2)
+    if search_frame is None:
         return [None] * len(values)
 
     labels: list[Optional[str]] = []
@@ -51,9 +75,8 @@ def _infer_var_names(*values: Any) -> list[Optional[str]]:
 
 def _infer_assigned_name() -> Optional[str]:
     """Try inferring assignment target name from call-site."""
-    try:
-        frame = sys._getframe(2)
-    except ValueError:
+    frame = _find_user_frame(start_depth=2)
+    if frame is None:
         return None
 
     # Bytecode inspection works in REPL/notebook contexts where source code file
@@ -101,6 +124,7 @@ def _infer_assigned_name() -> Optional[str]:
     return m.group(1) if m else None
 
 
+@validate
 def data(*x: Any, label: Optional[str | list[str]] = None) -> PlotDataSet:
     """
     Initializes a dataset interface which provides methods for mathematical
@@ -180,6 +204,7 @@ def data(*x: Any, label: Optional[str | list[str]] = None) -> PlotDataSet:
     return PlotDataSet(normalized_data[0], label=label)
 
 
+@validate
 def figure(
     *artists: "Artist",
     nrows: int | None = None,
