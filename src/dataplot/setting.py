@@ -42,81 +42,78 @@ class PlotSettings:
     subplots_adjust: Optional[SubplotDict] = None
 
     @overload
-    def __getitem__(self, __key: Literal["title", "xlabel", "ylabel"]) -> Optional[str]:
-        ...
+    def __getitem__(
+        self, __key: Literal["title", "xlabel", "ylabel"]
+    ) -> Optional[str]: ...
 
     @overload
-    def __getitem__(self, __key: Literal["alpha", "grid_alpha"]) -> Optional[float]:
-        ...
+    def __getitem__(self, __key: Literal["alpha", "grid_alpha"]) -> Optional[float]: ...
 
     @overload
-    def __getitem__(self, __key: Literal["dpi"]) -> Optional[int | float]:
-        ...
+    def __getitem__(self, __key: Literal["dpi"]) -> Optional[int | float]: ...
 
     @overload
-    def __getitem__(self, __key: Literal["grid"]) -> Optional[bool]:
-        ...
+    def __getitem__(self, __key: Literal["grid"]) -> Optional[bool]: ...
 
     @overload
-    def __getitem__(self, __key: Literal["style"]) -> Optional[StyleName]:
-        ...
+    def __getitem__(self, __key: Literal["style"]) -> Optional[StyleName]: ...
 
     @overload
-    def __getitem__(self, __key: Literal["figsize"]) -> Optional[tuple[int, int]]:
-        ...
+    def __getitem__(self, __key: Literal["figsize"]) -> Optional[tuple[int, int]]: ...
 
     @overload
-    def __getitem__(self, __key: Literal["fontdict"]) -> Optional[FontDict]:
-        ...
+    def __getitem__(self, __key: Literal["fontdict"]) -> Optional[FontDict]: ...
 
     @overload
-    def __getitem__(self, __key: Literal["legend_loc"]) -> Optional[str]:
-        ...
+    def __getitem__(self, __key: Literal["legend_loc"]) -> Optional[str]: ...
 
     @overload
-    def __getitem__(self, __key: Literal["subplots_adjust"]) -> Optional[SubplotDict]:
-        ...
+    def __getitem__(
+        self, __key: Literal["subplots_adjust"]
+    ) -> Optional[SubplotDict]: ...
 
     def __getitem__(self, __key: SettingKey) -> Any:
         return getattr(self, __key)
 
     @overload
     def __setitem__(
-        self, __key: Literal["title", "xlabel", "ylabel", "legend_loc"], __value: Optional[str]
-    ) -> None:
-        ...
+        self,
+        __key: Literal["title", "xlabel", "ylabel", "legend_loc"],
+        __value: Optional[str],
+    ) -> None: ...
 
     @overload
-    def __setitem__(self, __key: Literal["alpha", "grid_alpha"], __value: Optional[float]) -> None:
-        ...
+    def __setitem__(
+        self, __key: Literal["alpha", "grid_alpha"], __value: Optional[float]
+    ) -> None: ...
 
     @overload
-    def __setitem__(self, __key: Literal["dpi"], __value: Optional[int | float]) -> None:
-        ...
+    def __setitem__(
+        self, __key: Literal["dpi"], __value: Optional[int | float]
+    ) -> None: ...
 
     @overload
-    def __setitem__(self, __key: Literal["grid"], __value: Optional[bool]) -> None:
-        ...
+    def __setitem__(self, __key: Literal["grid"], __value: Optional[bool]) -> None: ...
 
     @overload
-    def __setitem__(self, __key: Literal["style"], __value: Optional[StyleName]) -> None:
-        ...
+    def __setitem__(
+        self, __key: Literal["style"], __value: Optional[StyleName]
+    ) -> None: ...
 
     @overload
     def __setitem__(
         self, __key: Literal["figsize"], __value: Optional[tuple[int, int]]
-    ) -> None:
-        ...
+    ) -> None: ...
 
     @overload
-    def __setitem__(self, __key: Literal["fontdict"], __value: Optional[FontDict]) -> None:
-        ...
+    def __setitem__(
+        self, __key: Literal["fontdict"], __value: Optional[FontDict]
+    ) -> None: ...
 
     @overload
     def __setitem__(
         self, __key: Literal["subplots_adjust"], __value: Optional[SubplotDict]
-    ) -> None:
-        ...
+    ) -> None: ...
 
     def __setitem__(self, __key: SettingKey, __value: Any) -> None:
         setattr(self, __key, __value)
@@ -208,17 +205,7 @@ class PlotSettable:
             settings = asdict(settings)
         self._set(inplace=True, **settings)
 
-    @overload
-    def get_setting(self, key: SettingKey) -> Any:
-        ...
-
-    @overload
-    def get_setting(self, key: SettingKey, default: DefaultVar) -> DefaultVar | Any:
-        ...
-
-    def get_setting(
-        self, key: SettingKey, default: Optional[DefaultVar] = None
-    ) -> "DefaultVar | Any":
+    def get_setting(self, key: SettingKey, default: Any = None) -> Any:
         """
         Returns the value of a setting if it is not None, otherwise returns the
         default value.
