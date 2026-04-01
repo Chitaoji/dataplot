@@ -113,26 +113,12 @@ class PlotSettable:
         for k, v in kwargs.items():
             if v is None or k not in keys:
                 continue
-            obj.setting_check(k, v)
             if isinstance(v, dict) and isinstance(d := obj.settings[k], dict):
                 d.update(v)
             else:
                 obj.settings[k] = v
         if not inplace:
             return obj
-
-    def setting_check(self, key: SettingKey, value: Any) -> None:
-        """
-        Checks if a new setting is legal.
-
-        Parameters
-        ----------
-        key : SettingKey
-            Key of the setting.
-        value : Any
-            Value of the setting.
-
-        """
 
     def load(self, settings: "PlotSettings | SettingDict") -> None:
         """

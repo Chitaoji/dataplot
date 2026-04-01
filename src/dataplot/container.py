@@ -6,16 +6,16 @@ NOTE: this module is private. All functions and objects are available in the mai
 
 """
 
-import logging
-from typing import TYPE_CHECKING, Any, Self, Unpack
+from typing import TYPE_CHECKING, Self, Unpack
 
+import loggings
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.figure import Figure
 from matplotlib.pyplot import Axes
 from validating import attr, dataclass
 
-from ._typing import AxesSettingDict, FigureSettingDict, SettingKey
+from ._typing import AxesSettingDict, FigureSettingDict
 from .setting import PlotSettable, defaults
 
 if TYPE_CHECKING:
@@ -203,16 +203,12 @@ class FigWrapper(PlotSettable):
             top, wspace, and hspace. See `SubplotDict` for more details.
 
         """
-        self._set(inplace=True, **kwargs)
-
-    def setting_check(self, key: SettingKey, value: Any) -> None:
-        entered = self._copy is not None
-        if entered and key == "style":
-            logging.warning(
-                "setting the '%s' of a figure has no effect unless it's done "
+        if "style" in kwargs and (self._copy is not None):
+            loggings.warning(
+                "setting the 'style' of a figure has no effect unless it's done "
                 "before invoking context manager",
-                key,
             )
+        self._set(inplace=True, **kwargs)
 
     def copy(self) -> Self:
         """Get a copy of self."""
