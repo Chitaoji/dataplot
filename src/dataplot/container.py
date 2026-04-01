@@ -188,7 +188,7 @@ class FigWrapper(PlotSettable):
         ----------
         title : str, optional
             Title of figure. Please note that there's another parameter with
-            the same name in `.set_axis()`.
+            the same name in `.set_axes()`.
         dpi : float, optional
             Sets the resolution of figure in dots-per-inch.
         style : StyleName, optional

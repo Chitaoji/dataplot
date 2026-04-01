@@ -134,25 +134,6 @@ class PlotSettable:
 
         """
 
-    def set_default(self, **kwargs: Unpack[SettingDict]) -> None:
-        """
-        Sets the default settings.
-
-        Parameters
-        ----------
-        **kwargs : Unpack[SettingDict]
-            Specifies the settings.
-
-        """
-        keys = self.settings.keys()
-        for k, v in kwargs.items():
-            if k not in keys:
-                continue
-            if self.settings[k] is None:
-                self.settings[k] = v
-            elif isinstance(d := self.settings[k], dict):
-                self.settings[k] = {**v, **d}
-
     def load(self, settings: "PlotSettings | SettingDict") -> None:
         """
         Load in the settings.
