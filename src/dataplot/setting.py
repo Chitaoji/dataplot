@@ -12,7 +12,6 @@ from typing import Any, Literal, Optional, Self, Unpack, overload
 from validating import attr, dataclass
 
 from ._typing import (
-    DefaultVar,
     FontDict,
     PlotSettableVar,
     SettingDict,
@@ -204,6 +203,48 @@ class PlotSettable:
         if isinstance(settings, PlotSettings):
             settings = asdict(settings)
         self._set(inplace=True, **settings)
+
+    @overload
+    def get_setting(
+        self,
+        key: Literal["title", "xlabel", "ylabel", "legend_loc"],
+        default: Optional[str] = None,
+    ) -> Optional[str]: ...
+
+    @overload
+    def get_setting(
+        self, key: Literal["alpha", "grid_alpha"], default: Optional[float] = None
+    ) -> Optional[float]: ...
+
+    @overload
+    def get_setting(
+        self, key: Literal["dpi"], default: Optional[int | float] = None
+    ) -> Optional[int | float]: ...
+
+    @overload
+    def get_setting(
+        self, key: Literal["grid"], default: Optional[bool] = None
+    ) -> Optional[bool]: ...
+
+    @overload
+    def get_setting(
+        self, key: Literal["style"], default: Optional[StyleName] = None
+    ) -> Optional[StyleName]: ...
+
+    @overload
+    def get_setting(
+        self, key: Literal["figsize"], default: Optional[tuple[int, int]] = None
+    ) -> Optional[tuple[int, int]]: ...
+
+    @overload
+    def get_setting(
+        self, key: Literal["fontdict"], default: Optional[FontDict] = None
+    ) -> Optional[FontDict]: ...
+
+    @overload
+    def get_setting(
+        self, key: Literal["subplots_adjust"], default: Optional[SubplotDict] = None
+    ) -> Optional[SubplotDict]: ...
 
     def get_setting(self, key: SettingKey, default: Any = None) -> Any:
         """
