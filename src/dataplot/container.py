@@ -128,16 +128,7 @@ class FigWrapper(PlotSettable):
             self._entered_copy = figw
             return figw
 
-        figw.set_default(
-            style=defaults.style,
-            figsize=(
-                defaults.figsize[0] * figw.ncols if defaults.figsize else 10 * figw.ncols,
-                defaults.figsize[1] * figw.nrows if defaults.figsize else 5 * figw.nrows,
-            ),
-            subplots_adjust=defaults.subplots_adjust,
-            fontdict=defaults.fontdict,
-        )
-        plt.style.use(figw.settings.style)
+        plt.style.use(figw.get_setting("style", defaults.style))
         figw.fig, axes = plt.subplots(figw.nrows, figw.ncols)
         figw.axes = [AxesWrapper(x) for x in np.reshape(axes, -1)]
         self._entered_copy = figw
@@ -156,13 +147,20 @@ class FigWrapper(PlotSettable):
             self._entered_copy = None
             return
 
+        fontdict = figw.get_setting("fontdict", defaults.fontdict or {})
         if len(figw.axes) > 1:
-            figw.fig.suptitle(figw.settings.title, **figw.settings.fontdict)
+            figw.fig.suptitle(figw.settings.title, **fontdict)
         else:
-            figw.axes[0].ax.set_title(figw.settings.title, **figw.settings.fontdict)
+            figw.axes[0].ax.set_title(figw.settings.title, **fontdict)
 
-        figw.fig.set_size_inches(*figw.settings.figsize)
-        figw.fig.subplots_adjust(**figw.settings.subplots_adjust)
+        default_figsize = (
+            defaults.figsize[0] * figw.ncols if defaults.figsize else 10 * figw.ncols,
+            defaults.figsize[1] * figw.nrows if defaults.figsize else 5 * figw.nrows,
+        )
+        figw.fig.set_size_inches(*figw.get_setting("figsize", default_figsize))
+        figw.fig.subplots_adjust(
+            **figw.get_setting("subplots_adjust", defaults.subplots_adjust or {})
+        )
         figw.fig.set_dpi(figw.get_setting("dpi", defaults.dpi))
 
         for ax in figw.axes:
