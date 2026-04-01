@@ -188,7 +188,11 @@ class PlotSettable:
             Value of the setting.
 
         """
-        return default if (value := self.settings[key]) is None else value
+        if (value := self.settings[key]) is None:
+            return default
+        if isinstance(value, dict) and isinstance(default, dict):
+            return {**default, **value}
+        return value
 
     def customize(
         self, cls: type["PlotSettableVar"], *args, **kwargs
