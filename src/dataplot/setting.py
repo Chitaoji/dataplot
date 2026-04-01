@@ -84,7 +84,16 @@ class PlotSettings:
             self[k] = None
 
 
-defaults = PlotSettings()
+defaults = PlotSettings(
+    alpha=1.0,
+    dpi=100,
+    grid=True,
+    grid_alpha=0.5,
+    style="seaborn-v0_8-darkgrid",
+    figsize=(10, 5),
+    fontdict={"fontsize": "x-large"},
+    subplots_adjust={"hspace": 0.5},
+)
 
 
 @dataclass(init=False)
