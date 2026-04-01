@@ -16,7 +16,7 @@ from matplotlib.pyplot import Axes
 from validating import attr, dataclass
 
 from ._typing import AxesSettingDict, FigureSettingDict, SettingKey
-from .setting import PlotSettable
+from .setting import PlotSettable, defaults
 
 if TYPE_CHECKING:
     from .artist import Artist
@@ -74,13 +74,19 @@ class AxesWrapper(PlotSettable):
         self.ax.set_xlabel(self.settings.xlabel)
         self.ax.set_ylabel(self.settings.ylabel)
         if len(self.ax.get_legend_handles_labels()[0]):
-            self.ax.legend(loc=self.settings.legend_loc)
-        if self.get_setting("grid", True):
-            alpha = self.get_setting("alpha", 1.0)
-            self.ax.grid(alpha=self.get_setting("grid_alpha", alpha / 2))
+            self.ax.legend(loc=self.get_setting("legend_loc", defaults.legend_loc))
+        if self.get_setting("grid", defaults.grid):
+            alpha = self.get_setting("alpha", defaults.alpha)
+            default_grid_alpha = (
+                alpha / 2 if defaults.grid_alpha is None else defaults.grid_alpha
+            )
+            self.ax.grid(alpha=self.get_setting("grid_alpha", default_grid_alpha))
         else:
             self.ax.grid(False)
-        self.ax.set_title(self.settings.title, **self.get_setting("fontdict", {}))
+        self.ax.set_title(
+            self.settings.title,
+            **self.get_setting("fontdict", defaults.fontdict or {}),
+        )
 
 
 @dataclass(validate_methods=True)
@@ -123,10 +129,13 @@ class FigWrapper(PlotSettable):
             return figw
 
         figw.set_default(
-            style="seaborn-v0_8-darkgrid",
-            figsize=(10 * figw.ncols, 5 * figw.nrows),
-            subplots_adjust={"hspace": 0.5},
-            fontdict={"fontsize": "x-large"},
+            style=defaults.style,
+            figsize=(
+                defaults.figsize[0] * figw.ncols if defaults.figsize else 10 * figw.ncols,
+                defaults.figsize[1] * figw.nrows if defaults.figsize else 5 * figw.nrows,
+            ),
+            subplots_adjust=defaults.subplots_adjust,
+            fontdict=defaults.fontdict,
         )
         plt.style.use(figw.settings.style)
         figw.fig, axes = plt.subplots(figw.nrows, figw.ncols)
@@ -154,7 +163,7 @@ class FigWrapper(PlotSettable):
 
         figw.fig.set_size_inches(*figw.settings.figsize)
         figw.fig.subplots_adjust(**figw.settings.subplots_adjust)
-        figw.fig.set_dpi(figw.get_setting("dpi", 100))
+        figw.fig.set_dpi(figw.get_setting("dpi", defaults.dpi))
 
         for ax in figw.axes:
             ax.exit()
