@@ -27,10 +27,10 @@ class KSPlot(QQPlot):
     """
 
     def paint(self, ax: "AxesWrapper", **_) -> None:
-        ax.set_default(
-            title="Kolmogorov-Smirnov Plot",
-            xlabel="value",
-            ylabel="cummulative probability",
+        ax.set_axes(
+            title=ax.get_setting("title", "Kolmogorov-Smirnov Plot"),
+            xlabel=ax.get_setting("xlabel", "value"),
+            ylabel=ax.get_setting("ylabel", "cummulative probability"),
         )
         ax.load(self.settings)
         self.__plot(ax)
