@@ -107,6 +107,12 @@ class FigWrapper(PlotSettable):
     artists: "list[Artist]" = attr(default_factory=list, init=False, repr=False)
     _copy: "FigWrapper | None" = attr(init=False, repr=False, default=None)
 
+    def __repr__(self) -> str:
+        with self as fig:
+            for artist, ax in zip(self.artists, fig.axes[: len(self.artists)]):
+                artist.paint(ax)
+        return f"<{self.__class__.__name__} {self.nrows}x{self.ncols}>"
+
     def __enter__(self) -> Self:
         """
         Create subplots and set the style.
@@ -173,12 +179,6 @@ class FigWrapper(PlotSettable):
         plt.style.use("default")
 
         self._copy = None
-
-    def __repr__(self) -> str:
-        with self as fig:
-            for artist, ax in zip(self.artists, fig.axes[: len(self.artists)]):
-                artist.paint(ax)
-        return f"<{self.__class__.__name__}(nrows={self.nrows}, ncols={self.ncols})>"
 
     def set_figure(self, **kwargs: Unpack[FigureSettingDict]) -> None:
         """
