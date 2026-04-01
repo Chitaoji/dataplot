@@ -21,7 +21,7 @@ from ._typing import (
     SubplotDict,
 )
 
-__all__ = ["PlotSettings", "PlotSettable"]
+__all__ = ["PlotSettings", "PlotSettable", "defaults"]
 
 
 @dataclass(validate_methods=True)
@@ -48,9 +48,9 @@ class PlotSettings:
         setattr(self, __key, __value)
 
     def __repr__(self) -> str:
-        return self.__class__.__name__ + "(" + self.repr_not_none() + ")"
+        return self.__class__.__name__ + "(" + self._repr_changes() + ")"
 
-    def repr_not_none(self) -> str:
+    def _repr_changes(self) -> str:
         """
         Returns a string representation of attributes with not-None values.
 
@@ -82,6 +82,9 @@ class PlotSettings:
         """
         for k in self.keys():
             self[k] = None
+
+
+defaults = PlotSettings()
 
 
 @dataclass(init=False)
