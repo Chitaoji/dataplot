@@ -7,7 +7,7 @@ NOTE: this module is private. All functions and objects are available in the mai
 """
 
 from dataclasses import asdict
-from typing import Any, Optional, Self, Unpack
+from typing import Any, Literal, Optional, Self, Unpack, overload
 
 from validating import attr, dataclass
 
@@ -41,8 +41,82 @@ class PlotSettings:
     legend_loc: Optional[str] = None
     subplots_adjust: Optional[SubplotDict] = None
 
+    @overload
+    def __getitem__(self, __key: Literal["title", "xlabel", "ylabel"]) -> Optional[str]:
+        ...
+
+    @overload
+    def __getitem__(self, __key: Literal["alpha", "grid_alpha"]) -> Optional[float]:
+        ...
+
+    @overload
+    def __getitem__(self, __key: Literal["dpi"]) -> Optional[int | float]:
+        ...
+
+    @overload
+    def __getitem__(self, __key: Literal["grid"]) -> Optional[bool]:
+        ...
+
+    @overload
+    def __getitem__(self, __key: Literal["style"]) -> Optional[StyleName]:
+        ...
+
+    @overload
+    def __getitem__(self, __key: Literal["figsize"]) -> Optional[tuple[int, int]]:
+        ...
+
+    @overload
+    def __getitem__(self, __key: Literal["fontdict"]) -> Optional[FontDict]:
+        ...
+
+    @overload
+    def __getitem__(self, __key: Literal["legend_loc"]) -> Optional[str]:
+        ...
+
+    @overload
+    def __getitem__(self, __key: Literal["subplots_adjust"]) -> Optional[SubplotDict]:
+        ...
+
     def __getitem__(self, __key: SettingKey) -> Any:
         return getattr(self, __key)
+
+    @overload
+    def __setitem__(
+        self, __key: Literal["title", "xlabel", "ylabel", "legend_loc"], __value: Optional[str]
+    ) -> None:
+        ...
+
+    @overload
+    def __setitem__(self, __key: Literal["alpha", "grid_alpha"], __value: Optional[float]) -> None:
+        ...
+
+    @overload
+    def __setitem__(self, __key: Literal["dpi"], __value: Optional[int | float]) -> None:
+        ...
+
+    @overload
+    def __setitem__(self, __key: Literal["grid"], __value: Optional[bool]) -> None:
+        ...
+
+    @overload
+    def __setitem__(self, __key: Literal["style"], __value: Optional[StyleName]) -> None:
+        ...
+
+    @overload
+    def __setitem__(
+        self, __key: Literal["figsize"], __value: Optional[tuple[int, int]]
+    ) -> None:
+        ...
+
+    @overload
+    def __setitem__(self, __key: Literal["fontdict"], __value: Optional[FontDict]) -> None:
+        ...
+
+    @overload
+    def __setitem__(
+        self, __key: Literal["subplots_adjust"], __value: Optional[SubplotDict]
+    ) -> None:
+        ...
 
     def __setitem__(self, __key: SettingKey, __value: Any) -> None:
         setattr(self, __key, __value)
@@ -133,6 +207,14 @@ class PlotSettable:
         if isinstance(settings, PlotSettings):
             settings = asdict(settings)
         self._set(inplace=True, **settings)
+
+    @overload
+    def get_setting(self, key: SettingKey) -> Any:
+        ...
+
+    @overload
+    def get_setting(self, key: SettingKey, default: DefaultVar) -> DefaultVar | Any:
+        ...
 
     def get_setting(
         self, key: SettingKey, default: Optional[DefaultVar] = None
