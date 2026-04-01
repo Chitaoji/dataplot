@@ -214,13 +214,13 @@ class PlotSettable:
         ----------
         key : SettingKey
             Key of the setting.
-        default : DefaultVar, optional
+        default : Any, optional
             Specifies the default value to be returned if the requested value
             is None, by default None.
 
         Returns
         -------
-        DefaultVar | Any
+        Any
             Value of the setting.
 
         """
