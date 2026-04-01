@@ -105,7 +105,7 @@ class FigWrapper(PlotSettable):
     fig: Figure = attr(init=False, repr=False)
     axes: list[AxesWrapper] = attr(init=False, repr=False)
     artists: "list[Artist]" = attr(default_factory=list, init=False, repr=False)
-    _entered_copy: "FigWrapper | None" = attr(init=False, repr=False, default=None)
+    _copy: "FigWrapper | None" = attr(init=False, repr=False, default=None)
 
     def __enter__(self) -> Self:
         """
@@ -117,7 +117,7 @@ class FigWrapper(PlotSettable):
             An instance of self.
 
         """
-        if self._entered_copy is not None:
+        if self._copy is not None:
             raise DoubleEnteredError(
                 f"can't enter an instance of {self.__class__.__name__!r} for twice; "
                 "please do all the operations in one single context manager"
@@ -125,13 +125,13 @@ class FigWrapper(PlotSettable):
 
         figw = self.copy()
         if not figw.active:
-            self._entered_copy = figw
+            self._copy = figw
             return figw
 
         plt.style.use(figw.get_setting("style", defaults.style))
         figw.fig, axes = plt.subplots(figw.nrows, figw.ncols)
         figw.axes = [AxesWrapper(x) for x in np.reshape(axes, -1)]
-        self._entered_copy = figw
+        self._copy = figw
         return figw
 
     def __exit__(self, *args) -> None:
@@ -139,12 +139,12 @@ class FigWrapper(PlotSettable):
         Set various properties for the figure and paint it.
 
         """
-        figw = self._entered_copy
+        figw = self._copy
         if figw is None:
             figw = self
 
         if not figw.active:
-            self._entered_copy = None
+            self._copy = None
             return
 
         fontdict = figw.get_setting("fontdict", defaults.fontdict or {})
@@ -172,7 +172,7 @@ class FigWrapper(PlotSettable):
         plt.close(figw.fig)
         plt.style.use("default")
 
-        self._entered_copy = None
+        self._copy = None
 
     def __repr__(self) -> str:
         with self as fig:
@@ -206,7 +206,7 @@ class FigWrapper(PlotSettable):
         self._set(inplace=True, **kwargs)
 
     def setting_check(self, key: SettingKey, value: Any) -> None:
-        entered = self._entered_copy is not None
+        entered = self._copy is not None
         if entered and key == "style":
             logging.warning(
                 "setting the '%s' of a figure has no effect unless it's done "
@@ -223,7 +223,7 @@ class FigWrapper(PlotSettable):
             active=self.active,
         )
         obj.artists = self.artists
-        obj._entered_copy = None
+        obj._copy = None
         return obj
 
     def set_artists(self, *artist: "Artist") -> None:
