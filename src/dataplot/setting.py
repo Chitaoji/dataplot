@@ -140,10 +140,22 @@ class PlotSettings:
         Returns
         -------
         list[SettingKey]
-            Keys of the settings.
+            List of keys.
 
         """
         return getattr(self, "__match_args__")
+
+    def values(self) -> list:
+        """
+        Values of settings.
+
+        Returns
+        -------
+        list
+            List of values.
+
+        """
+        return [self[x] for x in self.keys()]
 
     def reset(self) -> None:
         """
