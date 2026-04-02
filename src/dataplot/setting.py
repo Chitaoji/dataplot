@@ -258,7 +258,7 @@ class PlotSettable:
         self, key: Literal["subplots_adjust"], default: Optional[SubplotDict] = None
     ) -> Optional[SubplotDict]: ...
 
-    def get_setting(self, key: SettingKey, default: Any = ...) -> Any:
+    def get_setting(self, key: SettingKey, default: Any = None) -> Any:
         """
         Returns the value of a setting if it is not None, otherwise returns the
         default value.
@@ -269,7 +269,7 @@ class PlotSettable:
             Key of the setting.
         default : Any, optional
             Specifies the default value to be returned if the requested value
-            is None. If omitted, falls back to ``defaults[key]``.
+            is None. If None, falls back to ``defaults[key]``. By default None.
 
         Returns
         -------
@@ -277,7 +277,7 @@ class PlotSettable:
             Value of the setting.
 
         """
-        if default is ...:
+        if default is None:
             default = defaults[key]
 
         if (value := self.settings[key]) is None:
