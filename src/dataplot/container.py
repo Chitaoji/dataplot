@@ -74,9 +74,9 @@ class AxesWrapper(PlotSettable):
         self.ax.set_xlabel(self.settings.xlabel)
         self.ax.set_ylabel(self.settings.ylabel)
         if len(self.ax.get_legend_handles_labels()[0]):
-            self.ax.legend(loc=self.get_setting("legend_loc", defaults.legend_loc))
-        if self.get_setting("grid", defaults.grid):
-            alpha = self.get_setting("alpha", defaults.alpha)
+            self.ax.legend(loc=self.get_setting("legend_loc"))
+        if self.get_setting("grid"):
+            alpha = self.get_setting("alpha")
             default_grid_alpha = (
                 alpha / 2 if defaults.grid_alpha is None else defaults.grid_alpha
             )
@@ -85,7 +85,7 @@ class AxesWrapper(PlotSettable):
             self.ax.grid(False)
         self.ax.set_title(
             self.settings.title,
-            **self.get_setting("fontdict", defaults.fontdict or {}),
+            **(self.get_setting("fontdict") or {}),
         )
 
 
@@ -134,7 +134,7 @@ class FigWrapper(PlotSettable):
             self._copy = figw
             return figw
 
-        plt.style.use(figw.get_setting("style", defaults.style))
+        plt.style.use(figw.get_setting("style"))
         figw.fig, axes = plt.subplots(figw.nrows, figw.ncols)
         figw.axes = [AxesWrapper(x) for x in np.reshape(axes, -1)]
         self._copy = figw
@@ -153,7 +153,7 @@ class FigWrapper(PlotSettable):
             self._copy = None
             return
 
-        fontdict = figw.get_setting("fontdict", defaults.fontdict or {})
+        fontdict = figw.get_setting("fontdict") or {}
         if len(figw.axes) > 1:
             figw.fig.suptitle(figw.settings.title, **fontdict)
         else:
@@ -165,9 +165,9 @@ class FigWrapper(PlotSettable):
         )
         figw.fig.set_size_inches(*figw.get_setting("figsize", default_figsize))
         figw.fig.subplots_adjust(
-            **figw.get_setting("subplots_adjust", defaults.subplots_adjust or {})
+            **(figw.get_setting("subplots_adjust") or {})
         )
-        figw.fig.set_dpi(figw.get_setting("dpi", defaults.dpi))
+        figw.fig.set_dpi(figw.get_setting("dpi"))
 
         for ax in figw.axes:
             ax.exit()
