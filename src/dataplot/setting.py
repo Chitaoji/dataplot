@@ -21,7 +21,6 @@ from ._typing import (
 )
 
 __all__ = ["PlotSettings", "PlotSettable", "defaults"]
-_MISSING = object()
 
 
 @dataclass(validate_methods=True)
@@ -247,7 +246,7 @@ class PlotSettable:
         self, key: Literal["subplots_adjust"], default: Optional[SubplotDict] = None
     ) -> Optional[SubplotDict]: ...
 
-    def get_setting(self, key: SettingKey, default: Any = _MISSING) -> Any:
+    def get_setting(self, key: SettingKey, default: Any = ...) -> Any:
         """
         Returns the value of a setting if it is not None, otherwise returns the
         default value.
@@ -266,7 +265,7 @@ class PlotSettable:
             Value of the setting.
 
         """
-        if default is _MISSING:
+        if default is ...:
             default = defaults[key]
 
         if (value := self.settings[key]) is None:
