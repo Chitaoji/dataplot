@@ -125,8 +125,7 @@ class FigWrapper(PlotSettable):
         """
         if self._copy is not None:
             raise DoubleEnteredError(
-                f"can't enter an instance of {self.__class__.__name__!r} for twice; "
-                "please do all the operations in one single context manager"
+                f"calling {self.__class__.__name__}.__enter__() for twice"
             )
 
         figw = self.copy()
@@ -147,7 +146,9 @@ class FigWrapper(PlotSettable):
         """
         figw = self._copy
         if figw is None:
-            figw = self
+            raise NotEnteredError(
+                f"calling {self.__class__.__name__}.__exit__(...) before entering"
+            )
 
         if not figw.active:
             self._copy = None
@@ -164,9 +165,7 @@ class FigWrapper(PlotSettable):
             defaults.figsize[1] * figw.nrows if defaults.figsize else 5 * figw.nrows,
         )
         figw.fig.set_size_inches(*figw.get_setting("figsize", default_figsize))
-        figw.fig.subplots_adjust(
-            **(figw.get_setting("subplots_adjust") or {})
-        )
+        figw.fig.subplots_adjust(**(figw.get_setting("subplots_adjust") or {}))
         figw.fig.set_dpi(figw.get_setting("dpi"))
 
         for ax in figw.axes:
@@ -229,3 +228,7 @@ class FigWrapper(PlotSettable):
 
 class DoubleEnteredError(Exception):
     """Raised when entering a Figwrapper for twice."""
+
+
+class NotEnteredError(Exception):
+    """Raised when exiting a Figwrapper that is not entered yet."""
