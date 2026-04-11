@@ -41,11 +41,11 @@ class Histogram(Plotter):
         __multi_prev_returned__: Optional[tuple[str, np.ndarray]] = None,
         __multi_is_final__: bool = True,
     ) -> list[float]:
-        ax.set_default(
-            title="Histogram",
-            alpha=0.8,
-            xlabel="value",
-            ylabel="density" if self.density else "count",
+        ax.set_axes(
+            title=ax.get_setting("title", "Histogram"),
+            alpha=ax.get_setting("alpha", 0.8),
+            xlabel=ax.get_setting("xlabel", "value"),
+            ylabel=ax.get_setting("ylabel", "density" if self.density else "count"),
         )
         ax.load(self.settings)
         if __multi_prev_returned__ is None:

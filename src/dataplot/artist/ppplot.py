@@ -26,10 +26,10 @@ class PPPlot(QQPlot):
     """
 
     def paint(self, ax: "AxesWrapper", **_) -> None:
-        ax.set_default(
-            title="Probability-Probability Plot",
-            xlabel="cumulative probility",
-            ylabel="cumulative probility",
+        ax.set_axes(
+            title=ax.get_setting("title", "Probability-Probability Plot"),
+            xlabel=ax.get_setting("xlabel", "cumulative probility"),
+            ylabel=ax.get_setting("ylabel", "cumulative probility"),
         )
         ax.load(self.settings)
         self.__plot(ax)

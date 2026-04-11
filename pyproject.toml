@@ -4,10 +4,11 @@ build-backend = "hatchling.build"
 
 [project]
 name = "dataplot"
-version = "0.1.7"
+version = "0.1.8"
 dependencies = [
     "validating",
     "lazyr",
+    "loggings",
     "matplotlib",
     "numpy",
     "pandas",

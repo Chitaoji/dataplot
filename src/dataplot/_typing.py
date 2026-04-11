@@ -12,7 +12,6 @@ if TYPE_CHECKING:
 
 
 PlotSettableVar = TypeVar("PlotSettableVar", bound="PlotSettable")
-DefaultVar = TypeVar("DefaultVar")
 StyleName = Literal[
     "Solarize_Light2",
     "_classic_test_patch",

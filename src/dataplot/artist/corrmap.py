@@ -45,7 +45,7 @@ class CorrMap(Plotter):
         arrays.append(self.data)
         labels.append(self.label)
         if __multi_is_final__:
-            ax.set_default(title="Correlation Heatmap")
+            ax.set_axes(title=ax.get_setting("title", "Correlation Heatmap"))
             ax.load(self.settings)
             self.__plot(ax, arrays, labels)
         return arrays, labels

@@ -7,12 +7,11 @@ NOTE: this module is private. All functions and objects are available in the mai
 """
 
 from dataclasses import asdict
-from typing import Any, Optional, Self, Unpack
+from typing import Any, Literal, Optional, Self, Unpack, overload
 
 from validating import attr, dataclass
 
 from ._typing import (
-    DefaultVar,
     FontDict,
     PlotSettableVar,
     SettingDict,
@@ -21,7 +20,7 @@ from ._typing import (
     SubplotDict,
 )
 
-__all__ = ["PlotSettings", "PlotSettable"]
+__all__ = ["PlotSettings", "PlotSettable", "defaults"]
 
 
 @dataclass(validate_methods=True)
@@ -32,7 +31,7 @@ class PlotSettings:
     xlabel: Optional[str] = None
     ylabel: Optional[str] = None
     alpha: Optional[float] = None
-    dpi: Optional[float] = None
+    dpi: Optional[int | float] = None
     grid: Optional[bool] = None
     grid_alpha: Optional[float] = None
     style: Optional[StyleName] = None
@@ -41,16 +40,87 @@ class PlotSettings:
     legend_loc: Optional[str] = None
     subplots_adjust: Optional[SubplotDict] = None
 
+    @overload
+    def __getitem__(
+        self, __key: Literal["title", "xlabel", "ylabel"]
+    ) -> Optional[str]: ...
+
+    @overload
+    def __getitem__(self, __key: Literal["alpha", "grid_alpha"]) -> Optional[float]: ...
+
+    @overload
+    def __getitem__(self, __key: Literal["dpi"]) -> Optional[int | float]: ...
+
+    @overload
+    def __getitem__(self, __key: Literal["grid"]) -> Optional[bool]: ...
+
+    @overload
+    def __getitem__(self, __key: Literal["style"]) -> Optional[StyleName]: ...
+
+    @overload
+    def __getitem__(self, __key: Literal["figsize"]) -> Optional[tuple[int, int]]: ...
+
+    @overload
+    def __getitem__(self, __key: Literal["fontdict"]) -> Optional[FontDict]: ...
+
+    @overload
+    def __getitem__(self, __key: Literal["legend_loc"]) -> Optional[str]: ...
+
+    @overload
+    def __getitem__(
+        self, __key: Literal["subplots_adjust"]
+    ) -> Optional[SubplotDict]: ...
+
     def __getitem__(self, __key: SettingKey) -> Any:
         return getattr(self, __key)
+
+    @overload
+    def __setitem__(
+        self,
+        __key: Literal["title", "xlabel", "ylabel", "legend_loc"],
+        __value: Optional[str],
+    ) -> None: ...
+
+    @overload
+    def __setitem__(
+        self, __key: Literal["alpha", "grid_alpha"], __value: Optional[float]
+    ) -> None: ...
+
+    @overload
+    def __setitem__(
+        self, __key: Literal["dpi"], __value: Optional[int | float]
+    ) -> None: ...
+
+    @overload
+    def __setitem__(self, __key: Literal["grid"], __value: Optional[bool]) -> None: ...
+
+    @overload
+    def __setitem__(
+        self, __key: Literal["style"], __value: Optional[StyleName]
+    ) -> None: ...
+
+    @overload
+    def __setitem__(
+        self, __key: Literal["figsize"], __value: Optional[tuple[int, int]]
+    ) -> None: ...
+
+    @overload
+    def __setitem__(
+        self, __key: Literal["fontdict"], __value: Optional[FontDict]
+    ) -> None: ...
+
+    @overload
+    def __setitem__(
+        self, __key: Literal["subplots_adjust"], __value: Optional[SubplotDict]
+    ) -> None: ...
 
     def __setitem__(self, __key: SettingKey, __value: Any) -> None:
         setattr(self, __key, __value)
 
     def __repr__(self) -> str:
-        return self.__class__.__name__ + "(" + self.repr_not_none() + ")"
+        return self.__class__.__name__ + "(" + self._repr_changes() + ")"
 
-    def repr_not_none(self) -> str:
+    def _repr_changes(self) -> str:
         """
         Returns a string representation of attributes with not-None values.
 
@@ -70,10 +140,22 @@ class PlotSettings:
         Returns
         -------
         list[SettingKey]
-            Keys of the settings.
+            List of keys.
 
         """
         return getattr(self, "__match_args__")
+
+    def values(self) -> list:
+        """
+        Values of settings.
+
+        Returns
+        -------
+        list
+            List of values.
+
+        """
+        return [self[x] for x in self.keys()]
 
     def reset(self) -> None:
         """
@@ -82,6 +164,18 @@ class PlotSettings:
         """
         for k in self.keys():
             self[k] = None
+
+
+defaults = PlotSettings(
+    alpha=1.0,
+    dpi=100,
+    grid=True,
+    grid_alpha=0.5,
+    style="seaborn-v0_8-darkgrid",
+    figsize=(10, 5),
+    fontdict={"fontsize": "x-large"},
+    subplots_adjust={"hspace": 0.5},
+)
 
 
 @dataclass(init=False)
@@ -101,45 +195,12 @@ class PlotSettable:
         for k, v in kwargs.items():
             if v is None or k not in keys:
                 continue
-            obj.setting_check(k, v)
             if isinstance(v, dict) and isinstance(d := obj.settings[k], dict):
                 d.update(v)
             else:
                 obj.settings[k] = v
         if not inplace:
             return obj
-
-    def setting_check(self, key: SettingKey, value: Any) -> None:
-        """
-        Checks if a new setting is legal.
-
-        Parameters
-        ----------
-        key : SettingKey
-            Key of the setting.
-        value : Any
-            Value of the setting.
-
-        """
-
-    def set_default(self, **kwargs: Unpack[SettingDict]) -> None:
-        """
-        Sets the default settings.
-
-        Parameters
-        ----------
-        **kwargs : Unpack[SettingDict]
-            Specifies the settings.
-
-        """
-        keys = self.settings.keys()
-        for k, v in kwargs.items():
-            if k not in keys:
-                continue
-            if self.settings[k] is None:
-                self.settings[k] = v
-            elif isinstance(d := self.settings[k], dict):
-                self.settings[k] = {**v, **d}
 
     def load(self, settings: "PlotSettings | SettingDict") -> None:
         """
@@ -155,9 +216,49 @@ class PlotSettable:
             settings = asdict(settings)
         self._set(inplace=True, **settings)
 
+    @overload
     def get_setting(
-        self, key: SettingKey, default: Optional[DefaultVar] = None
-    ) -> "DefaultVar | Any":
+        self,
+        key: Literal["title", "xlabel", "ylabel", "legend_loc"],
+        default: Optional[str] = None,
+    ) -> Optional[str]: ...
+
+    @overload
+    def get_setting(
+        self, key: Literal["alpha", "grid_alpha"], default: Optional[float] = None
+    ) -> Optional[float]: ...
+
+    @overload
+    def get_setting(
+        self, key: Literal["dpi"], default: Optional[int | float] = None
+    ) -> Optional[int | float]: ...
+
+    @overload
+    def get_setting(
+        self, key: Literal["grid"], default: Optional[bool] = None
+    ) -> Optional[bool]: ...
+
+    @overload
+    def get_setting(
+        self, key: Literal["style"], default: Optional[StyleName] = None
+    ) -> Optional[StyleName]: ...
+
+    @overload
+    def get_setting(
+        self, key: Literal["figsize"], default: Optional[tuple[int, int]] = None
+    ) -> Optional[tuple[int, int]]: ...
+
+    @overload
+    def get_setting(
+        self, key: Literal["fontdict"], default: Optional[FontDict] = None
+    ) -> Optional[FontDict]: ...
+
+    @overload
+    def get_setting(
+        self, key: Literal["subplots_adjust"], default: Optional[SubplotDict] = None
+    ) -> Optional[SubplotDict]: ...
+
+    def get_setting(self, key: SettingKey, default: Any = None) -> Any:
         """
         Returns the value of a setting if it is not None, otherwise returns the
         default value.
@@ -166,17 +267,24 @@ class PlotSettable:
         ----------
         key : SettingKey
             Key of the setting.
-        default : DefaultVar, optional
+        default : Any, optional
             Specifies the default value to be returned if the requested value
-            is None, by default None.
+            is None. If None, falls back to ``defaults[key]``. By default None.
 
         Returns
         -------
-        DefaultVar | Any
+        Any
             Value of the setting.
 
         """
-        return default if (value := self.settings[key]) is None else value
+        if default is None:
+            default = defaults[key]
+
+        if (value := self.settings[key]) is None:
+            return default
+        if isinstance(value, dict) and isinstance(default, dict):
+            return {**default, **value}
+        return value
 
     def customize(
         self, cls: type["PlotSettableVar"], *args, **kwargs

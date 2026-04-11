@@ -6,17 +6,17 @@ NOTE: this module is private. All functions and objects are available in the mai
 
 """
 
-import logging
-from typing import TYPE_CHECKING, Any, Self, Unpack
+from typing import TYPE_CHECKING, Self, Unpack
 
+import loggings
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.figure import Figure
 from matplotlib.pyplot import Axes
 from validating import attr, dataclass
 
-from ._typing import AxesSettingDict, FigureSettingDict, SettingKey
-from .setting import PlotSettable
+from ._typing import AxesSettingDict, FigureSettingDict
+from .setting import PlotSettable, defaults
 
 if TYPE_CHECKING:
     from .artist import Artist
@@ -74,13 +74,19 @@ class AxesWrapper(PlotSettable):
         self.ax.set_xlabel(self.settings.xlabel)
         self.ax.set_ylabel(self.settings.ylabel)
         if len(self.ax.get_legend_handles_labels()[0]):
-            self.ax.legend(loc=self.settings.legend_loc)
-        if self.get_setting("grid", True):
-            alpha = self.get_setting("alpha", 1.0)
-            self.ax.grid(alpha=self.get_setting("grid_alpha", alpha / 2))
+            self.ax.legend(loc=self.get_setting("legend_loc"))
+        if self.get_setting("grid"):
+            alpha = self.get_setting("alpha")
+            default_grid_alpha = (
+                alpha / 2 if defaults.grid_alpha is None else defaults.grid_alpha
+            )
+            self.ax.grid(alpha=self.get_setting("grid_alpha", default_grid_alpha))
         else:
             self.ax.grid(False)
-        self.ax.set_title(self.settings.title, **self.get_setting("fontdict", {}))
+        self.ax.set_title(
+            self.settings.title,
+            **(self.get_setting("fontdict") or {}),
+        )
 
 
 @dataclass(validate_methods=True)
@@ -99,7 +105,13 @@ class FigWrapper(PlotSettable):
     fig: Figure = attr(init=False, repr=False)
     axes: list[AxesWrapper] = attr(init=False, repr=False)
     artists: "list[Artist]" = attr(default_factory=list, init=False, repr=False)
-    _entered_copy: "FigWrapper | None" = attr(init=False, repr=False, default=None)
+    _copy: "FigWrapper | None" = attr(init=False, repr=False, default=None)
+
+    def __repr__(self) -> str:
+        with self as fig:
+            for artist, ax in zip(self.artists, fig.axes[: len(self.artists)]):
+                artist.paint(ax)
+        return f"<{self.__class__.__name__} {self.nrows}x{self.ncols}>"
 
     def __enter__(self) -> Self:
         """
@@ -111,27 +123,20 @@ class FigWrapper(PlotSettable):
             An instance of self.
 
         """
-        if self._entered_copy is not None:
+        if self._copy is not None:
             raise DoubleEnteredError(
-                f"can't enter an instance of {self.__class__.__name__!r} for twice; "
-                "please do all the operations in one single context manager"
+                f"calling {self.__class__.__name__}.__enter__() for twice"
             )
 
         figw = self.copy()
         if not figw.active:
-            self._entered_copy = figw
+            self._copy = figw
             return figw
 
-        figw.set_default(
-            style="seaborn-v0_8-darkgrid",
-            figsize=(10 * figw.ncols, 5 * figw.nrows),
-            subplots_adjust={"hspace": 0.5},
-            fontdict={"fontsize": "x-large"},
-        )
-        plt.style.use(figw.settings.style)
+        plt.style.use(figw.get_setting("style"))
         figw.fig, axes = plt.subplots(figw.nrows, figw.ncols)
         figw.axes = [AxesWrapper(x) for x in np.reshape(axes, -1)]
-        self._entered_copy = figw
+        self._copy = figw
         return figw
 
     def __exit__(self, *args) -> None:
@@ -139,22 +144,29 @@ class FigWrapper(PlotSettable):
         Set various properties for the figure and paint it.
 
         """
-        figw = self._entered_copy
+        figw = self._copy
         if figw is None:
-            figw = self
+            raise NotEnteredError(
+                f"calling {self.__class__.__name__}.__exit__(...) before entering"
+            )
 
         if not figw.active:
-            self._entered_copy = None
+            self._copy = None
             return
 
+        fontdict = figw.get_setting("fontdict") or {}
         if len(figw.axes) > 1:
-            figw.fig.suptitle(figw.settings.title, **figw.settings.fontdict)
+            figw.fig.suptitle(figw.settings.title, **fontdict)
         else:
-            figw.axes[0].ax.set_title(figw.settings.title, **figw.settings.fontdict)
+            figw.axes[0].ax.set_title(figw.settings.title, **fontdict)
 
-        figw.fig.set_size_inches(*figw.settings.figsize)
-        figw.fig.subplots_adjust(**figw.settings.subplots_adjust)
-        figw.fig.set_dpi(figw.get_setting("dpi", 100))
+        default_figsize = (
+            defaults.figsize[0] * figw.ncols if defaults.figsize else 10 * figw.ncols,
+            defaults.figsize[1] * figw.nrows if defaults.figsize else 5 * figw.nrows,
+        )
+        figw.fig.set_size_inches(*figw.get_setting("figsize", default_figsize))
+        figw.fig.subplots_adjust(**(figw.get_setting("subplots_adjust") or {}))
+        figw.fig.set_dpi(figw.get_setting("dpi"))
 
         for ax in figw.axes:
             ax.exit()
@@ -165,13 +177,7 @@ class FigWrapper(PlotSettable):
         plt.close(figw.fig)
         plt.style.use("default")
 
-        self._entered_copy = None
-
-    def __repr__(self) -> str:
-        with self as fig:
-            for artist, ax in zip(self.artists, fig.axes[: len(self.artists)]):
-                artist.paint(ax)
-        return f"<{self.__class__.__name__}(nrows={self.nrows}, ncols={self.ncols})>"
+        self._copy = None
 
     def set_figure(self, **kwargs: Unpack[FigureSettingDict]) -> None:
         """
@@ -181,7 +187,7 @@ class FigWrapper(PlotSettable):
         ----------
         title : str, optional
             Title of figure. Please note that there's another parameter with
-            the same name in `.set_axis()`.
+            the same name in `.set_axes()`.
         dpi : float, optional
             Sets the resolution of figure in dots-per-inch.
         style : StyleName, optional
@@ -196,18 +202,15 @@ class FigWrapper(PlotSettable):
             top, wspace, and hspace. See `SubplotDict` for more details.
 
         """
+        if "style" in kwargs and (self._copy is not None):
+            loggings.warning(
+                "setting the 'style' of a figure has no effect unless it's done "
+                "before invoking context manager",
+            )
         self._set(inplace=True, **kwargs)
 
-    def setting_check(self, key: SettingKey, value: Any) -> None:
-        entered = self._entered_copy is not None
-        if entered and key == "style":
-            logging.warning(
-                "setting the '%s' of a figure has no effect unless it's done "
-                "before invoking context manager",
-                key,
-            )
-
     def copy(self) -> Self:
+        """Get a copy of self."""
         obj = self.customize(
             self.__class__,
             nrows=self.nrows,
@@ -215,9 +218,17 @@ class FigWrapper(PlotSettable):
             active=self.active,
         )
         obj.artists = self.artists
-        obj._entered_copy = None
+        obj._copy = None
         return obj
+
+    def set_artists(self, *artist: "Artist") -> None:
+        """Set artists."""
+        self.artists = list(artist)
 
 
 class DoubleEnteredError(Exception):
     """Raised when entering a Figwrapper for twice."""
+
+
+class NotEnteredError(Exception):
+    """Raised when exiting a Figwrapper that is not entered yet."""

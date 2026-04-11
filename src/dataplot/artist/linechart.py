@@ -34,7 +34,7 @@ class LineChart(Plotter):
     sorted: bool
 
     def paint(self, ax: "AxesWrapper", **_) -> None:
-        ax.set_default(title="Line Chart")
+        ax.set_axes(title=ax.get_setting("title", "Line Chart"))
         ax.load(self.settings)
         self.__plot(ax)
 

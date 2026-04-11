@@ -131,7 +131,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             A string indicating the data label and the plot settings.
 
         """
-        not_none = self.settings.repr_not_none()
+        not_none = self.settings._repr_changes()
         return f"{self.formatted_label()}{': ' if not_none else ''}{not_none}"
 
     def __getitem__(self, __key: int) -> Self | Any:

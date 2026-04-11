@@ -33,7 +33,7 @@ class ScatterChart(Plotter):
     sorted: bool
 
     def paint(self, ax: "AxesWrapper", **_) -> None:
-        ax.set_default(title="Scatter Chart")
+        ax.set_axes(title=ax.get_setting("title", "Scatter Chart"))
         ax.load(self.settings)
         self.__plot(ax)
 
