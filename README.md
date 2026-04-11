@@ -29,6 +29,12 @@ This project falls under the BSD 3-Clause License.
 
 ## History
 ### v0.1.8
+* Improved naming inference in `dp.data(...)` when decorators from `validating` are involved.
+* Refined module exports around artist helpers to make wildcard-style artist imports behave consistently.
+* Refactored plot-setting fallback behavior to use `dp.defaults` as the global source of defaults.
+* Enhanced `get_setting(...)` (including overload/type-hint coverage) so default values align with the corresponding setting types, and dict defaults are handled more safely.
+* Removed legacy `set_default()` usage and simplified setting application paths across artists/containers.
+* Added dependency `loggings` and updated warning emission in figure setting flows.
 
 ### v0.1.7
 * `dp.data(...)` can accept `PlotDataSet` objects now.
