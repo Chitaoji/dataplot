@@ -28,6 +28,8 @@ seaborn
 This project falls under the BSD 3-Clause License.
 
 ## History
+### v0.1.8
+
 ### v0.1.7
 * `dp.data(...)` can accept `PlotDataSet` objects now.
 * `FigWrapper.__enter__()` now returns a copy safely via `_entered_copy`.
