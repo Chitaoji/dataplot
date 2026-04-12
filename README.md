@@ -10,6 +10,7 @@ $ pip install dataplot
 ```txt
 validating
 lazyr
+loggings
 matplotlib
 numpy
 pandas
