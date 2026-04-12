@@ -121,14 +121,27 @@ def _infer_assigned_name() -> Optional[str]:
             None,
         )
         if store_index is not None:
+            store_indexes = [store_index]
+            while store_indexes[-1] + 1 < len(instructions) and instructions[
+                store_indexes[-1] + 1
+            ].opname in {"STORE_NAME", "STORE_FAST", "STORE_GLOBAL"}:
+                store_indexes.append(store_indexes[-1] + 1)
+
+            # Tuple unpack assignment keeps the STORE_* order aligned with the
+            # values being unpacked, so consecutive calls can consume targets one
+            # by one.
+            prev_opname = instructions[store_index - 1].opname if store_index > 0 else ""
+            if len(store_indexes) > 1 and prev_opname == "UNPACK_SEQUENCE":
+                state_key = (frame.f_code, instructions[store_index].offset)
+                prev_lasti, prev_count = _ASSIGNMENT_CALL_STATE.get(state_key, (-1, -1))
+                call_count = prev_count + 1 if frame.f_lasti > prev_lasti else 0
+                _ASSIGNMENT_CALL_STATE[state_key] = (frame.f_lasti, call_count)
+                idx = min(call_count, len(store_indexes) - 1)
+                return str(instructions[store_indexes[idx]].argval)
+
             # `a = b = data(...)` compiles to STORE_* b then STORE_* a;
             # returning the last one better matches user expectation.
-            last_store = store_index
-            while last_store + 1 < len(instructions) and instructions[
-                last_store + 1
-            ].opname in {"STORE_NAME", "STORE_FAST", "STORE_GLOBAL"}:
-                last_store += 1
-            return str(instructions[last_store].argval)
+            return str(instructions[store_indexes[-1]].argval)
     except Exception:
         pass
 
