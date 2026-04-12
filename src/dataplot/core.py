@@ -93,6 +93,17 @@ def _infer_assigned_name() -> Optional[str]:
             None,
         )
         if store_index is not None:
+            # `a, b, c = ...` compiles with UNPACK_* immediately before
+            # STORE_* targets, and should map each data() call to its
+            # corresponding left-hand variable.
+            is_unpack_assignment = (
+                store_index > 0
+                and instructions[store_index - 1].opname
+                in {"UNPACK_SEQUENCE", "UNPACK_EX"}
+            )
+            if is_unpack_assignment:
+                return str(instructions[store_index].argval)
+
             # `a = b = data(...)` compiles to STORE_* b then STORE_* a;
             # returning the last one better matches user expectation.
             last_store = store_index
