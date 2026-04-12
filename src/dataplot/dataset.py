@@ -20,7 +20,6 @@ from typing import (
 )
 
 import numpy as np
-import pandas as pd
 from validating import attr, dataclass
 
 from ._typing import DistName, ResampleRule, SettingDict
@@ -386,8 +385,12 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             A new instance of self.__class__.
 
         """
+        if n < 1:
+            raise ValueError(f"rolling window must be a positive integer, got {n}")
         new_fmt = f"rolling({self.format}, {n})"
-        new_data = pd.Series(self.data).rolling(n, min_periods=1).mean().values
+        new_data = np.convolve(
+            np.asarray(self.data, dtype=float), np.ones(n, dtype=float), mode="full"
+        )[: len(self.data)] / np.minimum(np.arange(1, len(self.data) + 1), n)
         return self.__create(new_fmt, new_data)
 
     def exp(self) -> Self:
@@ -657,6 +660,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         fmt: str = "",
         scatter: bool = False,
         sorted: bool = False,
+        rolling: Optional[int] = None,
         ax: Optional["AxesWrapper"] = None,
         **kwargs: Unpack[SettingDict],
     ) -> Artist:
@@ -677,6 +681,10 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         sorted : bool, optional
             Determines whether to sort by x-ticks before drawing the chart, by
             default False.
+        rolling : int, optional
+            Rolling window size. If provided, rolling mean with
+            `rolling(rolling, min_periods=1)` is applied to y-values after optional
+            sorting, by default None.
         ax : AxesWrapper, optional
             Specifies the axes-wrapper on which the plot should be painted If
             not specified, the histogram will be plotted on a new axes in a new

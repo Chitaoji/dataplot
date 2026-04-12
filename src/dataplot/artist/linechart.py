@@ -32,6 +32,7 @@ class LineChart(Plotter):
     fmt: str
     scatter: bool
     sorted: bool
+    rolling: Optional[int]
 
     def paint(self, ax: "AxesWrapper", **_) -> None:
         ax.set_axes(title=ax.get_setting("title", "Line Chart"))
@@ -58,6 +59,19 @@ class LineChart(Plotter):
             xticks, data = zip(*paired, strict=True)
         else:
             data = self.data
+
+        if self.rolling is not None:
+            if self.rolling < 1:
+                raise ValueError(
+                    f"rolling must be a positive integer, got {self.rolling}"
+                )
+            data = np.convolve(
+                np.asarray(data, dtype=float),
+                np.ones(self.rolling, dtype=float),
+                mode="full",
+            )[: len(data)] / np.minimum(
+                np.arange(1, len(data) + 1), self.rolling
+            )
 
         ax.ax.plot(xticks, data, self.fmt, label=self.label)
         if self.scatter:
