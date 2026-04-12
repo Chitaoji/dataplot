@@ -7,6 +7,7 @@ NOTE: this module is private. All functions and objects are available in the mai
 """
 
 import dis
+import linecache
 import re
 import sys
 from math import ceil, sqrt
@@ -25,6 +26,9 @@ if TYPE_CHECKING:
 
 
 __all__ = ["data", "figure"]
+
+
+_ASSIGNMENT_CALL_STATE: dict[tuple[object, int], tuple[int, int]] = {}
 
 
 def _find_user_frame(start_depth: int = 1) -> FrameType | None:
@@ -79,6 +83,30 @@ def _infer_assigned_name() -> Optional[str]:
     if frame is None:
         return None
 
+    filename = frame.f_code.co_filename
+    lineno = frame.f_lineno
+
+    try:
+        line = linecache.getline(filename, lineno).strip()
+        if "=" in line:
+            lhs = line.split("=", 1)[0].strip()
+            if "," in lhs:
+                names = [
+                    n
+                    for n in (part.strip() for part in lhs.split(","))
+                    if re.match(r"^[A-Za-z_][A-Za-z0-9_]*$", n)
+                ]
+                if names:
+                    state_key = (frame.f_code, lineno)
+                    prev_lasti, prev_count = _ASSIGNMENT_CALL_STATE.get(
+                        state_key, (-1, -1)
+                    )
+                    call_count = prev_count + 1 if frame.f_lasti > prev_lasti else 0
+                    _ASSIGNMENT_CALL_STATE[state_key] = (frame.f_lasti, call_count)
+                    return names[min(call_count, len(names) - 1)]
+    except Exception:
+        pass
+
     # Bytecode inspection works in REPL/notebook contexts where source code file
     # is unavailable.
     try:
@@ -105,11 +133,7 @@ def _infer_assigned_name() -> Optional[str]:
         pass
 
     try:
-        context = frame.f_code.co_filename
-        lineno = frame.f_lineno
-        with open(context, "r", encoding="utf-8") as f:
-            lines = f.readlines()
-        line = lines[lineno - 1].strip()
+        line = linecache.getline(filename, lineno).strip()
     except (OSError, IndexError):
         return None
     finally:
