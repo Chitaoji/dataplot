@@ -505,9 +505,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
                 ranked /= valid_data.size
             ranks[valid_mask] = ranked
 
-        new_fmt = (
-            f"rank({self.format}, pct=True)" if pct else f"rank({self.format})"
-        )
+        new_fmt = f"rank({self.format}, pct=True)" if pct else f"rank({self.format})"
         return self.__create(new_fmt, ranks)
 
     def copy(self) -> Self:
@@ -753,7 +751,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
     def scatter(
         self,
         xticks: Optional["np.ndarray | PlotDataSet"] = None,
-        fmt: str = ".",
+        fmt: str = "o",
         ax: Optional["AxesWrapper"] = None,
         **kwargs: Unpack[SettingDict],
     ) -> Artist:
@@ -767,7 +765,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             Specifies the x-ticks for the chart. If not provided, the x-ticks will
             be set to `range(len(data))`. By default None.
         fmt : str, optional
-            A format string, e.g. 'ro' for red circles, by default '.'.
+            A format string, e.g. 'ro' for red circles, by default 'o'.
         ax : AxesWrapper, optional
             Specifies the axes-wrapper on which the plot should be painted If
             not specified, the histogram will be plotted on a new axes in a new
