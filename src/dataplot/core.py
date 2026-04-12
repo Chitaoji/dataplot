@@ -83,26 +83,58 @@ def _infer_assigned_name() -> Optional[str]:
     # is unavailable.
     try:
         instructions = list(dis.get_instructions(frame.f_code))
+        current_index = next(
+            (
+                i
+                for i in range(len(instructions) - 1, -1, -1)
+                if instructions[i].offset <= frame.f_lasti
+            ),
+            None,
+        )
+        if current_index is None:
+            return None
+
         store_index = next(
             (
                 i
                 for i, ins in enumerate(instructions)
-                if ins.offset > frame.f_lasti
+                if i > current_index
                 and ins.opname in {"STORE_NAME", "STORE_FAST", "STORE_GLOBAL"}
             ),
             None,
         )
         if store_index is not None:
-            # `a, b, c = ...` compiles with UNPACK_* immediately before
-            # STORE_* targets, and should map each data() call to its
-            # corresponding left-hand variable.
-            is_unpack_assignment = (
-                store_index > 0
-                and instructions[store_index - 1].opname
-                in {"UNPACK_SEQUENCE", "UNPACK_EX"}
+            # When multiple `data()` calls appear on one assignment line, map
+            # each call to its corresponding STORE target by call order.
+            assignment_targets: list[str] = [str(instructions[store_index].argval)]
+            next_index = store_index + 1
+            while next_index < len(instructions) and instructions[next_index].opname in {
+                "STORE_NAME",
+                "STORE_FAST",
+                "STORE_GLOBAL",
+            }:
+                assignment_targets.append(str(instructions[next_index].argval))
+                next_index += 1
+
+            call_opnames = {"CALL", "CALL_FUNCTION", "CALL_METHOD", "CALL_FUNCTION_EX"}
+            line_start_index = next(
+                (
+                    i
+                    for i in range(current_index, -1, -1)
+                    if instructions[i].starts_line is not None
+                ),
+                0,
             )
-            if is_unpack_assignment:
-                return str(instructions[store_index].argval)
+            line_calls = [
+                i
+                for i in range(line_start_index, store_index)
+                if instructions[i].opname in call_opnames
+            ]
+            current_call_position = (
+                len([i for i in line_calls if i <= current_index]) - 1
+            )
+            if 0 <= current_call_position < len(assignment_targets):
+                return assignment_targets[current_call_position]
 
             # `a = b = data(...)` compiles to STORE_* b then STORE_* a;
             # returning the last one better matches user expectation.
