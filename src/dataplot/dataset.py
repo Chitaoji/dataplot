@@ -465,6 +465,51 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         new_data = np.cumsum(self.data)
         return self.__create(new_fmt, new_data)
 
+    def rank(self, pct: bool = False) -> Self:
+        """
+        Rank the data values.
+
+        Tied values receive the average rank. Non-finite values (nan/inf) are
+        kept as nan in the output.
+
+        Parameters
+        ----------
+        pct : bool, optional
+            If True, return percentage ranks in (0, 1] by dividing ranks by the
+            number of finite observations. By default False.
+
+        Returns
+        -------
+        Self
+            A new instance of self.__class__.
+
+        """
+        valid_mask = np.isfinite(self.data)
+        valid_data = self.data[valid_mask]
+        ranks = np.full(self.data.shape, np.nan, dtype=float)
+
+        if valid_data.size > 0:
+            order = np.argsort(valid_data, kind="mergesort")
+            sorted_data = valid_data[order]
+            ranked = np.empty(valid_data.size, dtype=float)
+
+            i = 0
+            while i < valid_data.size:
+                j = i + 1
+                while j < valid_data.size and sorted_data[j] == sorted_data[i]:
+                    j += 1
+                ranked[order[i:j]] = (i + 1 + j) / 2
+                i = j
+
+            if pct:
+                ranked /= valid_data.size
+            ranks[valid_mask] = ranked
+
+        new_fmt = (
+            f"rank({self.format}, pct=True)" if pct else f"rank({self.format})"
+        )
+        return self.__create(new_fmt, ranks)
+
     def copy(self) -> Self:
         return self.__create(self.fmtb, self.data, priority=self.priority)
 
