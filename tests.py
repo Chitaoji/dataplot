@@ -1,4 +1,4 @@
-import dataplot as dp
+from src import dataplot as dp
 
 
 def test_auto_label_for_multiple_data_calls_on_same_line():

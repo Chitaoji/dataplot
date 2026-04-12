@@ -83,75 +83,16 @@ def _infer_assigned_name() -> Optional[str]:
     # is unavailable.
     try:
         instructions = list(dis.get_instructions(frame.f_code))
-        current_index = next(
-            (
-                i
-                for i in range(len(instructions) - 1, -1, -1)
-                if instructions[i].offset <= frame.f_lasti
-            ),
-            None,
-        )
-        if current_index is None:
-            return None
-
-        # In Python 3.11+, the frame may stop at PRECALL while CALL has not
-        # been executed yet from the perspective of f_lasti. Move the cursor
-        # to the subsequent CALL opcode so call-order mapping still works.
-        if instructions[current_index].opname == "PRECALL":
-            next_call_index = next(
-                (
-                    i
-                    for i in range(current_index + 1, len(instructions))
-                    if instructions[i].opname
-                    in {"CALL", "CALL_FUNCTION", "CALL_METHOD", "CALL_FUNCTION_EX"}
-                ),
-                None,
-            )
-            if next_call_index is not None:
-                current_index = next_call_index
-
         store_index = next(
             (
                 i
                 for i, ins in enumerate(instructions)
-                if i > current_index
+                if ins.offset > frame.f_lasti
                 and ins.opname in {"STORE_NAME", "STORE_FAST", "STORE_GLOBAL"}
             ),
             None,
         )
         if store_index is not None:
-            # When multiple `data()` calls appear on one assignment line, map
-            # each call to its corresponding STORE target by call order.
-            assignment_targets: list[str] = [str(instructions[store_index].argval)]
-            next_index = store_index + 1
-            while next_index < len(instructions) and instructions[next_index].opname in {
-                "STORE_NAME",
-                "STORE_FAST",
-                "STORE_GLOBAL",
-            }:
-                assignment_targets.append(str(instructions[next_index].argval))
-                next_index += 1
-
-            call_opnames = {"CALL", "CALL_FUNCTION", "CALL_METHOD", "CALL_FUNCTION_EX"}
-            line_start_index = next(
-                (
-                    i
-                    for i in range(current_index, -1, -1)
-                    if instructions[i].starts_line is not None
-                ),
-                0,
-            )
-            line_calls = [
-                i
-                for i in range(line_start_index, store_index)
-                if instructions[i].opname in call_opnames
-            ]
-            current_call_position = (
-                len([i for i in line_calls if i <= current_index]) - 1
-            )
-            if 0 <= current_call_position < len(assignment_targets):
-                return assignment_targets[current_call_position]
-
             # `a = b = data(...)` compiles to STORE_* b then STORE_* a;
             # returning the last one better matches user expectation.
             last_store = store_index
