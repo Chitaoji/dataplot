@@ -30,7 +30,7 @@ This project falls under the BSD 3-Clause License.
 
 ## History
 ### v0.1.9
-* New method `PlotDataSet.rank(pct=False)` for rank transformation, supporting `pct=True` to return percentage ranks.
+* New method `PlotDataSet.rank(pct=True)` for rank transformation, supporting `pct=False` to return raw ranks.
 
 ### v0.1.8
 * Improved naming inference in `dp.data(...)` when decorators from `validating` are involved.

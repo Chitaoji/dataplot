@@ -465,7 +465,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         new_data = np.cumsum(self.data)
         return self.__create(new_fmt, new_data)
 
-    def rank(self, pct: bool = False) -> Self:
+    def rank(self, pct: bool = True) -> Self:
         """
         Rank the data values.
 
@@ -476,7 +476,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         ----------
         pct : bool, optional
             If True, return percentage ranks in (0, 1] by dividing ranks by the
-            number of finite observations. By default False.
+            number of finite observations. By default True.
 
         Returns
         -------
