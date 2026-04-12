@@ -17,4 +17,5 @@ def test_auto_label_for_multiple_data_calls_on_same_line():
     assert c.label == "c"
 
 
-test_auto_label_for_multiple_data_calls_on_same_line()
+if __name__ == "__main__":
+    test_auto_label_for_multiple_data_calls_on_same_line()
