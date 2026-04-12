@@ -6,3 +6,6 @@ def test_auto_label_for_multiple_data_calls_on_same_line():
     assert a.label == "a"
     assert b.label == "b"
     assert c.label == "c"
+
+
+test_auto_label_for_multiple_data_calls_on_same_line()
