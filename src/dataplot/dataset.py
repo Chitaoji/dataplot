@@ -753,8 +753,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
     def scatter(
         self,
         xticks: Optional["np.ndarray | PlotDataSet"] = None,
-        fmt: str = "",
-        sorted: bool = False,
+        fmt: str = ".",
         ax: Optional["AxesWrapper"] = None,
         **kwargs: Unpack[SettingDict],
     ) -> Artist:
@@ -768,10 +767,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             Specifies the x-ticks for the chart. If not provided, the x-ticks will
             be set to `range(len(data))`. By default None.
         fmt : str, optional
-            A format string, e.g. 'ro' for red circles, by default ''.
-        sorted : bool, optional
-            Determines whether to sort by x-ticks before drawing the chart, by
-            default False.
+            A format string, e.g. 'ro' for red circles, by default '.'.
         ax : AxesWrapper, optional
             Specifies the axes-wrapper on which the plot should be painted If
             not specified, the histogram will be plotted on a new axes in a new
