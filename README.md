@@ -28,6 +28,8 @@ seaborn
 This project falls under the BSD 3-Clause License.
 
 ## History
+### v0.1.9
+
 ### v0.1.8
 * Improved naming inference in `dp.data(...)` when decorators from `validating` are involved.
 * Refined module exports around artist helpers to make wildcard-style artist imports behave consistently.

@@ -387,7 +387,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
         """
         new_fmt = f"rolling({self.format}, {n})"
-        new_data = pd.Series(self.data).rolling(n).mean().values
+        new_data = pd.Series(self.data).rolling(n, min_periods=1).mean().values
         return self.__create(new_fmt, new_data)
 
     def exp(self) -> Self:

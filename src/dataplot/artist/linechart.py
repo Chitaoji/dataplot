@@ -6,10 +6,10 @@ NOTE: this module is private. All functions and objects are available in the mai
 
 """
 
-from validating import dataclass
 from typing import TYPE_CHECKING, Optional
 
 import numpy as np
+from validating import dataclass
 
 from ..setting import PlotSettable
 from .base import Plotter
@@ -52,7 +52,9 @@ class LineChart(Plotter):
             )
 
         if self.sorted:
-            paired = sorted(zip(xticks, self.data, strict=True), key=lambda pair: pair[0])
+            paired = sorted(
+                zip(xticks, self.data, strict=True), key=lambda pair: pair[0]
+            )
             xticks, data = zip(*paired, strict=True)
         else:
             data = self.data
