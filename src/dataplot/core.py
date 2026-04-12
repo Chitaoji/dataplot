@@ -94,6 +94,22 @@ def _infer_assigned_name() -> Optional[str]:
         if current_index is None:
             return None
 
+        # In Python 3.11+, the frame may stop at PRECALL while CALL has not
+        # been executed yet from the perspective of f_lasti. Move the cursor
+        # to the subsequent CALL opcode so call-order mapping still works.
+        if instructions[current_index].opname == "PRECALL":
+            next_call_index = next(
+                (
+                    i
+                    for i in range(current_index + 1, len(instructions))
+                    if instructions[i].opname
+                    in {"CALL", "CALL_FUNCTION", "CALL_METHOD", "CALL_FUNCTION_EX"}
+                ),
+                None,
+            )
+            if next_call_index is not None:
+                current_index = next_call_index
+
         store_index = next(
             (
                 i
