@@ -54,19 +54,54 @@ def _parse_linear_expression(expr: str, var: str) -> tuple[float, float]:
 
 
 def _draw_reference_lines(ax: Axes, lines: list[str]) -> None:
+    data_x0, data_x1 = map(float, ax.dataLim.intervalx)
+    data_y0, data_y1 = map(float, ax.dataLim.intervaly)
+
+    if not np.isfinite([data_x0, data_x1]).all():
+        data_x0, data_x1 = ax.get_xlim()
+    if not np.isfinite([data_y0, data_y1]).all():
+        data_y0, data_y1 = ax.get_ylim()
+
+    data_xmin, data_xmax = sorted((data_x0, data_x1))
+    data_ymin, data_ymax = sorted((data_y0, data_y1))
+
     for text in lines:
         normalized = text.replace(" ", "")
         lhs, rhs = normalized.split("=")
         if lhs == "y":
             intercept, slope = _parse_linear_expression(rhs, "x")
-            x0, x1 = ax.get_xlim()
-            xs = np.linspace(x0, x1, 200)
+            x_min = data_xmin
+            x_max = data_xmax
+            if slope == 0:
+                if not (data_ymin <= intercept <= data_ymax):
+                    continue
+            else:
+                y_limited_x = sorted(
+                    ((data_ymin - intercept) / slope, (data_ymax - intercept) / slope)
+                )
+                x_min = max(x_min, y_limited_x[0])
+                x_max = min(x_max, y_limited_x[1])
+            if x_min > x_max:
+                continue
+            xs = np.linspace(x_min, x_max, 200)
             ys = intercept + slope * xs
             ax.plot(xs, ys, linestyle="--", linewidth=1.2, color="gray", alpha=0.85)
         else:
             intercept, slope = _parse_linear_expression(rhs, "y")
-            y0, y1 = ax.get_ylim()
-            ys = np.linspace(y0, y1, 200)
+            y_min = data_ymin
+            y_max = data_ymax
+            if slope == 0:
+                if not (data_xmin <= intercept <= data_xmax):
+                    continue
+            else:
+                x_limited_y = sorted(
+                    ((data_xmin - intercept) / slope, (data_xmax - intercept) / slope)
+                )
+                y_min = max(y_min, x_limited_y[0])
+                y_max = min(y_max, x_limited_y[1])
+            if y_min > y_max:
+                continue
+            ys = np.linspace(y_min, y_max, 200)
             xs = intercept + slope * ys
             ax.plot(xs, ys, linestyle="--", linewidth=1.2, color="gray", alpha=0.85)
 
