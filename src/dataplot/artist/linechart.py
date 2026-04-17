@@ -6,7 +6,6 @@ NOTE: this module is private. All functions and objects are available in the mai
 
 """
 
-from collections.abc import Iterable
 from typing import TYPE_CHECKING, Optional
 
 import numpy as np
@@ -34,7 +33,7 @@ class LineChart(Plotter):
     fmt: str
     scatter: bool
     sorted: bool
-    rolling: Optional[int | Iterable[int]]
+    rolling: Optional[int | list[int]]
 
     def paint(self, ax: "AxesWrapper", **_) -> None:
         ax.set_axes(title=ax.get_setting("title", "Line Chart"))
@@ -84,7 +83,7 @@ class LineChart(Plotter):
                 ax.ax.scatter(xticks, rolling_data, zorder=2.0)
 
     def __normalize_rolling(
-        self, rolling: Optional[int | Iterable[int]]
+        self, rolling: Optional[int | list[int]]
     ) -> Optional[list[int]]:
         if rolling is None:
             return None
