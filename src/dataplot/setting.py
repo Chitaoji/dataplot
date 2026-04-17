@@ -74,9 +74,7 @@ class PlotSettings:
     ) -> Optional[SubplotDict]: ...
 
     @overload
-    def __getitem__(
-        self, __key: Literal["reference_lines"]
-    ) -> Optional[list[str]]: ...
+    def __getitem__(self, __key: Literal["reference_lines"]) -> Optional[list[str]]: ...
 
     def __getitem__(self, __key: SettingKey) -> Any:
         return getattr(self, __key)
@@ -205,14 +203,16 @@ class PlotSettable:
             raise TypeError(f"reference line must be str, got {type(text)!r}")
         if re.search(r"[^0-9xy=+\-.\s]", text):
             raise ValueError(
-                "reference line can only contain numbers, x, y, =, +, -, dot and spaces"
+                "reference line can only contain numbers, x, y, =, +, -, and spaces"
             )
         normalized = text.replace(" ", "")
         if normalized.count("=") != 1:
             raise ValueError(f"invalid reference line: {text!r}")
         lhs, rhs = normalized.split("=")
         if lhs not in {"x", "y"}:
-            raise ValueError(f"left side of reference line must be 'x' or 'y': {text!r}")
+            raise ValueError(
+                f"left side of reference line must be 'x' or 'y': {text!r}"
+            )
         if not rhs:
             raise ValueError(f"right side of reference line cannot be empty: {text!r}")
         if "xx" in rhs or "yy" in rhs:
