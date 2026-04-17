@@ -697,7 +697,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         fmt: str = "",
         scatter: bool = False,
         sorted: bool = False,
-        rolling: Optional[int] = None,
+        rolling: Optional[int | list[int]] = None,
         **kwargs: Unpack[SettingDict],
     ) -> Artist:
         """
@@ -717,10 +717,11 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         sorted : bool, optional
             Determines whether to sort by x-ticks before drawing the chart, by
             default False.
-        rolling : int, optional
-            Rolling window size. If provided, rolling mean with
-            `rolling(rolling, min_periods=1)` is applied to y-values after optional
-            sorting, by default None.
+        rolling : int | list[int], optional
+            Rolling window size(s). If provided as an integer, a single rolling
+            mean with `rolling(rolling, min_periods=1)` is applied to y-values
+            after optional sorting. If provided as a list, one line is drawn for
+            each rolling window, by default None.
         **kwargs : **SettingDict
             Specifies the plot settings, see `.set_plot()` for more details.
 
