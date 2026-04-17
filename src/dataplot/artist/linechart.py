@@ -77,7 +77,7 @@ class LineChart(Plotter):
         for rolling_data, label in data_and_labels:
             ax.ax.plot(xticks, rolling_data, self.fmt, label=label)
             if self.scatter:
-                ax.ax.scatter(xticks, rolling_data, zorder=2.0)
+                ax.ax.scatter(xticks, rolling_data, zorder=2.0, clip_on=False)
 
         # Disable matplotlib's default horizontal margins for tighter x-limits.
         ax.ax.margins(x=0)
