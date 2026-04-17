@@ -61,8 +61,7 @@ class LineChart(Plotter):
             xticks, data = zip(*paired, strict=True)
             data_array = np.array(data, dtype=float)
         else:
-            data = self.data
-            data_array = data if isinstance(data, np.ndarray) else np.array(data)
+            data_array = self.data
 
         rolling_list = self.__normalize_rolling(self.rolling)
         if rolling_list is None:
@@ -99,15 +98,11 @@ class LineChart(Plotter):
         for n in rolling_list:
             if not isinstance(n, int) or n < 1:
                 raise ValueError(
-                    "rolling items must be positive integers, "
-                    f"got {rolling_list!r}"
+                    f"rolling items must be positive integers, got {rolling_list!r}"
                 )
         return rolling_list
 
     def __rolling_mean(self, data: np.ndarray, n: int) -> np.ndarray:
-        return (
-            pd.Series(data)
-            .rolling(window=n, min_periods=1)
-            .mean()
-            .to_numpy()
-        )
+        if n == 1:
+            return data
+        return pd.Series(data).rolling(window=n, min_periods=1).mean().to_numpy()
