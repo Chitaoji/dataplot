@@ -49,4 +49,4 @@ class ScatterChart(Plotter):
                 f"lengths {len_t} and {len_d}"
             )
 
-        ax.ax.plot(xticks, self.data, self.fmt, linestyle="None", label=self.label)
+        ax.ax.plot(xticks, self.data, self.fmt, linestyle="None", label=self.label, clip_on=False)
