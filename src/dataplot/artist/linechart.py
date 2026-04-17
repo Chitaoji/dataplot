@@ -80,7 +80,7 @@ class LineChart(Plotter):
                 ax.ax.scatter(xticks, rolling_data, zorder=2.0)
 
         # Disable matplotlib's default horizontal margins for tighter x-limits.
-        ax.ax.margins(x=0)
+        ax.ax.margins(x=0.01)
 
     def __normalize_rolling(
         self, rolling: Optional[int | list[int]]
