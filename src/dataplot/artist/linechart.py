@@ -65,14 +65,11 @@ class LineChart(Plotter):
         rolling_list = self.__normalize_rolling(self.rolling)
         if rolling_list is None:
             data_and_labels = [(data_array, self.label)]
-        elif len(rolling_list) == 1:
-            window = rolling_list[0]
-            data_and_labels = [(self.__rolling_mean(data_array, window), self.label)]
         else:
             data_and_labels = [
                 (
                     self.__rolling_mean(data_array, window),
-                    f"{self.label} (rolling={window})",
+                    f"rolling({self.label}, {window})" if window > 1 else self.label,
                 )
                 for window in rolling_list
             ]
