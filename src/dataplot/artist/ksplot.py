@@ -6,8 +6,9 @@ NOTE: this module is private. All functions and objects are available in the mai
 
 """
 
-from validating import dataclass
 from typing import TYPE_CHECKING
+
+from validating import dataclass
 
 from ..utils.math import get_quantile
 from .qqplot import QQPlot
@@ -40,4 +41,4 @@ class KSPlot(QQPlot):
         q2 = get_quantile(self.data, p)
         ax.ax.plot(q1, p, self.fmt, label=xlabel)
         ax.ax.plot(q2, p, self.fmt, label=self.label)
-        ax.ax.margins(x=0.01)
+        ax.ax.margins(x=0)
