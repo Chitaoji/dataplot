@@ -8,6 +8,8 @@ NOTE: this module is private. All functions and objects are available in the mai
 
 from collections import Counter
 from typing import TYPE_CHECKING, Any, Optional
+
+import numpy as np
 from validating import attr, dataclass
 
 from ..container import FigWrapper
@@ -33,6 +35,7 @@ class Artist(PlotSettable):
     """
 
     plotter: "Plotter | MultiObject"
+
     def __repr__(self) -> str:
         self.paint()
         names = (x.__class__.__name__ for x in multiple(self.plotter))
