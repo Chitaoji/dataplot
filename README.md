@@ -29,6 +29,8 @@ seaborn
 This project falls under the BSD 3-Clause License.
 
 ## History
+### v0.1.10
+
 ### v0.1.9
 * New method `PlotDataSet.rank(pct=True)` for rank transformation, supporting `pct=False` to return raw ranks.
 
