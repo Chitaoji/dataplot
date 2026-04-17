@@ -49,8 +49,8 @@ class QQPlot(Plotter):
         xlabel, p, q1 = self._generate_dist()
         q2 = get_quantile(self.data, p)
         ax.ax.plot(q1, q2, self.fmt, zorder=2.1, label=f"{self.label} & {xlabel}")
-        self._plot_fitted_line(ax, q1, q2)
         ax.ax.margins(x=0.01)
+        self._plot_fitted_line(ax, q1, q2)
 
     def _generate_dist(self) -> tuple[str, np.ndarray, np.ndarray]:
         if not 0 <= self.edge_precision < 0.5:
@@ -77,7 +77,9 @@ class QQPlot(Plotter):
     @staticmethod
     def _plot_fitted_line(ax: "AxesWrapper", x: np.ndarray, y: np.ndarray) -> None:
         a, b = linear_regression_1d(y, x)
-        l, r = x.min(), x.max()
+        l, r = ax.ax.get_xlim()
+        if l == r:
+            l, r = x.min(), x.max()
         ax.ax.plot(
             [l, r], [a + l * b, a + r * b], "--", label=f"y = {a:.3f} + {b:.3f}x"
         )

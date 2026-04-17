@@ -38,5 +38,5 @@ class PPPlot(QQPlot):
         xlabel, p1, q = self._generate_dist()
         p2 = get_prob(self.data, q)
         ax.ax.plot(p1, p2, self.fmt, zorder=2.1, label=f"{self.label} & {xlabel}")
-        self._plot_fitted_line(ax, p1, p2)
         ax.ax.margins(x=0.01)
+        self._plot_fitted_line(ax, p1, p2)
