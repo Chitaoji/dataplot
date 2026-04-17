@@ -50,6 +50,7 @@ class QQPlot(Plotter):
         q2 = get_quantile(self.data, p)
         ax.ax.plot(q1, q2, self.fmt, zorder=2.1, label=f"{self.label} & {xlabel}")
         self._plot_fitted_line(ax, q1, q2)
+        ax.ax.margins(x=0)
 
     def _generate_dist(self) -> tuple[str, np.ndarray, np.ndarray]:
         if not 0 <= self.edge_precision < 0.5:
