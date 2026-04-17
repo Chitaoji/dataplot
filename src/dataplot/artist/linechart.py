@@ -6,10 +6,10 @@ NOTE: this module is private. All functions and objects are available in the mai
 
 """
 
-from validating import dataclass
 from typing import TYPE_CHECKING, Optional
 
 import numpy as np
+from validating import dataclass
 
 from ..setting import PlotSettable
 from .base import Plotter
@@ -32,6 +32,7 @@ class LineChart(Plotter):
     fmt: str
     scatter: bool
     sorted: bool
+    rolling: Optional[int]
 
     def paint(self, ax: "AxesWrapper", **_) -> None:
         ax.set_axes(title=ax.get_setting("title", "Line Chart"))
@@ -52,10 +53,25 @@ class LineChart(Plotter):
             )
 
         if self.sorted:
-            paired = sorted(zip(xticks, self.data, strict=True), key=lambda pair: pair[0])
+            paired = sorted(
+                zip(xticks, self.data, strict=True), key=lambda pair: pair[0]
+            )
             xticks, data = zip(*paired, strict=True)
         else:
             data = self.data
+
+        if self.rolling is not None:
+            if self.rolling < 1:
+                raise ValueError(
+                    f"rolling must be a positive integer, got {self.rolling}"
+                )
+            data = np.convolve(
+                np.asarray(data, dtype=float),
+                np.ones(self.rolling, dtype=float),
+                mode="full",
+            )[: len(data)] / np.minimum(
+                np.arange(1, len(data) + 1), self.rolling
+            )
 
         ax.ax.plot(xticks, data, self.fmt, label=self.label)
         if self.scatter:

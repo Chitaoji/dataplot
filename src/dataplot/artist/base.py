@@ -35,10 +35,8 @@ class Artist(PlotSettable):
     """
 
     plotter: "Plotter | MultiObject"
-    ax: Optional["AxesWrapper"] = attr(default=None, repr=False)
-
     def __repr__(self) -> str:
-        self.paint(self.ax)
+        self.paint()
         names = (x.__class__.__name__ for x in multiple(self.plotter))
         s = ", ".join(f"{i} {x}s" for x, i in Counter(names).items())
         return f"<{self.__class__.__name__} with {s}>"

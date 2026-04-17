@@ -20,7 +20,6 @@ from typing import (
 )
 
 import numpy as np
-import pandas as pd
 from validating import attr, dataclass
 
 from ._typing import DistName, ResampleRule, SettingDict
@@ -45,7 +44,6 @@ from .utils.multi import (
 
 if TYPE_CHECKING:
     from .artist import Plotter
-    from .container import AxesWrapper
 
 
 __all__ = ["PlotDataSet"]
@@ -386,8 +384,12 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             A new instance of self.__class__.
 
         """
+        if n < 1:
+            raise ValueError(f"rolling window must be a positive integer, got {n}")
         new_fmt = f"rolling({self.format}, {n})"
-        new_data = pd.Series(self.data).rolling(n).mean().values
+        new_data = np.convolve(
+            np.asarray(self.data, dtype=float), np.ones(n, dtype=float), mode="full"
+        )[: len(self.data)] / np.minimum(np.arange(1, len(self.data) + 1), n)
         return self.__create(new_fmt, new_data)
 
     def exp(self) -> Self:
@@ -461,6 +463,49 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         new_fmt = f"csum({self.format})"
         new_data = np.cumsum(self.data)
         return self.__create(new_fmt, new_data)
+
+    def rank(self, pct: bool = True) -> Self:
+        """
+        Rank the data values.
+
+        Tied values receive the average rank. Non-finite values (nan/inf) are
+        kept as nan in the output.
+
+        Parameters
+        ----------
+        pct : bool, optional
+            If True, return percentage ranks in (0, 1] by dividing ranks by the
+            number of finite observations. By default True.
+
+        Returns
+        -------
+        Self
+            A new instance of self.__class__.
+
+        """
+        valid_mask = np.isfinite(self.data)
+        valid_data = self.data[valid_mask]
+        ranks = np.full(self.data.shape, np.nan, dtype=float)
+
+        if valid_data.size > 0:
+            order = np.argsort(valid_data, kind="mergesort")
+            sorted_data = valid_data[order]
+            ranked = np.empty(valid_data.size, dtype=float)
+
+            i = 0
+            while i < valid_data.size:
+                j = i + 1
+                while j < valid_data.size and sorted_data[j] == sorted_data[i]:
+                    j += 1
+                ranked[order[i:j]] = (i + 1 + j) / 2
+                i = j
+
+            if pct:
+                ranked /= valid_data.size
+            ranks[valid_mask] = ranked
+
+        new_fmt = f"rank({self.format}, pct=True)" if pct else f"rank({self.format})"
+        return self.__create(new_fmt, ranks)
 
     def copy(self) -> Self:
         return self.__create(self.fmtb, self.data, priority=self.priority)
@@ -609,7 +654,6 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         log: bool = False,
         same_bin: bool = True,
         stats: bool = True,
-        ax: Optional["AxesWrapper"] = None,
         **kwargs: Unpack[SettingDict],
     ) -> Artist:
         """
@@ -636,10 +680,6 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         stats : bool, optional
             Determines whether to show the statistics, including the calculated mean,
             standard deviation, skewness, and kurtosis of the input, by default True.
-        on : Optional[AxesWrapper], optional
-            Specifies the axes-wrapper on which the plot should be painted. If
-            not specified, the histogram will be plotted on a new axes in a new
-            figure. By default None.
         **kwargs : **SettingDict
             Specifies the plot settings, see `.set_plot()` for more details.
 
@@ -657,7 +697,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         fmt: str = "",
         scatter: bool = False,
         sorted: bool = False,
-        ax: Optional["AxesWrapper"] = None,
+        rolling: Optional[int] = None,
         **kwargs: Unpack[SettingDict],
     ) -> Artist:
         """
@@ -677,10 +717,10 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         sorted : bool, optional
             Determines whether to sort by x-ticks before drawing the chart, by
             default False.
-        ax : AxesWrapper, optional
-            Specifies the axes-wrapper on which the plot should be painted If
-            not specified, the histogram will be plotted on a new axes in a new
-            figure. By default None.
+        rolling : int, optional
+            Rolling window size. If provided, rolling mean with
+            `rolling(rolling, min_periods=1)` is applied to y-values after optional
+            sorting, by default None.
         **kwargs : **SettingDict
             Specifies the plot settings, see `.set_plot()` for more details.
 
@@ -700,9 +740,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
     def scatter(
         self,
         xticks: Optional["np.ndarray | PlotDataSet"] = None,
-        fmt: str = "",
-        sorted: bool = False,
-        ax: Optional["AxesWrapper"] = None,
+        fmt: str = "o",
         **kwargs: Unpack[SettingDict],
     ) -> Artist:
         """
@@ -715,14 +753,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             Specifies the x-ticks for the chart. If not provided, the x-ticks will
             be set to `range(len(data))`. By default None.
         fmt : str, optional
-            A format string, e.g. 'ro' for red circles, by default ''.
-        sorted : bool, optional
-            Determines whether to sort by x-ticks before drawing the chart, by
-            default False.
-        ax : AxesWrapper, optional
-            Specifies the axes-wrapper on which the plot should be painted If
-            not specified, the histogram will be plotted on a new axes in a new
-            figure. By default None.
+            A format string, e.g. 'ro' for red circles, by default 'o'.
         **kwargs : **SettingDict
             Specifies the plot settings, see `.set_plot()` for more details.
 
@@ -745,7 +776,6 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         dots: int = 30,
         edge_precision: float = 1e-2,
         fmt: str = "o",
-        ax: Optional["AxesWrapper"] = None,
         **kwargs: Unpack[SettingDict],
     ) -> Artist:
         """
@@ -764,10 +794,6 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             quantile (`=1-edge_precision`), by default 1e-2.
         fmt : str, optional
             A format string, e.g. 'ro' for red circles, by default 'o'.
-        ax : AxesWrapper, optional
-            Specifies the axes-wrapper on which the plot should be painted. If
-            not specified, the histogram will be plotted on a new axes in a new
-            figure. By default None.
         **kwargs : **SettingDict
             Specifies the plot settings, see `.set_plot()` for more details.
 
@@ -785,7 +811,6 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         dots: int = 30,
         edge_precision: float = 1e-6,
         fmt: str = "o",
-        ax: Optional["AxesWrapper"] = None,
         **kwargs: Unpack[SettingDict],
     ) -> Artist:
         """
@@ -804,10 +829,6 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             quantile (`=1-edge_precision`), by default 1e-6.
         fmt : str, optional
             A format string, e.g. 'ro' for red circles, by default 'o'.
-        ax : AxesWrapper, optional
-            Specifies the axes-wrapper on which the plot should be painted. If
-            not specified, the histogram will be plotted on a new axes in a new
-            figure. By default None.
         **kwargs : **SettingDict
             Specifies the plot settings, see `.set_plot()` for more details.
 
@@ -825,7 +846,6 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         dots: int = 1000,
         edge_precision: float = 1e-6,
         fmt: str = "",
-        ax: Optional["AxesWrapper"] = None,
         **kwargs: Unpack[SettingDict],
     ) -> Artist:
         """
@@ -844,10 +864,6 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             quantile (`=1-edge_precision`), by default 1e-6.
         fmt : str, optional
             A format string, e.g. 'ro' for red circles, by default ''.
-        ax : AxesWrapper, optional
-            Specifies the axes-wrapper on which the plot should be painted. If
-            not specified, the histogram will be plotted on a new axes in a new
-            figure. By default None.
         **kwargs : **SettingDict
             Specifies the plot settings, see `.set_plot()` for more details.
 
@@ -862,7 +878,6 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
     def corrmap(
         self,
         annot: bool = True,
-        ax: Optional["AxesWrapper"] = None,
         **kwargs: Unpack[SettingDict],
     ) -> Artist:
         """
@@ -873,10 +888,6 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         annot : bool, optional
             Specifies whether to write the data value in each cell, by default
             True.
-        ax : AxesWrapper, optional
-            Specifies the axes-wrapper on which the plot should be painted. If
-            not specified, the histogram will be plotted on a new axes in a new
-            figure. By default None.
         **kwargs : **SettingDict
             Specifies the plot settings, see `.set_plot()` for more details.
 
@@ -897,7 +908,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         else:
             label = self.formatted_label()
         plotter = self.customize(cls, data=self.data, label=label, **params)
-        artist = single(self.customize)(Artist, plotter=plotter, ax=local["ax"])
+        artist = single(self.customize)(Artist, plotter=plotter)
         if local["kwargs"]:
             artist.plotter.load(local["kwargs"])
             artist.load(local["kwargs"])

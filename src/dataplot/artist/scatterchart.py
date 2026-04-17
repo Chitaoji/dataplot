@@ -30,7 +30,6 @@ class ScatterChart(Plotter):
 
     xticks: Optional["np.ndarray | PlotDataSet"]
     fmt: str
-    sorted: bool
 
     def paint(self, ax: "AxesWrapper", **_) -> None:
         ax.set_axes(title=ax.get_setting("title", "Scatter Chart"))
@@ -50,10 +49,4 @@ class ScatterChart(Plotter):
                 f"lengths {len_t} and {len_d}"
             )
 
-        if self.sorted:
-            paired = sorted(zip(xticks, self.data, strict=True), key=lambda pair: pair[0])
-            xticks, data = zip(*paired, strict=True)
-        else:
-            data = self.data
-
-        ax.ax.plot(xticks, data, self.fmt, linestyle="None", label=self.label)
+        ax.ax.plot(xticks, self.data, self.fmt, linestyle="None", label=self.label)
