@@ -30,7 +30,6 @@ This project falls under the BSD 3-Clause License.
 
 ## History
 ### v0.1.10
-* Refined `dp.data(...)` label/name inference across unpack assignments, multi-target assignments, chained assignments, and tuple-unpack call patterns.
 * Updated scatter behavior with improved defaults and removed implicit x-axis sorting.
 * Refactored plotting APIs to remove the `ax` constructor argument for a cleaner artist construction flow.
 
