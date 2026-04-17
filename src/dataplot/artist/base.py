@@ -8,8 +8,6 @@ NOTE: this module is private. All functions and objects are available in the mai
 
 from collections import Counter
 from typing import TYPE_CHECKING, Any, Optional
-
-import numpy as np
 from validating import attr, dataclass
 
 from ..container import FigWrapper
