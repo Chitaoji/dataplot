@@ -95,6 +95,7 @@ SettingKey = Literal[
     "fontdict",
     "legend_loc",
     "subplots_adjust",
+    "reference_lines",
 ]
 ResampleRule = Literal["head", "tail", "random"]
 
@@ -118,6 +119,7 @@ class SettingDict(TypedDict):
     legend_loc: NotRequired[Optional[str]]
     format_label: NotRequired[Optional[bool]]
     subplots_adjust: NotRequired[Optional["SubplotDict"]]
+    reference_lines: NotRequired[Optional[list[str]]]
 
 
 class FigureSettingDict(TypedDict):
@@ -132,6 +134,7 @@ class FigureSettingDict(TypedDict):
     figsize: NotRequired[Optional[tuple[int, int]]]
     fontdict: NotRequired[Optional["FontDict"]]
     subplots_adjust: NotRequired[Optional["SubplotDict"]]
+    reference_lines: NotRequired[Optional[list[str]]]
 
 
 class AxesSettingDict(TypedDict):
@@ -148,6 +151,7 @@ class AxesSettingDict(TypedDict):
     grid_alpha: NotRequired[Optional[float]]
     fontdict: NotRequired[Optional["FontDict"]]
     legend_loc: NotRequired[Optional[LegendLoc]]
+    reference_lines: NotRequired[Optional[list[str]]]
 
 
 class FontDict(TypedDict):
