@@ -29,12 +29,10 @@ seaborn
 This project falls under the BSD 3-Clause License.
 
 ## History
-### v0.1.10
-* Updated scatter behavior with improved defaults and removed implicit x-axis sorting.
-* Refactored plotting APIs to remove the `ax` constructor argument for a cleaner artist construction flow.
-
 ### v0.1.9
 * New method `PlotDataSet.rank(pct=True)` for rank transformation, supporting `pct=False` to return raw ranks.
+* Updated scatter behavior with improved defaults and removed implicit x-axis sorting.
+* Refactored plotting APIs to remove the `ax` constructor argument for a cleaner artist construction flow.
 
 ### v0.1.8
 * Improved naming inference in `dp.data(...)` when decorators from `validating` are involved.
