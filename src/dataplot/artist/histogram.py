@@ -84,7 +84,7 @@ class Histogram(Plotter):
             )
 
         # Disable matplotlib's default horizontal margins for tighter x-limits.
-        ax.ax.margins(x=0)
+        ax.ax.margins(x=0.01)
         return (
             f"{self.label}: mean={mean:.3f}, std={std:.3f}, skew={skew:.3f}, "
             f"kurt={kurt:.3f}",
