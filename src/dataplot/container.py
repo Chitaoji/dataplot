@@ -79,7 +79,16 @@ def _draw_reference_lines(ax: Axes, lines: list[str]) -> None:
                 continue
             xs = np.linspace(x_min, x_max, 200)
             ys = intercept + slope * xs
-            ax.plot(xs, ys, linestyle="--", linewidth=1.2, color="gray", alpha=0.85)
+            ax.plot(
+                xs,
+                ys,
+                linestyle="--",
+                linewidth=1.2,
+                color="gray",
+                alpha=0.85,
+                scalex=False,
+                scaley=False,
+            )
         else:
             intercept, slope = _parse_linear_expression(rhs, "y")
             y_min = data_ymin
@@ -97,7 +106,16 @@ def _draw_reference_lines(ax: Axes, lines: list[str]) -> None:
                 continue
             ys = np.linspace(y_min, y_max, 200)
             xs = intercept + slope * ys
-            ax.plot(xs, ys, linestyle="--", linewidth=1.2, color="gray", alpha=0.85)
+            ax.plot(
+                xs,
+                ys,
+                linestyle="--",
+                linewidth=1.2,
+                color="gray",
+                alpha=0.85,
+                scalex=False,
+                scaley=False,
+            )
 
 
 @dataclass(validate_methods=True)
