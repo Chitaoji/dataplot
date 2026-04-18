@@ -76,9 +76,10 @@ class Histogram(Plotter):
         skew: float = stats.skew(self.data, bias=False, nan_policy="omit")
         kurt: float = stats.kurtosis(self.data, bias=False, nan_policy="omit")
         if self.fit and self.density:
+            fit_curve = self.__skew_t_pdf(bin_list, self.data)
             ax.ax.plot(
                 bin_list,
-                stats.norm.pdf(bin_list, mean, std),
+                fit_curve,
                 alpha=ax.settings.alpha,
                 label=f"{self.label} · fit",
             )
@@ -90,3 +91,27 @@ class Histogram(Plotter):
             f"kurt={kurt:.3f}",
             bin_list,
         )
+
+    @staticmethod
+    def __skew_t_pdf(x: np.ndarray, data: np.ndarray) -> np.ndarray:
+        sample = np.asarray(data, dtype=float)
+        sample = sample[np.isfinite(sample)]
+        if len(sample) < 5:
+            return np.zeros_like(x, dtype=float)
+
+        # Jones-Faddy skew-t distribution: captures skewness and heavy tails.
+        # a, b affect skewness and kurtosis; loc/scale shift and scale the fit.
+        try:
+            a, b, loc, scale = stats.jf_skew_t.fit(sample)
+        except Exception:
+            return np.zeros_like(x, dtype=float)
+        if (
+            (not np.isfinite(a))
+            or (not np.isfinite(b))
+            or (not np.isfinite(scale))
+            or a <= 0
+            or b <= 0
+            or scale <= 0
+        ):
+            return np.zeros_like(x, dtype=float)
+        return stats.jf_skew_t.pdf(x, a, b, loc=loc, scale=scale)
