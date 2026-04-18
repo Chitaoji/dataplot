@@ -76,9 +76,10 @@ class Histogram(Plotter):
         skew: float = stats.skew(self.data, bias=False, nan_policy="omit")
         kurt: float = stats.kurtosis(self.data, bias=False, nan_policy="omit")
         if self.fit and self.density:
+            fit_curve = self.__skewnorm_pdf(bin_list, self.data)
             ax.ax.plot(
                 bin_list,
-                stats.norm.pdf(bin_list, mean, std),
+                fit_curve,
                 alpha=ax.settings.alpha,
                 label=f"{self.label} · fit",
             )
@@ -90,3 +91,15 @@ class Histogram(Plotter):
             f"kurt={kurt:.3f}",
             bin_list,
         )
+
+    @staticmethod
+    def __skewnorm_pdf(x: np.ndarray, data: np.ndarray) -> np.ndarray:
+        sample = np.asarray(data, dtype=float)
+        sample = sample[np.isfinite(sample)]
+        if len(sample) < 3:
+            return np.zeros_like(x, dtype=float)
+
+        alpha, loc, scale = stats.skewnorm.fit(sample)
+        if (not np.isfinite(scale)) or scale <= 0:
+            return np.zeros_like(x, dtype=float)
+        return stats.skewnorm.pdf(x, alpha, loc=loc, scale=scale)
