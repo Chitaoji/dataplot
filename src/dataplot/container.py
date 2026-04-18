@@ -54,16 +54,10 @@ def _parse_linear_expression(expr: str, var: str) -> tuple[float, float]:
 
 
 def _draw_reference_lines(ax: Axes, lines: list[str]) -> None:
-    data_x0, data_x1 = map(float, ax.dataLim.intervalx)
-    data_y0, data_y1 = map(float, ax.dataLim.intervaly)
-
-    if not np.isfinite([data_x0, data_x1]).all():
-        data_x0, data_x1 = ax.get_xlim()
-    if not np.isfinite([data_y0, data_y1]).all():
-        data_y0, data_y1 = ax.get_ylim()
-
-    data_xmin, data_xmax = sorted((data_x0, data_x1))
-    data_ymin, data_ymax = sorted((data_y0, data_y1))
+    view_x0, view_x1 = map(float, ax.get_xlim())
+    view_y0, view_y1 = map(float, ax.get_ylim())
+    data_xmin, data_xmax = sorted((view_x0, view_x1))
+    data_ymin, data_ymax = sorted((view_y0, view_y1))
 
     for text in lines:
         normalized = text.replace(" ", "")
