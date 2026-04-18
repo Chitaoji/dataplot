@@ -86,13 +86,12 @@ class QQPlot(Plotter):
         else:
             ax.ax.margins(x=0.01)
         lb, ub = ax.ax.get_xlim()
-        print(lb, ub)
         if lb == ub:
             lb, ub = x.min(), x.max()
         ax.ax.plot(
             [lb, ub], [a + lb * b, a + ub * b], "--", label=f"y = {a:.3f} + {b:.3f}x"
         )
-        ax.ax.margins(0)
+        ax.ax.margins(x=0)
 
     @staticmethod
     def _get_ppf(dist: str, p: np.ndarray) -> np.ndarray:
