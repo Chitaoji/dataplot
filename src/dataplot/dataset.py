@@ -368,6 +368,65 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         new_data[self.data == 0] = 0
         return self.__create(new_fmt, new_data)
 
+    def pow(self, n: float = 2) -> Self:
+        """
+        Perform a power operation on the data.
+
+        Parameters
+        ----------
+        n : float, optional
+            Power exponent, by default 2.
+
+        Returns
+        -------
+        Self
+            A new instance of self.__class__.
+
+        """
+        new_fmt = f"pow({self.format}, {n})"
+        new_data = np.power(self.data, n)
+        return self.__create(new_fmt, new_data)
+
+    def root(self, n: float = 2) -> Self:
+        """
+        Perform an n-th root operation on the data.
+
+        Parameters
+        ----------
+        n : float, optional
+            Root degree, by default 2.
+
+        Returns
+        -------
+        Self
+            A new instance of self.__class__.
+
+        Raises
+        ------
+        ValueError
+            Raised when n is zero.
+
+        """
+        if n == 0:
+            raise ValueError("root degree must not be zero")
+        new_fmt = f"root({self.format}, {n})"
+        new_data = np.power(self.data, 1 / n)
+        return self.__create(new_fmt, new_data)
+
+    def sqrt(self) -> Self:
+        """
+        Perform a square-root operation on the data.
+
+        Equivalent to calling `root(2)`.
+
+        Returns
+        -------
+        Self
+            A new instance of self.__class__.
+
+        """
+        return self.root(2)
+
     def rolling(self, n: int) -> Self:
         """
         Perform a rolling-mean operation on the data.
