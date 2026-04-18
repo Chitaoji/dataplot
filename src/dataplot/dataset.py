@@ -368,6 +368,25 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         new_data[self.data == 0] = 0
         return self.__create(new_fmt, new_data)
 
+    def pow(self, n: int | float = 2) -> Self:
+        """
+        Perform a power operation on the data.
+
+        Parameters
+        ----------
+        n : int | float, optional
+            Power exponent, by default 2.
+
+        Returns
+        -------
+        Self
+            A new instance of self.__class__.
+
+        """
+        new_fmt = f"pow({self.format}, {n})"
+        new_data = self.data**n
+        return self.__create(new_fmt, new_data)
+
     def signedpow(self, n: int | float) -> Self:
         """
         Perform a power operation on the data, but keep the sign.
@@ -388,25 +407,6 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         new_data = np.where(self.data > 0, self.data, np.nan) ** n
         new_data[self.data < 0] = -((-self.data[self.data < 0]) ** n)
         new_data[self.data == 0] = 0
-        return self.__create(new_fmt, new_data)
-
-    def pow(self, n: int | float = 2) -> Self:
-        """
-        Perform a power operation on the data.
-
-        Parameters
-        ----------
-        n : int | float, optional
-            Power exponent, by default 2.
-
-        Returns
-        -------
-        Self
-            A new instance of self.__class__.
-
-        """
-        new_fmt = f"pow({self.format}, {n})"
-        new_data = self.data**n
         return self.__create(new_fmt, new_data)
 
     def root(self, n: int = 2) -> Self:
