@@ -487,6 +487,20 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         new_data = np.exp(self.data)
         return self.__create(new_fmt, new_data)
 
+    def exp10(self) -> Self:
+        """
+        Perform a 10-based exponential operation on the data.
+
+        Returns
+        -------
+        Self
+            A new instance of self.__class__.
+
+        """
+        new_fmt = f"exp10({self.format})"
+        new_data = 10**self.data
+        return self.__create(new_fmt, new_data)
+
     def signedexp(self) -> Self:
         """
         Perform an exp operation on the data, but keep the sign.
@@ -506,6 +520,28 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         new_fmt = f"signedexp({self.format})"
         new_data = np.exp(np.where(self.data > 0, self.data, np.nan))
         new_data[self.data < 0] = -np.exp(-self.data[self.data < 0])
+        new_data[self.data == 0] = 0
+        return self.__create(new_fmt, new_data)
+
+    def signedexp10(self) -> Self:
+        """
+        Perform a 10-based exponential operation on the data, but keep the sign.
+
+        signedexp10(x) =
+
+        * 10**x,    for x > 0;
+        * 0,        for x = 0;
+        * -10**(-x), for x < 0.
+
+        Returns
+        -------
+        Self
+            A new instance of self.__class__.
+
+        """
+        new_fmt = f"signedexp10({self.format})"
+        new_data = 10 ** np.where(self.data > 0, self.data, np.nan)
+        new_data[self.data < 0] = -(10 ** (-self.data[self.data < 0]))
         new_data[self.data == 0] = 0
         return self.__create(new_fmt, new_data)
 
