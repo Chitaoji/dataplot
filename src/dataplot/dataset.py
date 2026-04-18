@@ -396,7 +396,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
         Parameters
         ----------
-        n : float, optional
+        n : int | float, optional
             Power exponent, by default 2.
 
         Returns
@@ -406,16 +406,16 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
         """
         new_fmt = f"pow({self.format}, {n})"
-        new_data = np.power(self.data, n)
+        new_data = self.data**n
         return self.__create(new_fmt, new_data)
 
-    def root(self, n: int | float = 2) -> Self:
+    def root(self, n: int = 2) -> Self:
         """
         Perform an n-th root operation on the data.
 
         Parameters
         ----------
-        n : float, optional
+        n : int, optional
             Root degree, by default 2.
 
         Returns
