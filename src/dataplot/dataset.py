@@ -346,7 +346,29 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         new_data[self.data == 0] = 0
         return self.__create(new_fmt, new_data)
 
-    def signedpow(self, n: float) -> Self:
+    def signedlog10(self) -> Self:
+        """
+        Perform a log operation on the data, but keep the sign.
+
+        signedlog10(x) =
+
+        * log10(x),   for x > 0;
+        * 0,        for x = 0;
+        * -log10(-x), for x < 0.
+
+        Returns
+        -------
+        Self
+            A new instance of self.__class__.
+
+        """
+        new_fmt = f"signedlog({self.format})"
+        new_data = np.log10(np.where(self.data > 0, self.data, np.nan))
+        new_data[self.data < 0] = np.log10(-self.data[self.data < 0])
+        new_data[self.data == 0] = 0
+        return self.__create(new_fmt, new_data)
+
+    def signedpow(self, n: int | float) -> Self:
         """
         Perform a power operation on the data, but keep the sign.
 
@@ -368,7 +390,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         new_data[self.data == 0] = 0
         return self.__create(new_fmt, new_data)
 
-    def pow(self, n: float = 2) -> Self:
+    def pow(self, n: int | float = 2) -> Self:
         """
         Perform a power operation on the data.
 
@@ -387,7 +409,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         new_data = np.power(self.data, n)
         return self.__create(new_fmt, new_data)
 
-    def root(self, n: float = 2) -> Self:
+    def root(self, n: int | float = 2) -> Self:
         """
         Perform an n-th root operation on the data.
 
