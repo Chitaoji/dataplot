@@ -6,6 +6,7 @@ NOTE: this module is private. All functions and objects are available in the mai
 
 """
 
+import warnings
 from typing import TYPE_CHECKING, Optional
 
 import numpy as np
@@ -102,7 +103,11 @@ class Histogram(Plotter):
         # Jones-Faddy skew-t distribution: captures skewness and heavy tails.
         # a, b affect skewness and kurtosis; loc/scale shift and scale the fit.
         try:
-            a, b, loc, scale = stats.jf_skew_t.fit(sample)
+            with warnings.catch_warnings():
+                # scipy's jf_skew_t can overflow internally for extreme shapes.
+                # Treat those runtime warnings as fit failure for a quiet fallback.
+                warnings.filterwarnings("error", category=RuntimeWarning)
+                a, b, loc, scale = stats.jf_skew_t.fit(sample)
         except Exception:
             return np.zeros_like(x, dtype=float)
         if (
@@ -114,4 +119,9 @@ class Histogram(Plotter):
             or scale <= 0
         ):
             return np.zeros_like(x, dtype=float)
-        return stats.jf_skew_t.pdf(x, a, b, loc=loc, scale=scale)
+        try:
+            with warnings.catch_warnings():
+                warnings.filterwarnings("error", category=RuntimeWarning)
+                return stats.jf_skew_t.pdf(x, a, b, loc=loc, scale=scale)
+        except Exception:
+            return np.zeros_like(x, dtype=float)
