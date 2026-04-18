@@ -76,9 +76,10 @@ class Histogram(Plotter):
         skew: float = stats.skew(self.data, bias=False, nan_policy="omit")
         kurt: float = stats.kurtosis(self.data, bias=False, nan_policy="omit")
         if self.fit and self.density:
+            fit_curve = self.__edgeworth_pdf(bin_list, mean, std, skew, kurt)
             ax.ax.plot(
                 bin_list,
-                stats.norm.pdf(bin_list, mean, std),
+                fit_curve,
                 alpha=ax.settings.alpha,
                 label=f"{self.label} · fit",
             )
@@ -90,3 +91,21 @@ class Histogram(Plotter):
             f"kurt={kurt:.3f}",
             bin_list,
         )
+
+    @staticmethod
+    def __edgeworth_pdf(
+        x: np.ndarray, mean: float, std: float, skew: float, kurt: float
+    ) -> np.ndarray:
+        if (not np.isfinite(std)) or std <= 0:
+            return np.zeros_like(x, dtype=float)
+
+        z = (x - mean) / std
+        phi = stats.norm.pdf(z) / std
+
+        # Edgeworth expansion terms (using excess kurtosis).
+        h3 = z**3 - 3 * z
+        h4 = z**4 - 6 * z**2 + 3
+        h6 = z**6 - 15 * z**4 + 45 * z**2 - 15
+
+        correction = 1 + (skew / 6) * h3 + (kurt / 24) * h4 + (skew**2 / 72) * h6
+        return np.maximum(phi * correction, 0.0)
