@@ -97,8 +97,6 @@ class Histogram(Plotter):
     def __skew_t_pdf(x: np.ndarray, data: np.ndarray) -> np.ndarray:
         sample = np.asarray(data, dtype=float)
         sample = sample[np.isfinite(sample)]
-        if len(sample) < 5:
-            return np.zeros_like(x, dtype=float)
         # Jones-Faddy skew-t distribution: captures skewness and heavy tails.
         # a, b affect skewness and kurtosis; loc/scale shift and scale the fit.
         try:
