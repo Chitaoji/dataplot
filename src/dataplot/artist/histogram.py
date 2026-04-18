@@ -40,7 +40,7 @@ class Histogram(Plotter):
         *,
         __multi_prev_returned__: Optional[tuple[str, np.ndarray]] = None,
         __multi_is_final__: bool = True,
-    ) -> list[float]:
+    ) -> tuple[str, np.ndarray]:
         ax.set_axes(
             title=ax.get_setting("title", "Histogram"),
             alpha=ax.get_setting("alpha", 0.8),

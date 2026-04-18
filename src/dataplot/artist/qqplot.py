@@ -36,21 +36,23 @@ class QQPlot(Plotter):
     edge_precision: float
     fmt: str
 
-    def paint(self, ax: "AxesWrapper", **_) -> None:
+    def paint(
+        self, ax: "AxesWrapper", __multi_prev_returned__: bool | None = None, **_
+    ) -> bool:
         ax.set_axes(
             title=ax.get_setting("title", "Quantile-Quantile Plot"),
             xlabel=ax.get_setting("xlabel", "quantiles"),
             ylabel=ax.get_setting("ylabel", "quantiles"),
         )
         ax.load(self.settings)
-        self.__plot(ax)
+        self.__plot(ax, __multi_prev_returned__)
+        return True
 
-    def __plot(self, ax: "AxesWrapper") -> None:
+    def __plot(self, ax: "AxesWrapper", is_multi: bool) -> None:
         xlabel, p, q1 = self._generate_dist()
         q2 = get_quantile(self.data, p)
         ax.ax.plot(q1, q2, self.fmt, zorder=2.1, label=f"{self.label} & {xlabel}")
-        ax.ax.margins(x=0.01)
-        self._plot_fitted_line(ax, q1, q2)
+        self._plot_fitted_line(ax, q1, q2, is_multi)
 
     def _generate_dist(self) -> tuple[str, np.ndarray, np.ndarray]:
         if not 0 <= self.edge_precision < 0.5:
@@ -75,14 +77,22 @@ class QQPlot(Plotter):
         return xlabel, p, q
 
     @staticmethod
-    def _plot_fitted_line(ax: "AxesWrapper", x: np.ndarray, y: np.ndarray) -> None:
+    def _plot_fitted_line(
+        ax: "AxesWrapper", x: np.ndarray, y: np.ndarray, is_multi: bool
+    ) -> None:
         a, b = linear_regression_1d(y, x)
-        l, r = ax.ax.get_xlim()
-        if l == r:
-            l, r = x.min(), x.max()
+        if is_multi:
+            ax.ax.margins(x=0)
+        else:
+            ax.ax.margins(x=0.01)
+        lb, ub = ax.ax.get_xlim()
+        print(lb, ub)
+        if lb == ub:
+            lb, ub = x.min(), x.max()
         ax.ax.plot(
-            [l, r], [a + l * b, a + r * b], "--", label=f"y = {a:.3f} + {b:.3f}x"
+            [lb, ub], [a + lb * b, a + ub * b], "--", label=f"y = {a:.3f} + {b:.3f}x"
         )
+        ax.ax.margins(0)
 
     @staticmethod
     def _get_ppf(dist: str, p: np.ndarray) -> np.ndarray:

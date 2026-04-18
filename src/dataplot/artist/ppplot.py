@@ -6,8 +6,9 @@ NOTE: this module is private. All functions and objects are available in the mai
 
 """
 
-from validating import dataclass
 from typing import TYPE_CHECKING
+
+from validating import dataclass
 
 from ..utils.math import get_prob
 from .qqplot import QQPlot
@@ -25,18 +26,20 @@ class PPPlot(QQPlot):
 
     """
 
-    def paint(self, ax: "AxesWrapper", **_) -> None:
+    def paint(
+        self, ax: "AxesWrapper", __multi_prev_returned__: bool | None = None, **_
+    ) -> None:
         ax.set_axes(
             title=ax.get_setting("title", "Probability-Probability Plot"),
             xlabel=ax.get_setting("xlabel", "cumulative probility"),
             ylabel=ax.get_setting("ylabel", "cumulative probility"),
         )
         ax.load(self.settings)
-        self.__plot(ax)
+        self.__plot(ax, __multi_prev_returned__)
+        return True
 
-    def __plot(self, ax: "AxesWrapper") -> None:
+    def __plot(self, ax: "AxesWrapper", is_multi: bool) -> None:
         xlabel, p1, q = self._generate_dist()
         p2 = get_prob(self.data, q)
         ax.ax.plot(p1, p2, self.fmt, zorder=2.1, label=f"{self.label} & {xlabel}")
-        ax.ax.margins(x=0.01)
-        self._plot_fitted_line(ax, p1, p2)
+        self._plot_fitted_line(ax, p1, p2, is_multi)
