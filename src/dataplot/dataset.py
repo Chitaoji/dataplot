@@ -487,6 +487,28 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         new_data = np.exp(self.data)
         return self.__create(new_fmt, new_data)
 
+    def signedexp(self) -> Self:
+        """
+        Perform an exp operation on the data, but keep the sign.
+
+        signedexp(x) =
+
+        * exp(x),   for x > 0;
+        * 0,        for x = 0;
+        * -exp(-x), for x < 0.
+
+        Returns
+        -------
+        Self
+            A new instance of self.__class__.
+
+        """
+        new_fmt = f"signedexp({self.format})"
+        new_data = np.exp(np.where(self.data > 0, self.data, np.nan))
+        new_data[self.data < 0] = -np.exp(-self.data[self.data < 0])
+        new_data[self.data == 0] = 0
+        return self.__create(new_fmt, new_data)
+
     def abs(self) -> Self:
         """
         Perform an abs operation on the data.
