@@ -449,6 +449,55 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         """
         return self.root(2)
 
+    def signedroot(self, n: int = 2) -> Self:
+        """
+        Perform an n-th root operation on the data, but keep the sign.
+
+        signedroot(x, n) =
+
+        * x**(1/n),       for x > 0;
+        * 0,              for x = 0;
+        * -((-x)**(1/n)), for x < 0.
+
+        Parameters
+        ----------
+        n : int, optional
+            Root degree, by default 2.
+
+        Returns
+        -------
+        Self
+            A new instance of self.__class__.
+
+        Raises
+        ------
+        ValueError
+            Raised when n is zero.
+
+        """
+        if n == 0:
+            raise ValueError("root degree must not be zero")
+        new_fmt = f"signedroot({self.format}, {n})"
+        power = 1 / n
+        new_data = np.power(np.where(self.data > 0, self.data, np.nan), power)
+        new_data[self.data < 0] = -np.power(-self.data[self.data < 0], power)
+        new_data[self.data == 0] = 0
+        return self.__create(new_fmt, new_data)
+
+    def signedsqrt(self) -> Self:
+        """
+        Perform a square-root operation on the data, but keep the sign.
+
+        Equivalent to calling `signedroot(2)`.
+
+        Returns
+        -------
+        Self
+            A new instance of self.__class__.
+
+        """
+        return self.signedroot(2)
+
     def rolling(self, n: int) -> Self:
         """
         Perform a rolling-mean operation on the data.
