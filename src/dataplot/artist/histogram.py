@@ -82,7 +82,7 @@ class Histogram(Plotter):
                 bin_list,
                 fit_curve,
                 alpha=ax.settings.alpha,
-                label=f"{self.label} · fit ({self.fit})",
+                label=f"{self.label} · fit",
             )
 
         # Disable matplotlib's default horizontal margins for tighter x-limits.
