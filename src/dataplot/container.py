@@ -155,11 +155,6 @@ class AxesWrapper(PlotSettable):
             A dictionary controlling the appearance of the title text.
         legend_loc : LegendLoc, optional
             Location of the legend.
-        reference_lines : list[str], optional
-            Reference line expressions to draw on the axes. Each expression
-            should use the format ``"y=..."`` or ``"x=..."`` (for example,
-            ``"y=0"``, ``"x=10"``, ``"y=2x+1"``), and the lines are rendered
-            as dashed gray guides.
 
         """
         self._set(inplace=True, **kwargs)

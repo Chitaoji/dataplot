@@ -807,6 +807,10 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             Adjusts the subplot layout parameters including: left, right, bottom,
             top, wspace, and hspace. See `SubplotDict` for more details.
         reference_lines : list[str], optional
+            Reference line expressions to draw on the axes. Each expression
+            should use the format ``"y=..."`` or ``"x=..."`` (for example,
+            ``"y=0"``, ``"x=10"``, ``"y=2x+1"``), and the lines are rendered
+            as dashed gray guides.
 
         Returns
         -------
