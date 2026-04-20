@@ -7,7 +7,7 @@ NOTE: this module is private. All functions and objects are available in the mai
 """
 
 import warnings
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Literal, Optional
 
 import numpy as np
 from scipy import stats
@@ -29,7 +29,7 @@ class Histogram(Plotter):
     """
 
     bins: int | list[float]
-    fit: bool
+    fit: Literal["norm", "skew-norm", "t", "skew-t"] | None
     density: bool
     log: bool
     same_bin: bool
@@ -76,13 +76,13 @@ class Histogram(Plotter):
         mean, std = np.nanmean(self.data), np.nanstd(self.data)
         skew: float = stats.skew(self.data, bias=False, nan_policy="omit")
         kurt: float = stats.kurtosis(self.data, bias=False, nan_policy="omit")
-        if self.fit and self.density:
-            fit_curve = self.__skew_t_pdf(bin_list, self.data)
+        if self.fit is not None and self.density:
+            fit_curve = self.__fit_pdf(bin_list, self.data, dist=self.fit)
             ax.ax.plot(
                 bin_list,
                 fit_curve,
                 alpha=ax.settings.alpha,
-                label=f"{self.label} · fit",
+                label=f"{self.label} · fit ({self.fit})",
             )
 
         # Disable matplotlib's default horizontal margins for tighter x-limits.
@@ -94,25 +94,44 @@ class Histogram(Plotter):
         )
 
     @staticmethod
-    def __skew_t_pdf(x: np.ndarray, data: np.ndarray) -> np.ndarray:
+    def __fit_pdf(
+        x: np.ndarray,
+        data: np.ndarray,
+        dist: Literal["norm", "skew-norm", "t", "skew-t"],
+    ) -> np.ndarray:
         sample = np.asarray(data, dtype=float)
         sample = sample[np.isfinite(sample)]
-        # Jones-Faddy skew-t distribution: captures skewness and heavy tails.
-        # a, b affect skewness and kurtosis; loc/scale shift and scale the fit.
         try:
             with warnings.catch_warnings():
-                # scipy's jf_skew_t can overflow internally for extreme shapes.
                 warnings.filterwarnings("ignore", category=RuntimeWarning)
-                a, b, loc, scale = stats.jf_skew_t.fit(sample)
+                if dist == "norm":
+                    loc, scale = stats.norm.fit(sample)
+                    params: tuple[float, ...] = (loc, scale)
+                elif dist == "skew-norm":
+                    a, loc, scale = stats.skewnorm.fit(sample)
+                    params = (a, loc, scale)
+                elif dist == "t":
+                    df, loc, scale = stats.t.fit(sample)
+                    params = (df, loc, scale)
+                else:
+                    # Jones-Faddy skew-t: captures skewness and heavy tails.
+                    # a, b affect skewness and kurtosis; loc/scale shift/scale.
+                    a, b, loc, scale = stats.jf_skew_t.fit(sample)
+                    params = (a, b, loc, scale)
         except Exception:
             return np.zeros_like(x, dtype=float)
-        if (
-            (not np.isfinite(a))
-            or (not np.isfinite(b))
-            or (not np.isfinite(scale))
-            or a <= 0
-            or b <= 0
-            or scale <= 0
-        ):
+        if (not np.all(np.isfinite(params))) or params[-1] <= 0:
+            return np.zeros_like(x, dtype=float)
+        if dist == "norm":
+            loc, scale = params
+            return stats.norm.pdf(x, loc=loc, scale=scale)
+        if dist == "skew-norm":
+            a, loc, scale = params
+            return stats.skewnorm.pdf(x, a, loc=loc, scale=scale)
+        if dist == "t":
+            df, loc, scale = params
+            return stats.t.pdf(x, df, loc=loc, scale=scale)
+        a, b, loc, scale = params
+        if a <= 0 or b <= 0:
             return np.zeros_like(x, dtype=float)
         return stats.jf_skew_t.pdf(x, a, b, loc=loc, scale=scale)
