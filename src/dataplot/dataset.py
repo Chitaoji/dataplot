@@ -837,7 +837,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
     def hist(
         self,
         bins: int | list[float] = 100,
-        fit: bool = True,
+        fit: Literal["norm", "skew-norm", "t", "skew-t"] | None = "skew-t",
         density: bool = True,
         log: bool = False,
         same_bin: bool = True,
@@ -852,9 +852,10 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         bins : int | list[float], optional
             Specifies the bins to divide the data into. If int, should be the number
             of bins. By default 100.
-        fit : bool, optional
-            Determines whether to fit a curve to the histogram, only available when
-            `density=True`, by default True.
+        fit : Literal["norm", "skew-norm", "t", "skew-t"] | None, optional
+            Distribution used to fit a curve to the histogram, only available when
+            `density=True`. Set to ``None`` to disable fitting. By default
+            ``"skew-t"``.
         density : bool, optional
             Determines whether to draw a probability density. If True, the histogram
             will be normalized such that the area under it equals to 1. By default
