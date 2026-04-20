@@ -155,6 +155,11 @@ class AxesWrapper(PlotSettable):
             A dictionary controlling the appearance of the title text.
         legend_loc : LegendLoc, optional
             Location of the legend.
+        reference_lines : list[str], optional
+            Reference line expressions to draw on the axes. Each expression
+            should use the format ``"y=..."`` or ``"x=..."`` (for example,
+            ``"y=0"``, ``"x=10"``, ``"y=2x+1"``), and the lines are rendered
+            as dashed gray guides.
 
         """
         self._set(inplace=True, **kwargs)
@@ -296,6 +301,10 @@ class FigWrapper(PlotSettable):
         subplots_adjust : SubplotDict, optional
             Adjusts the subplot layout parameters including: left, right, bottom,
             top, wspace, and hspace. See `SubplotDict` for more details.
+        reference_lines : list[str], optional
+            Reference line expressions applied to each subplot axis. Each item
+            should be in the form ``"y=..."`` or ``"x=..."`` and will be drawn
+            as a dashed gray guide line.
 
         """
         if "style" in kwargs and (self._copy is not None):
