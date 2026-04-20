@@ -803,6 +803,10 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         format_label : bool, optional
             Determines whether to format the label (to show the operations done
             on the data).
+        subplots_adjust : SubplotDict, optional
+            Adjusts the subplot layout parameters including: left, right, bottom,
+            top, wspace, and hspace. See `SubplotDict` for more details.
+        reference_lines : list[str], optional
 
         Returns
         -------
