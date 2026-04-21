@@ -50,6 +50,19 @@ class PPPlot(QQPlot):
         ax.ax.yaxis.set_major_formatter(
             FuncFormatter(lambda value, _: "" if abs(value) < 1e-12 else f"{value:.1f}")
         )
+        tick_label = next(
+            (label for label in ax.ax.get_xticklabels() if label.get_text()),
+            None,
+        )
+        text_style = {}
+        if tick_label is not None:
+            text_style = {
+                "fontsize": tick_label.get_fontsize(),
+                "fontfamily": tick_label.get_fontfamily(),
+                "fontstyle": tick_label.get_fontstyle(),
+                "fontweight": tick_label.get_fontweight(),
+                "color": tick_label.get_color(),
+            }
         shared_origin = ax.ax.transData + ScaledTranslation(
             -3.6 / 72, -2 / 72, ax.ax.figure.dpi_scale_trans
         )
@@ -62,5 +75,6 @@ class PPPlot(QQPlot):
             va="top",
             zorder=3,
             clip_on=False,
+            **text_style,
         )
         self._plot_fitted_line(ax, p1, p2)
