@@ -9,7 +9,6 @@ NOTE: this module is private. All functions and objects are available in the mai
 from typing import TYPE_CHECKING
 
 from matplotlib.ticker import FuncFormatter
-from matplotlib.transforms import ScaledTranslation
 from validating import dataclass
 
 from ..utils.math import get_prob
