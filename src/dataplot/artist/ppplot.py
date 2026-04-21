@@ -44,37 +44,7 @@ class PPPlot(QQPlot):
         ax.ax.plot(p1, p2, self.fmt, zorder=2.1, label=f"{self.label} & {xlabel}")
         ax.ax.set_xlim(0, 1)
         ax.ax.set_ylim(0, 1)
-        ax.ax.xaxis.set_major_formatter(
-            FuncFormatter(lambda value, _: "" if abs(value) < 1e-12 else f"{value:.1f}")
-        )
         ax.ax.yaxis.set_major_formatter(
             FuncFormatter(lambda value, _: "" if abs(value) < 1e-12 else f"{value:.1f}")
-        )
-        tick_label = next(
-            (label for label in ax.ax.get_xticklabels() if label.get_text()),
-            None,
-        )
-        text_style = {}
-        if tick_label is not None:
-            text_style = {
-                "fontsize": tick_label.get_fontsize(),
-                "fontfamily": tick_label.get_fontfamily(),
-                "fontstyle": tick_label.get_fontstyle(),
-                "fontweight": tick_label.get_fontweight(),
-                "color": tick_label.get_color(),
-            }
-        shared_origin = ax.ax.transData + ScaledTranslation(
-            -3.6 / 72, -2 / 72, ax.ax.figure.dpi_scale_trans
-        )
-        ax.ax.text(
-            0,
-            0,
-            "0.0",
-            transform=shared_origin,
-            ha="right",
-            va="top",
-            zorder=3,
-            clip_on=False,
-            **text_style,
         )
         self._plot_fitted_line(ax, p1, p2)
