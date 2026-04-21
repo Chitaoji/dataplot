@@ -51,7 +51,7 @@ class PPPlot(QQPlot):
             FuncFormatter(lambda value, _: "" if abs(value) < 1e-12 else f"{value:.1f}")
         )
         shared_origin = ax.ax.transData + ScaledTranslation(
-            -4 / 72, -2 / 72, ax.ax.figure.dpi_scale_trans
+            -3.6 / 72, -2 / 72, ax.ax.figure.dpi_scale_trans
         )
         ax.ax.text(
             0,
