@@ -9,6 +9,7 @@ NOTE: this module is private. All functions and objects are available in the mai
 from typing import TYPE_CHECKING
 
 from matplotlib.ticker import FuncFormatter
+from matplotlib.transforms import ScaledTranslation
 from validating import dataclass
 
 from ..utils.math import get_prob
@@ -43,7 +44,23 @@ class PPPlot(QQPlot):
         ax.ax.plot(p1, p2, self.fmt, zorder=2.1, label=f"{self.label} & {xlabel}")
         ax.ax.set_xlim(0, 1)
         ax.ax.set_ylim(0, 1)
+        ax.ax.xaxis.set_major_formatter(
+            FuncFormatter(lambda value, _: "" if abs(value) < 1e-12 else f"{value:.1f}")
+        )
         ax.ax.yaxis.set_major_formatter(
             FuncFormatter(lambda value, _: "" if abs(value) < 1e-12 else f"{value:.1f}")
+        )
+        shared_origin = ax.ax.transData + ScaledTranslation(
+            -4 / 72, -2 / 72, ax.ax.figure.dpi_scale_trans
+        )
+        ax.ax.text(
+            0,
+            0,
+            "0.0",
+            transform=shared_origin,
+            ha="right",
+            va="top",
+            zorder=3,
+            clip_on=False,
         )
         self._plot_fitted_line(ax, p1, p2)
