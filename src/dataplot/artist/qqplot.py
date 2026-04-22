@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 from scipy import stats
-from validating import dataclass
+from validating import attr, dataclass
 
 from .._typing import DistName
 from ..setting import PlotSettable
@@ -33,7 +33,7 @@ class QQPlot(Plotter):
 
     dist_or_sample: "DistName | np.ndarray | PlotDataSet"
     dots: int
-    edge_precision: float
+    edge_precision: float = attr(slb=0.0, sub=0.5)
     fmt: str
 
     def paint(
@@ -59,11 +59,6 @@ class QQPlot(Plotter):
         self._plot_fitted_line(ax, q1, q2)
 
     def _generate_dist(self) -> tuple[str, np.ndarray, np.ndarray]:
-        if not 0.0 < self.edge_precision < 0.5:
-            raise ValueError(
-                "'edge_precision' should be on the interval (0, 0.5), got "
-                f"{self.edge_precision} instead"
-            )
         p = np.linspace(self.edge_precision, 1 - self.edge_precision, self.dots)
         if isinstance(x := self.dist_or_sample, str):
             xlabel = x + "-distribution"
