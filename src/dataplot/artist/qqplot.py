@@ -58,8 +58,13 @@ class QQPlot(Plotter):
             ax.ax.margins(x=0.01)
         self._plot_fitted_line(ax, q1, q2)
 
-    def _generate_dist(self) -> tuple[str, np.ndarray, np.ndarray]:
-        p = np.linspace(self.edge_precision, 1 - self.edge_precision, self.dots)
+    def _generate_dist(
+        self, use_edge_precision: bool = True
+    ) -> tuple[str, np.ndarray, np.ndarray]:
+        if use_edge_precision:
+            p = np.linspace(self.edge_precision, 1 - self.edge_precision, self.dots)
+        else:
+            p = np.linspace(0, 1, self.dots)
         if isinstance(x := self.dist_or_sample, str):
             xlabel = x + "-distribution"
             q = self._get_ppf(x, p)
