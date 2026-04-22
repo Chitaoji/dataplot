@@ -37,7 +37,7 @@ class KSPlot(QQPlot):
         self.__plot(ax)
 
     def __plot(self, ax: "AxesWrapper") -> None:
-        xlabel, p, q1 = self._generate_dist()
+        xlabel, p, q1 = self._generate_dist(use_edge_precision=False)
         q2 = get_quantile(self.data, p)
         ax.ax.plot(q1, p, self.fmt, label=xlabel)
         ax.ax.plot(q2, p, self.fmt, label=self.label)
