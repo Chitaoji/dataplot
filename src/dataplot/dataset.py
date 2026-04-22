@@ -970,7 +970,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
     def qqplot(
         self,
-        dist_or_sample: "DistName | np.ndarray | PlotDataSet" = "normal",
+        dist_or_sample: "DistName | PlotDataSet | Any" = "normal",
         dots: int = 30,
         edge_precision: float = 1e-2,
         fmt: str = "o",
@@ -981,10 +981,10 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
         Parameters
         ----------
-        dist_or_sample : DistName | np.ndarray | PlotDataSet, optional
+        dist_or_sample : DistName | PlotDataSet | Any, optional
             Specifies the distribution to compare with. If str, specifies a
-            theoretical distribution; if np.ndarray or PlotDataSet, specifies
-            another real sample. By default 'normal'.
+            theoretical distribution; if PlotDataSet or Any, specifies another
+            sample. By default 'normal'.
         dots : int, optional
             Number of dots, by default 30.
         edge_precision : float, optional
@@ -1005,7 +1005,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
     def ppplot(
         self,
-        dist_or_sample: "DistName | np.ndarray | PlotDataSet" = "normal",
+        dist_or_sample: "DistName | PlotDataSet | Any" = "normal",
         dots: int = 30,
         edge_precision: float = 1e-6,
         fmt: str = "o",
@@ -1016,10 +1016,10 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
         Parameters
         ----------
-        dist_or_sample : DistName | np.ndarray | PlotDataSet, optional
+        dist_or_sample : DistName | PlotDataSet | Any, optional
             Specifies the distribution to compare with. If str, specifies a
-            theoretical distribution; if np.ndarray or PlotDataSet, specifies
-            another real sample. By default 'normal'.
+            theoretical distribution; if PlotDataSet or Any, specifies another
+            sample. By default 'normal'.
         dots : int, optional
             Number of dots, by default 30.
         edge_precision : float, optional

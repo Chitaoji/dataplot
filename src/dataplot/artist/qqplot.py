@@ -6,7 +6,7 @@ NOTE: this module is private. All functions and objects are available in the mai
 
 """
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 from scipy import stats
@@ -31,7 +31,7 @@ class QQPlot(Plotter):
 
     """
 
-    dist_or_sample: "DistName | np.ndarray | PlotDataSet"
+    dist_or_sample: "DistName | PlotDataSet | Any"
     dots: int
     edge_precision: float = attr(slb=0.0, sub=0.5)
     fmt: str
@@ -66,13 +66,9 @@ class QQPlot(Plotter):
         elif isinstance(x, PlotSettable):
             xlabel = x.formatted_label()
             q = get_quantile(x.data, p)
-        elif isinstance(x, (list, np.ndarray)):
-            xlabel = "sample"
-            q = get_quantile(x, p)
         else:
-            raise TypeError(
-                f"'dist_or_sample' can not be instance of {x.__class__.__name__!r}"
-            )
+            xlabel = "sample"
+            q = get_quantile(np.array(x), p)
         return xlabel, p, q
 
     @staticmethod
