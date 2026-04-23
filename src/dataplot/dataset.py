@@ -1007,7 +1007,6 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         self,
         dist_or_sample: "DistName | PlotDataSet | Any" = "normal",
         dots: int = 30,
-        edge_precision: float = 1e-6,
         fmt: str = "o",
         **kwargs: Unpack[SettingDict],
     ) -> Artist:
@@ -1022,9 +1021,6 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             sample. By default 'normal'.
         dots : int, optional
             Number of dots, by default 30.
-        edge_precision : float, optional
-            Specifies the lowest quantile (`=edge_precision`) and the highest
-            quantile (`=1-edge_precision`), by default 1e-6.
         fmt : str, optional
             A format string, e.g. 'ro' for red circles, by default 'o'.
         **kwargs : **SettingDict
@@ -1036,13 +1032,13 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             An instance of Artist.
 
         """
+        edge_precision = 1e-6
         return self._get_artist(PPPlot, locals())
 
     def ksplot(
         self,
         dist_or_sample: "DistName | np.ndarray | PlotDataSet" = "normal",
         dots: int = 1000,
-        edge_precision: float = 1e-6,
         fmt: str = "",
         **kwargs: Unpack[SettingDict],
     ) -> Artist:
@@ -1057,9 +1053,6 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             another real sample. By default 'normal'.
         dots : int, optional
             Number of dots, by default 1000.
-        edge_precision : float, optional
-            Specifies the lowest quantile (`=edge_precision`) and the highest
-            quantile (`=1-edge_precision`), by default 1e-6.
         fmt : str, optional
             A format string, e.g. 'ro' for red circles, by default ''.
         **kwargs : **SettingDict
@@ -1071,6 +1064,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             An instance of Artist.
 
         """
+        edge_precision = 1e-6
         return self._get_artist(KSPlot, locals())
 
     def corrmap(
