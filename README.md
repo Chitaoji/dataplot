@@ -1,6 +1,69 @@
 # dataplot
 Provides plotting tools useful in datascience.
 
+A lightweight plotting library for data science that unifies data transformation and plotting in a single chainable API. `dataplot` is designed for fast exploration, teaching demos, and script-based analysis workflows.
+
+## Features
+- Data-as-object workflow with `dp.data(...)` and `PlotDataSet`.
+- Chainable transforms such as `zscore()`, `log10()`, `rank()`, `rolling()`, and more.
+- Statistical plotting methods including histogram, line/scatter, QQ/PP/KS plots, and correlation map.
+- Unified plotting settings across figure / axes / dataset scopes.
+- Built on top of `matplotlib`, `numpy`, `scipy`, and `seaborn`.
+
+## Quick Start
+```python
+import numpy as np
+import dataplot as dp
+
+x = np.random.normal(loc=0, scale=1, size=500)
+d = dp.data(x)
+
+artist1 = d.zscore().hist(bins=30, color="C0")
+artist2 = d.zscore().qqplot(dist="normal")
+
+fig = dp.figure(
+    artist1,
+    artist2,
+    ncols=2,
+    title="Distribution diagnostics",
+    style="seaborn-v0_8-whitegrid",
+)
+
+with fig as f:
+    f.axes[0].set_axes(title="Histogram", xlabel="value", ylabel="count")
+    f.axes[1].set_axes(title="QQ Plot", reference_lines=["y=x"])
+```
+
+## Core Concepts
+### `dp.data(...)`
+Wrap raw input into objects that support both math operations and plotting.
+
+### Data Operations
+`PlotDataSet` supports arithmetic operators (`+ - * / **`) and transforms such as:
+- `log()` / `log10()` / `signedlog()` / `signedlog10()`
+- `pow()` / `signedpow()` / `root()` / `sqrt()` / `signedroot()` / `signedsqrt()`
+- `rolling()` / `demean()` / `zscore()` / `rank(pct=True)` / `cumsum()` / `abs()`
+- `resample()` / `reset()` / `undo_all()` / `copy()`
+
+### Plot Methods
+Each method returns an `Artist` object that can be passed to `dp.figure(...)`:
+- `hist(...)`
+- `plot(...)`
+- `scatter(...)`
+- `qqplot(...)`
+- `ppplot(...)`
+- `ksplot(...)`
+- `corrmap(...)`
+
+## Plot Settings
+Common settings:
+- `title`, `xlabel`, `ylabel`
+- `alpha`, `grid`, `grid_alpha`
+- `style`, `figsize`, `dpi`
+- `fontdict`, `legend_loc`
+- `subplots_adjust`
+- `reference_lines` (for example: `"y=x"`, `"y=0"`, `"x=1"`)
+
 ## Installation
 ```sh
 $ pip install dataplot
