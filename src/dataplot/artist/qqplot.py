@@ -39,17 +39,19 @@ class QQPlot(Plotter):
     def paint(
         self, ax: "AxesWrapper", __multi_prev_returned__: bool | None = None, **_
     ) -> bool:
+        xlabel, p, q1 = self._generate_dist()
         ax.set_axes(
             title=ax.get_setting("title", "Quantile-Quantile Plot"),
-            xlabel=ax.get_setting("xlabel", "quantiles"),
-            ylabel=ax.get_setting("ylabel", "quantiles"),
+            xlabel=ax.get_setting("xlabel", f"{xlabel} quantiles"),
+            ylabel=ax.get_setting("ylabel", f"{self.label} quantiles"),
         )
         ax.load(self.settings)
-        self.__plot(ax, __multi_prev_returned__)
+        self.__plot(ax, __multi_prev_returned__, xlabel, p, q1)
         return True
 
-    def __plot(self, ax: "AxesWrapper", is_multi: bool) -> None:
-        xlabel, p, q1 = self._generate_dist()
+    def __plot(
+        self, ax: "AxesWrapper", is_multi: bool, xlabel: str, p: np.ndarray, q1: np.ndarray
+    ) -> None:
         q2 = get_quantile(self.data, p)
         ax.ax.plot(q1, q2, self.fmt, zorder=2.1, label=f"{self.label} & {xlabel}")
         if is_multi:
