@@ -30,25 +30,20 @@ seaborn
 ## Quick Start
 ```python
 import numpy as np
-import dataplot as dp
 
-x = np.random.normal(loc=0, scale=1, size=500)
-d = dp.data(x)
+arr = np.random.normal(loc=0, scale=1, size=500)
+x = dp.data(arr)
 
-artist1 = d.zscore().hist(bins=30, color="C0")
-artist2 = d.zscore().qqplot(dist="normal")
+artist1 = x.zscore().hist(bins=30)
+artist2 = x.zscore().qqplot(baseline="normal")
 
-fig = dp.figure(
+dp.figure(
     artist1,
     artist2,
     ncols=2,
     title="Distribution diagnostics",
     style="seaborn-v0_8-whitegrid",
 )
-
-with fig as f:
-    f.axes[0].set_axes(title="Histogram", xlabel="value", ylabel="count")
-    f.axes[1].set_axes(title="QQ Plot", reference_lines=["y=x"])
 ```
 
 ## Core Concepts
