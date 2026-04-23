@@ -31,7 +31,7 @@ class QQPlot(Plotter):
 
     """
 
-    dist_or_sample: "DistName | PlotDataSet | Any"
+    baseline: "DistName | PlotDataSet | Any"
     dots: int
     edge_precision: float = attr(slb=0.0, sub=0.5)
     fmt: str
@@ -65,7 +65,7 @@ class QQPlot(Plotter):
             p = np.linspace(self.edge_precision, 1 - self.edge_precision, self.dots)
         else:
             p = np.linspace(0, 1, self.dots)
-        if isinstance(x := self.dist_or_sample, str):
+        if isinstance(x := self.baseline, str):
             xlabel = x + "-distribution"
             q = self._get_ppf(x, p)
         elif isinstance(x, PlotSettable):
