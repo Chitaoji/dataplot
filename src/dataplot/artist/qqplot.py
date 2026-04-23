@@ -42,8 +42,8 @@ class QQPlot(Plotter):
         xlabel, p, q1 = self._generate_dist()
         ax.set_axes(
             title=ax.get_setting("title", "Quantile-Quantile Plot"),
-            xlabel=ax.get_setting("xlabel", f"{xlabel} quantiles"),
-            ylabel=ax.get_setting("ylabel", f"{self.label} quantiles"),
+            xlabel=ax.get_setting("xlabel", "sample quantiles"),
+            ylabel=ax.get_setting("ylabel", "quantiles"),
         )
         ax.load(self.settings)
         self.__plot(ax, __multi_prev_returned__, xlabel, p, q1)
