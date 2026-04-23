@@ -1032,6 +1032,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             An instance of Artist.
 
         """
+        edge_precision = 1e-6
         return self._get_artist(PPPlot, locals())
 
     def ksplot(
@@ -1063,6 +1064,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             An instance of Artist.
 
         """
+        edge_precision = 1e-6
         return self._get_artist(KSPlot, locals())
 
     def corrmap(
