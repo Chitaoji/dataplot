@@ -41,7 +41,7 @@ class QQPlot(Plotter):
     ) -> bool:
         ax.set_axes(
             title=ax.get_setting("title", "Quantile-Quantile Plot"),
-            xlabel=ax.get_setting("xlabel", "quantiles"),
+            xlabel=ax.get_setting("xlabel", "sample quantiles"),
             ylabel=ax.get_setting("ylabel", "quantiles"),
         )
         ax.load(self.settings)
