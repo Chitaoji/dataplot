@@ -3,6 +3,23 @@ Provides plotting tools useful in datascience.
 
 A lightweight plotting library for data science that unifies data transformation and plotting in a single chainable API. `dataplot` is designed for fast exploration, teaching demos, and script-based analysis workflows.
 
+## Installation
+```sh
+$ pip install dataplot
+```
+
+## Requirements
+```txt
+validating
+lazyr
+loggings
+matplotlib
+numpy
+pandas
+scipy
+seaborn
+```
+
 ## Features
 - Data-as-object workflow with `dp.data(...)` and `PlotDataSet`.
 - Chainable transforms such as `zscore()`, `log10()`, `rank()`, `rolling()`, and more.
@@ -64,22 +81,6 @@ Common settings:
 - `subplots_adjust`
 - `reference_lines` (for example: `"y=x"`, `"y=0"`, `"x=1"`)
 
-## Installation
-```sh
-$ pip install dataplot
-```
-
-## Requirements
-```txt
-validating
-lazyr
-loggings
-matplotlib
-numpy
-pandas
-scipy
-seaborn
-```
 
 ## See Also
 ### Github repository
