@@ -970,7 +970,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
     def qqplot(
         self,
-        dist_or_sample: "DistName | PlotDataSet | Any" = "normal",
+        baseline: "DistName | PlotDataSet | Any" = "normal",
         dots: int = 30,
         edge_precision: float = 1e-2,
         fmt: str = "o",
@@ -981,7 +981,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
         Parameters
         ----------
-        dist_or_sample : DistName | PlotDataSet | Any, optional
+        baseline : DistName | PlotDataSet | Any, optional
             Specifies the distribution to compare with. If str, specifies a
             theoretical distribution; if PlotDataSet or Any, specifies another
             sample. By default 'normal'.
@@ -1005,7 +1005,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
     def ppplot(
         self,
-        dist_or_sample: "DistName | PlotDataSet | Any" = "normal",
+        baseline: "DistName | PlotDataSet | Any" = "normal",
         dots: int = 30,
         fmt: str = "o",
         **kwargs: Unpack[SettingDict],
@@ -1015,7 +1015,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
         Parameters
         ----------
-        dist_or_sample : DistName | PlotDataSet | Any, optional
+        baseline : DistName | PlotDataSet | Any, optional
             Specifies the distribution to compare with. If str, specifies a
             theoretical distribution; if PlotDataSet or Any, specifies another
             sample. By default 'normal'.
@@ -1037,7 +1037,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
     def ksplot(
         self,
-        dist_or_sample: "DistName | np.ndarray | PlotDataSet" = "normal",
+        baseline: "DistName | np.ndarray | PlotDataSet" = "normal",
         dots: int = 1000,
         fmt: str = "",
         **kwargs: Unpack[SettingDict],
@@ -1047,7 +1047,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
         Parameters
         ----------
-        dist_or_sample : DistName | np.ndarray | PlotDataSet, optional
+        baseline : DistName | np.ndarray | PlotDataSet, optional
             Specifies the distribution to compare with. If str, specifies a
             theoretical distribution; if np.ndarray or PlotDataSet, specifies
             another real sample. By default 'normal'.
