@@ -28,17 +28,17 @@ class PPPlot(QQPlot):
     """
 
     def paint(self, ax: "AxesWrapper", **_) -> None:
+        xlabel, p1, q = self._generate_dist(use_edge_precision=False)
         ax.set_axes(
             title=ax.get_setting("title", "Probability-Probability Plot"),
-            xlabel=ax.get_setting("xlabel", "cumulative probility"),
-            ylabel=ax.get_setting("ylabel", "cumulative probility"),
+            xlabel=ax.get_setting("xlabel", f"{xlabel} cumulative probility"),
+            ylabel=ax.get_setting("ylabel", f"{self.label} cumulative probility"),
         )
         ax.load(self.settings)
-        self.__plot(ax)
+        self.__plot(ax, xlabel, p1, q)
         return True
 
-    def __plot(self, ax: "AxesWrapper") -> None:
-        xlabel, p1, q = self._generate_dist(use_edge_precision=False)
+    def __plot(self, ax: "AxesWrapper", xlabel: str, p1, q) -> None:
         p2 = get_prob(self.data, q)
         ax.ax.plot(p1, p2, self.fmt, zorder=2.1, label=f"{self.label} & {xlabel}")
         ax.ax.set_xlim(0, 1)
