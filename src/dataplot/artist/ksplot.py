@@ -45,7 +45,7 @@ class KSPlot(QQPlot):
         q1_mask = q1[np.isfinite(q1)]
         q2_mask = q2[np.isfinite(q2)]
         qmin = min(q1_mask[0], q2_mask[0])
-        qmax = max(q1_mask[-1], q2_mask[0])
+        qmax = max(q1_mask[-1], q2_mask[-1])
         q1 = np.concatenate(([qmin], q1, [qmax]))
         q2 = np.concatenate(([qmin], q2, [qmax]))
         p = np.concatenate(([0.0], p, [1.0]))
