@@ -132,6 +132,10 @@ This project falls under the BSD 3-Clause License.
 
 ## History
 ### v0.1.11
+* Added arithmetic operator support to `MultiObject` (including reflected operators), enabling element-wise math workflows for grouped `PlotDataSet` objects with length checks.
+* Improved numerical robustness in `utils.math` by consistently sanitizing `NaN`/`Inf` inputs and validating finite sample counts in 1D linear regression.
+* Refined `PlotDataSet.plot()` / `PlotDataSet.scatter()` x-tick handling to accept broader array-like inputs and convert them consistently.
+* Added and expanded unit tests for core/container behavior and utility modules.
 
 ### v0.1.10
 * Renamed `dist_or_sample=` to `baseline=` in `PlotDataSet.qqplot()` for clearer baseline specification.
