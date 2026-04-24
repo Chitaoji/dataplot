@@ -6,11 +6,11 @@ NOTE: this module is private. All functions and objects are available in the mai
 
 """
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Any, Optional
 
 import numpy as np
-from matplotlib.ticker import FixedLocator
 import pandas as pd
+from matplotlib.ticker import FixedLocator
 from validating import dataclass
 
 from ..setting import PlotSettable
@@ -30,7 +30,7 @@ class LineChart(Plotter):
 
     """
 
-    xticks: Optional["np.ndarray | PlotDataSet"]
+    xticks: Optional["PlotDataSet | Any"]
     fmt: str
     scatter: bool
     sorted: bool
@@ -45,7 +45,7 @@ class LineChart(Plotter):
         if isinstance(self.xticks, PlotSettable):
             xticks = self.xticks.data
         else:
-            xticks = self.xticks
+            xticks = np.array(self.xticks)
         if xticks is None:
             xticks = range(len(self.data))
         elif (len_t := len(xticks)) != (len_d := len(self.data)):

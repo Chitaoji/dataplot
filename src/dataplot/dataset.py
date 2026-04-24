@@ -890,7 +890,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
     def plot(
         self,
-        xticks: Optional["np.ndarray | PlotDataSet"] = None,
+        xticks: Optional["PlotDataSet | Any"] = None,
         fmt: str = "",
         scatter: bool = False,
         sorted: bool = False,
@@ -903,7 +903,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
         Parameters
         ----------
-        xticks : np.ndarray | PlotDataSet, optional
+        xticks : PlotDataSet | Any, optional
             Specifies the x-ticks for the line chart. If not provided, the x-ticks will
             be set to `range(len(data))`. By default None.
         fmt : str, optional
@@ -937,7 +937,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
     def scatter(
         self,
-        xticks: Optional["np.ndarray | PlotDataSet"] = None,
+        xticks: Optional["PlotDataSet | Any"] = None,
         fmt: str = "o",
         **kwargs: Unpack[SettingDict],
     ) -> Artist:
@@ -947,7 +947,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
         Parameters
         ----------
-        xticks : np.ndarray | PlotDataSet, optional
+        xticks : PlotDataSet | Any, optional
             Specifies the x-ticks for the chart. If not provided, the x-ticks will
             be set to `range(len(data))`. By default None.
         fmt : str, optional
