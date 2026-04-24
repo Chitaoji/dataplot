@@ -21,11 +21,12 @@ seaborn
 ```
 
 ## Features
-- Data-as-object workflow with `dp.data(...)` and `PlotDataSet`.
-- Chainable transforms such as `zscore()`, `log10()`, `rank()`, `rolling()`, and more.
-- Statistical plotting methods including histogram, line/scatter, QQ/PP/KS plots, and correlation map.
-- Unified plotting settings across figure / axes / dataset scopes.
-- Built on top of `matplotlib`, `numpy`, `scipy`, and `seaborn`.
+- **Data-as-object API**: create a `PlotDataSet` with `dp.data(...)` and keep data operations + plotting in one fluent chain.
+- **Composable transforms**: apply multiple transformations (`log10()`, `zscore()`, `rank()`, `rolling()`, `resample()`, etc.) before plotting.
+- **Rich statistical charts**: quickly generate histogram, line/scatter, QQ/PP/KS diagnostics, and correlation heatmaps.
+- **Consistent settings model**: configure style from dataset, axes, and figure layers with predictable fallback behavior.
+- **Artist-first composition**: plot methods return `Artist` objects that can be assembled into a final figure via `dp.figure(...)`.
+- **Scientific Python integration**: built on `matplotlib`, `numpy`, `scipy`, and `seaborn` for familiar rendering and numerics.
 
 ## Quick Start
 ```py
@@ -43,17 +44,39 @@ fig
 
 ## Core Concepts
 ### `dp.data(...)`
-Wrap raw input into objects that support both math operations and plotting.
+`dp.data(...)` converts array-like input (for example: list, `numpy.ndarray`, or `pandas.Series`) into a `PlotDataSet`.
+`PlotDataSet` is the central object in `dataplot`: it stores data, transformation history, and plot-level settings together.
+
+```py
+import dataplot as dp
+import numpy as np
+
+raw = np.random.randn(300)
+x = dp.data(raw, name="daily_return")
+```
 
 ### Data Operations
-`PlotDataSet` supports arithmetic operators (`+ - * / **`) and transforms such as:
-- `log()` / `log10()` / `signedlog()` / `signedlog10()`
-- `pow()` / `signedpow()` / `root()` / `sqrt()` / `signedroot()` / `signedsqrt()`
-- `rolling()` / `demean()` / `zscore()` / `rank(pct=True)` / `cumsum()` / `abs()`
-- `resample()` / `reset()` / `undo_all()` / `copy()`
+`PlotDataSet` supports both arithmetic operators and built-in transforms:
+- Arithmetic: `+ - * / **`
+- Log / power family: `log()` / `log10()` / `signedlog()` / `signedlog10()` / `pow()` / `root()` / `sqrt()` / ...
+- Statistical transforms: `rolling()` / `demean()` / `zscore()` / `rank(pct=True)` / `cumsum()` / `abs()`
+- State management: `copy()` / `reset()` / `undo_all()` / `resample()`
+
+Operations are chainable, which is useful for quick experimentation:
+
+```py
+y = (
+    x
+    .rolling(5)
+    .demean()
+    .zscore()
+    .rank(pct=True)
+)
+```
 
 ### Plot Methods
-Each method returns an `Artist` object that can be passed to `dp.figure(...)`:
+Every plot method returns an `Artist` object instead of drawing immediately.
+This enables deferred composition and clean multi-panel figure assembly:
 - `hist(...)`
 - `plot(...)`
 - `scatter(...)`
@@ -61,6 +84,12 @@ Each method returns an `Artist` object that can be passed to `dp.figure(...)`:
 - `ppplot(...)`
 - `ksplot(...)`
 - `corrmap(...)`
+
+```py
+a1 = x.hist(bins=40, alpha=0.7)
+a2 = x.qqplot(baseline="normal")
+fig = dp.figure(a1, a2, title="Distribution Check")
+```
 
 ## Plot Settings
 Common settings:
