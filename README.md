@@ -8,18 +8,6 @@ A lightweight plotting library for data science that unifies data transformation
 $ pip install dataplot
 ```
 
-## Requirements
-```txt
-validating
-lazyr
-loggings
-matplotlib
-numpy
-pandas
-scipy
-seaborn
-```
-
 ## Features
 `dataplot` focuses on an **analysis-first plotting workflow**: data processing and visual diagnostics are written in one concise chain.
 
@@ -89,13 +77,7 @@ You can think of `dataplot` as a 4-step loop:
 Operations are chainable, which is useful for quick experimentation:
 
 ```py
-y = (
-    x
-    .rolling(5)
-    .demean()
-    .zscore()
-    .rank(pct=True)
-)
+y = x.rolling(5).demean().zscore().rank(pct=True)
 ```
 
 ### Plot Methods
@@ -121,6 +103,17 @@ Common settings:
 - `subplots_adjust`
 - `reference_lines` (for example: `"y=x"`, `"y=0"`, `"x=1"`)
 
+## Requirements
+```txt
+validating
+lazyr
+loggings
+matplotlib
+numpy
+pandas
+scipy
+seaborn
+```
 
 ## See Also
 ### Github repository
