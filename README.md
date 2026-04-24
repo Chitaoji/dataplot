@@ -27,9 +27,10 @@ In short: **less boilerplate, clearer analysis flow, and more reusable plotting 
 import dataplot as dp
 import numpy as np
 
-x = dp.data(np.random.randn(500))
+raw = np.random.randn(300)
+x = dp.data(raw, label="daily_return")
 
-artist1 = x.hist(bins=30)
+artist1 = x.hist(bins=30, alpha=0.7)
 artist2 = x.qqplot(baseline="normal")
 
 fig = dp.figure(artist1, artist2, title="Distribution diagnostics")
@@ -53,7 +54,7 @@ import dataplot as dp
 import numpy as np
 
 raw = np.random.randn(300)
-x = dp.data(raw, name="daily_return")
+x = dp.data(raw, label="daily_return")
 ```
 
 ### Typical Workflow
@@ -77,7 +78,7 @@ You can think of `dataplot` as a 4-step loop:
 Operations are chainable, which is useful for quick experimentation:
 
 ```py
-y = x.rolling(5).demean().zscore().rank(pct=True)
+x.zscore().rolling(5).rank(pct=True)
 ```
 
 ### Plot Methods
@@ -89,9 +90,13 @@ This enables deferred composition and clean multi-panel figure assembly:
 - **Structure overview**: `corrmap(...)`
 
 ```py
-a1 = x.hist(bins=40, alpha=0.7)
-a2 = x.qqplot(baseline="normal")
-fig = dp.figure(a1, a2, title="Distribution Check")
+artist1 = x.hist(bins=30, alpha=0.7)
+artist1  # show one plot
+```
+```py
+artist2 = x.qqplot(baseline="normal")
+fig = dp.figure(artist1, artist2, title="Distribution diagnostics")
+fig  # show both plots
 ```
 
 ### Plot Settings
