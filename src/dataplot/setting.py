@@ -6,6 +6,7 @@ NOTE: this module is private. All functions and objects are available in the mai
 
 """
 
+import re
 from dataclasses import asdict
 from typing import Any, Literal, Optional, Self, Unpack, overload
 
@@ -39,6 +40,7 @@ class PlotSettings:
     fontdict: Optional[FontDict] = None
     legend_loc: Optional[str] = None
     subplots_adjust: Optional[SubplotDict] = None
+    reference_lines: Optional[list[str]] = None
 
     @overload
     def __getitem__(
@@ -70,6 +72,9 @@ class PlotSettings:
     def __getitem__(
         self, __key: Literal["subplots_adjust"]
     ) -> Optional[SubplotDict]: ...
+
+    @overload
+    def __getitem__(self, __key: Literal["reference_lines"]) -> Optional[list[str]]: ...
 
     def __getitem__(self, __key: SettingKey) -> Any:
         return getattr(self, __key)
@@ -112,6 +117,11 @@ class PlotSettings:
     @overload
     def __setitem__(
         self, __key: Literal["subplots_adjust"], __value: Optional[SubplotDict]
+    ) -> None: ...
+
+    @overload
+    def __setitem__(
+        self, __key: Literal["reference_lines"], __value: Optional[list[str]]
     ) -> None: ...
 
     def __setitem__(self, __key: SettingKey, __value: Any) -> None:
@@ -171,7 +181,7 @@ defaults = PlotSettings(
     dpi=100,
     grid=True,
     grid_alpha=0.5,
-    style="seaborn-v0_8-darkgrid",
+    style="seaborn-v0_8-whitegrid",
     figsize=(10, 5),
     fontdict={"fontsize": "x-large"},
     subplots_adjust={"hspace": 0.5},
@@ -187,6 +197,27 @@ class PlotSettable:
 
     settings: PlotSettings = attr(default_factory=PlotSettings, init=False)
 
+    @staticmethod
+    def _validate_reference_line(text: str) -> None:
+        if not isinstance(text, str):
+            raise TypeError(f"reference line must be str, got {type(text)!r}")
+        if re.search(r"[^0-9xy=+\-.\s]", text):
+            raise ValueError(
+                "reference line can only contain numbers, x, y, =, +, -, and spaces"
+            )
+        normalized = text.replace(" ", "")
+        if normalized.count("=") != 1:
+            raise ValueError(f"invalid reference line: {text!r}")
+        lhs, rhs = normalized.split("=")
+        if lhs not in {"x", "y"}:
+            raise ValueError(
+                f"left side of reference line must be 'x' or 'y': {text!r}"
+            )
+        if not rhs:
+            raise ValueError(f"right side of reference line cannot be empty: {text!r}")
+        if "xx" in rhs or "yy" in rhs:
+            raise ValueError(f"invalid reference line: {text!r}")
+
     def _set(
         self, *, inplace: bool = False, **kwargs: Unpack[SettingDict]
     ) -> Self | None:
@@ -195,6 +226,13 @@ class PlotSettable:
         for k, v in kwargs.items():
             if v is None or k not in keys:
                 continue
+            if k == "reference_lines":
+                if not isinstance(v, list):
+                    raise TypeError(
+                        f"reference_lines should be list[str], got {type(v)!r}"
+                    )
+                for text in v:
+                    self._validate_reference_line(text)
             if isinstance(v, dict) and isinstance(d := obj.settings[k], dict):
                 d.update(v)
             else:
@@ -257,6 +295,11 @@ class PlotSettable:
     def get_setting(
         self, key: Literal["subplots_adjust"], default: Optional[SubplotDict] = None
     ) -> Optional[SubplotDict]: ...
+
+    @overload
+    def get_setting(
+        self, key: Literal["reference_lines"], default: Optional[list[str]] = None
+    ) -> Optional[list[str]]: ...
 
     def get_setting(self, key: SettingKey, default: Any = None) -> Any:
         """

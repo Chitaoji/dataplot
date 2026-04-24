@@ -6,6 +6,7 @@ NOTE: this module is private. All functions and objects are available in the mai
 
 """
 
+import re
 from typing import TYPE_CHECKING, Self, Unpack
 
 import loggings
@@ -22,6 +23,99 @@ if TYPE_CHECKING:
     from .artist import Artist
 
 __all__ = ["FigWrapper", "AxesWrapper"]
+
+
+def _parse_linear_expression(expr: str, var: str) -> tuple[float, float]:
+    """
+    Parse a linear expression into (intercept, slope), where
+    expression = intercept + slope * var.
+    """
+    if not expr:
+        raise ValueError("empty expression")
+    if expr[0] not in "+-":
+        expr = "+" + expr
+    tokens = re.findall(r"[+-][^+-]+", expr)
+    if "".join(tokens) != expr:
+        raise ValueError(f"invalid expression: {expr!r}")
+    intercept = 0.0
+    slope = 0.0
+    for token in tokens:
+        sign = -1.0 if token[0] == "-" else 1.0
+        body = token[1:]
+        if body.endswith(var):
+            coef = body[:-1]
+            coef_value = 1.0 if coef == "" else float(coef)
+            slope += sign * coef_value
+            continue
+        if "x" in body or "y" in body:
+            raise ValueError(f"invalid expression: {expr!r}")
+        intercept += sign * float(body)
+    return intercept, slope
+
+
+def _draw_reference_lines(ax: Axes, lines: list[str]) -> None:
+    view_x0, view_x1 = map(float, ax.get_xlim())
+    view_y0, view_y1 = map(float, ax.get_ylim())
+    data_xmin, data_xmax = sorted((view_x0, view_x1))
+    data_ymin, data_ymax = sorted((view_y0, view_y1))
+
+    for text in lines:
+        normalized = text.replace(" ", "")
+        lhs, rhs = normalized.split("=")
+        if lhs == "y":
+            intercept, slope = _parse_linear_expression(rhs, "x")
+            x_min = data_xmin
+            x_max = data_xmax
+            if slope == 0:
+                if not (data_ymin <= intercept <= data_ymax):
+                    continue
+            else:
+                y_limited_x = sorted(
+                    ((data_ymin - intercept) / slope, (data_ymax - intercept) / slope)
+                )
+                x_min = max(x_min, y_limited_x[0])
+                x_max = min(x_max, y_limited_x[1])
+            if x_min > x_max:
+                continue
+            xs = np.linspace(x_min, x_max, 200)
+            ys = intercept + slope * xs
+            ax.plot(
+                xs,
+                ys,
+                linestyle="--",
+                linewidth=1.2,
+                color="gray",
+                alpha=0.85,
+                scalex=False,
+                scaley=False,
+            )
+        else:
+            intercept, slope = _parse_linear_expression(rhs, "y")
+            y_min = data_ymin
+            y_max = data_ymax
+            if slope == 0:
+                if not (data_xmin <= intercept <= data_xmax):
+                    continue
+            else:
+                x_limited_y = sorted(
+                    ((data_xmin - intercept) / slope, (data_xmax - intercept) / slope)
+                )
+                y_min = max(y_min, x_limited_y[0])
+                y_max = min(y_max, x_limited_y[1])
+            if y_min > y_max:
+                continue
+            ys = np.linspace(y_min, y_max, 200)
+            xs = intercept + slope * ys
+            ax.plot(
+                xs,
+                ys,
+                linestyle="--",
+                linewidth=1.2,
+                color="gray",
+                alpha=0.85,
+                scalex=False,
+                scaley=False,
+            )
 
 
 @dataclass(validate_methods=True)
@@ -87,6 +181,8 @@ class AxesWrapper(PlotSettable):
             self.settings.title,
             **(self.get_setting("fontdict") or {}),
         )
+        if lines := self.get_setting("reference_lines"):
+            _draw_reference_lines(self.ax, lines)
 
 
 @dataclass(validate_methods=True)
@@ -200,6 +296,10 @@ class FigWrapper(PlotSettable):
         subplots_adjust : SubplotDict, optional
             Adjusts the subplot layout parameters including: left, right, bottom,
             top, wspace, and hspace. See `SubplotDict` for more details.
+        reference_lines : list[str], optional
+            Reference line expressions applied to each subplot axis. Each item
+            should be in the form ``"y=..."`` or ``"x=..."`` and will be drawn
+            as a dashed gray guide line.
 
         """
         if "style" in kwargs and (self._copy is not None):

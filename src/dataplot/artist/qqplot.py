@@ -6,11 +6,11 @@ NOTE: this module is private. All functions and objects are available in the mai
 
 """
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 from scipy import stats
-from validating import dataclass
+from validating import attr, dataclass
 
 from .._typing import DistName
 from ..setting import PlotSettable
@@ -31,58 +31,63 @@ class QQPlot(Plotter):
 
     """
 
-    dist_or_sample: "DistName | np.ndarray | PlotDataSet"
+    baseline: "DistName | PlotDataSet | Any"
     dots: int
-    edge_precision: float
+    edge_precision: float = attr(slb=0.0, sub=0.5)
     fmt: str
 
-    def paint(self, ax: "AxesWrapper", **_) -> None:
+    def paint(
+        self, ax: "AxesWrapper", __multi_prev_returned__: bool | None = None, **_
+    ) -> bool:
         ax.set_axes(
             title=ax.get_setting("title", "Quantile-Quantile Plot"),
-            xlabel=ax.get_setting("xlabel", "quantiles"),
-            ylabel=ax.get_setting("ylabel", "quantiles"),
+            xlabel=ax.get_setting("xlabel", "baseline quantiles"),
+            ylabel=ax.get_setting("ylabel", "sample quantiles"),
         )
         ax.load(self.settings)
-        self.__plot(ax)
+        self.__plot(ax, __multi_prev_returned__)
+        return True
 
-    def __plot(self, ax: "AxesWrapper") -> None:
+    def __plot(self, ax: "AxesWrapper", is_multi: bool) -> None:
         xlabel, p, q1 = self._generate_dist()
         q2 = get_quantile(self.data, p)
         ax.ax.plot(q1, q2, self.fmt, zorder=2.1, label=f"{self.label} & {xlabel}")
+        if is_multi:
+            ax.ax.margins(x=0)
+        else:
+            ax.ax.margins(x=0.01)
         self._plot_fitted_line(ax, q1, q2)
 
-    def _generate_dist(self) -> tuple[str, np.ndarray, np.ndarray]:
-        if not 0 <= self.edge_precision < 0.5:
-            raise ValueError(
-                "'edge_precision' should be on the interval [0, 0.5), got "
-                f"{self.edge_precision} instead"
-            )
-        p = np.linspace(self.edge_precision, 1 - self.edge_precision, self.dots)
-        if isinstance(x := self.dist_or_sample, str):
+    def _generate_dist(
+        self, use_edge_precision: bool = True
+    ) -> tuple[str, np.ndarray, np.ndarray]:
+        if use_edge_precision:
+            p = np.linspace(self.edge_precision, 1 - self.edge_precision, self.dots)
+        else:
+            p = np.linspace(0, 1, self.dots)
+        if isinstance(x := self.baseline, str):
             xlabel = x + "-distribution"
             q = self._get_ppf(x, p)
         elif isinstance(x, PlotSettable):
             xlabel = x.formatted_label()
             q = get_quantile(x.data, p)
-        elif isinstance(x, (list, np.ndarray)):
-            xlabel = "sample"
-            q = get_quantile(x, p)
         else:
-            raise TypeError(
-                f"'dist_or_sample' can not be instance of {x.__class__.__name__!r}"
-            )
+            xlabel = "sample"
+            q = get_quantile(np.array(x), p)
         return xlabel, p, q
 
     @staticmethod
     def _plot_fitted_line(ax: "AxesWrapper", x: np.ndarray, y: np.ndarray) -> None:
         a, b = linear_regression_1d(y, x)
-        l, r = x.min(), x.max()
+        lb, ub = ax.ax.get_xlim()
+        if lb == ub:
+            lb, ub = x.min(), x.max()
         ax.ax.plot(
-            [l, r], [a + l * b, a + r * b], "--", label=f"y = {a:.3f} + {b:.3f}x"
+            [lb, ub], [a + lb * b, a + ub * b], "--", label=f"y = {a:.3f} + {b:.3f}x"
         )
 
     @staticmethod
-    def _get_ppf(dist: str, p: np.ndarray) -> np.ndarray:
+    def _get_ppf(dist: DistName, p: np.ndarray) -> np.ndarray:
         match dist:
             case "normal":
                 return stats.norm.ppf(p)

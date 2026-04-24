@@ -35,6 +35,7 @@ class Artist(PlotSettable):
     """
 
     plotter: "Plotter | MultiObject"
+
     def __repr__(self) -> str:
         self.paint()
         names = (x.__class__.__name__ for x in multiple(self.plotter))

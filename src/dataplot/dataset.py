@@ -346,7 +346,48 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         new_data[self.data == 0] = 0
         return self.__create(new_fmt, new_data)
 
-    def signedpow(self, n: float) -> Self:
+    def signedlog10(self) -> Self:
+        """
+        Perform a log operation on the data, but keep the sign.
+
+        signedlog10(x) =
+
+        * log10(x),   for x > 0;
+        * 0,        for x = 0;
+        * -log10(-x), for x < 0.
+
+        Returns
+        -------
+        Self
+            A new instance of self.__class__.
+
+        """
+        new_fmt = f"signedlog({self.format})"
+        new_data = np.log10(np.where(self.data > 0, self.data, np.nan))
+        new_data[self.data < 0] = np.log10(-self.data[self.data < 0])
+        new_data[self.data == 0] = 0
+        return self.__create(new_fmt, new_data)
+
+    def pow(self, n: int | float = 2) -> Self:
+        """
+        Perform a power operation on the data.
+
+        Parameters
+        ----------
+        n : int | float, optional
+            Power exponent, by default 2.
+
+        Returns
+        -------
+        Self
+            A new instance of self.__class__.
+
+        """
+        new_fmt = f"pow({self.format}, {n})"
+        new_data = self.data**n
+        return self.__create(new_fmt, new_data)
+
+    def signedpow(self, n: int | float) -> Self:
         """
         Perform a power operation on the data, but keep the sign.
 
@@ -367,6 +408,95 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         new_data[self.data < 0] = -((-self.data[self.data < 0]) ** n)
         new_data[self.data == 0] = 0
         return self.__create(new_fmt, new_data)
+
+    def root(self, n: int = 2) -> Self:
+        """
+        Perform an n-th root operation on the data.
+
+        Parameters
+        ----------
+        n : int, optional
+            Root degree, by default 2.
+
+        Returns
+        -------
+        Self
+            A new instance of self.__class__.
+
+        Raises
+        ------
+        ValueError
+            Raised when n is zero.
+
+        """
+        if n == 0:
+            raise ValueError("root degree must not be zero")
+        new_fmt = f"root({self.format}, {n})"
+        new_data = np.power(self.data, 1 / n)
+        return self.__create(new_fmt, new_data)
+
+    def sqrt(self) -> Self:
+        """
+        Perform a square-root operation on the data.
+
+        Equivalent to calling `root(2)`.
+
+        Returns
+        -------
+        Self
+            A new instance of self.__class__.
+
+        """
+        return self.root(2)
+
+    def signedroot(self, n: int = 2) -> Self:
+        """
+        Perform an n-th root operation on the data, but keep the sign.
+
+        signedroot(x, n) =
+
+        * x**(1/n),       for x > 0;
+        * 0,              for x = 0;
+        * -((-x)**(1/n)), for x < 0.
+
+        Parameters
+        ----------
+        n : int, optional
+            Root degree, by default 2.
+
+        Returns
+        -------
+        Self
+            A new instance of self.__class__.
+
+        Raises
+        ------
+        ValueError
+            Raised when n is zero.
+
+        """
+        if n == 0:
+            raise ValueError("root degree must not be zero")
+        new_fmt = f"signedroot({self.format}, {n})"
+        power = 1 / n
+        new_data = np.power(np.where(self.data > 0, self.data, np.nan), power)
+        new_data[self.data < 0] = -np.power(-self.data[self.data < 0], power)
+        new_data[self.data == 0] = 0
+        return self.__create(new_fmt, new_data)
+
+    def signedsqrt(self) -> Self:
+        """
+        Perform a square-root operation on the data, but keep the sign.
+
+        Equivalent to calling `signedroot(2)`.
+
+        Returns
+        -------
+        Self
+            A new instance of self.__class__.
+
+        """
+        return self.signedroot(2)
 
     def rolling(self, n: int) -> Self:
         """
@@ -404,6 +534,64 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         """
         new_fmt = f"exp({self.format})"
         new_data = np.exp(self.data)
+        return self.__create(new_fmt, new_data)
+
+    def exp10(self) -> Self:
+        """
+        Perform a 10-based exponential operation on the data.
+
+        Returns
+        -------
+        Self
+            A new instance of self.__class__.
+
+        """
+        new_fmt = f"exp10({self.format})"
+        new_data = 10**self.data
+        return self.__create(new_fmt, new_data)
+
+    def signedexp(self) -> Self:
+        """
+        Perform an exp operation on the data, but keep the sign.
+
+        signedexp(x) =
+
+        * exp(x),   for x > 0;
+        * 0,        for x = 0;
+        * -exp(-x), for x < 0.
+
+        Returns
+        -------
+        Self
+            A new instance of self.__class__.
+
+        """
+        new_fmt = f"signedexp({self.format})"
+        new_data = np.exp(np.where(self.data > 0, self.data, np.nan))
+        new_data[self.data < 0] = -np.exp(-self.data[self.data < 0])
+        new_data[self.data == 0] = 0
+        return self.__create(new_fmt, new_data)
+
+    def signedexp10(self) -> Self:
+        """
+        Perform a 10-based exponential operation on the data, but keep the sign.
+
+        signedexp10(x) =
+
+        * 10**x,    for x > 0;
+        * 0,        for x = 0;
+        * -10**(-x), for x < 0.
+
+        Returns
+        -------
+        Self
+            A new instance of self.__class__.
+
+        """
+        new_fmt = f"signedexp10({self.format})"
+        new_data = 10 ** np.where(self.data > 0, self.data, np.nan)
+        new_data[self.data < 0] = -(10 ** (-self.data[self.data < 0]))
+        new_data[self.data == 0] = 0
         return self.__create(new_fmt, new_data)
 
     def abs(self) -> Self:
@@ -615,6 +803,14 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         format_label : bool, optional
             Determines whether to format the label (to show the operations done
             on the data).
+        subplots_adjust : SubplotDict, optional
+            Adjusts the subplot layout parameters including: left, right, bottom,
+            top, wspace, and hspace. See `SubplotDict` for more details.
+        reference_lines : list[str], optional
+            Reference line expressions to draw on the axes. Each expression
+            should use the format ``"y=..."`` or ``"x=..."`` (for example,
+            ``"y=0"``, ``"x=10"``, ``"y=2x+1"``), and the lines are rendered
+            as dashed gray guides.
 
         Returns
         -------
@@ -649,10 +845,10 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
     def hist(
         self,
         bins: int | list[float] = 100,
-        fit: bool = True,
         density: bool = True,
         log: bool = False,
         same_bin: bool = True,
+        fit: Literal["norm", "skew-norm", "t", "skew-t"] | None = "skew-t",
         stats: bool = True,
         **kwargs: Unpack[SettingDict],
     ) -> Artist:
@@ -664,9 +860,6 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         bins : int | list[float], optional
             Specifies the bins to divide the data into. If int, should be the number
             of bins. By default 100.
-        fit : bool, optional
-            Determines whether to fit a curve to the histogram, only available when
-            `density=True`, by default True.
         density : bool, optional
             Determines whether to draw a probability density. If True, the histogram
             will be normalized such that the area under it equals to 1. By default
@@ -677,6 +870,10 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         same_bin : bool, optional
             Determines whether the bins should be the same for all sets of data, by
             default True.
+        fit : Literal["norm", "skew-norm", "t", "skew-t"] | None, optional
+            Distribution used to fit a curve to the histogram, only available when
+            `density=True`. Set to ``None`` to disable fitting. By default
+            ``"skew-t"``.
         stats : bool, optional
             Determines whether to show the statistics, including the calculated mean,
             standard deviation, skewness, and kurtosis of the input, by default True.
@@ -697,7 +894,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         fmt: str = "",
         scatter: bool = False,
         sorted: bool = False,
-        rolling: Optional[int] = None,
+        rolling: Optional[int | list[int]] = None,
         **kwargs: Unpack[SettingDict],
     ) -> Artist:
         """
@@ -717,10 +914,11 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         sorted : bool, optional
             Determines whether to sort by x-ticks before drawing the chart, by
             default False.
-        rolling : int, optional
-            Rolling window size. If provided, rolling mean with
-            `rolling(rolling, min_periods=1)` is applied to y-values after optional
-            sorting, by default None.
+        rolling : int | list[int], optional
+            Rolling window size(s). If provided as an integer, a single rolling
+            mean with `rolling(rolling, min_periods=1)` is applied to y-values
+            after optional sorting. If provided as a list, one line is drawn for
+            each rolling window, by default None.
         **kwargs : **SettingDict
             Specifies the plot settings, see `.set_plot()` for more details.
 
@@ -772,7 +970,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
     def qqplot(
         self,
-        dist_or_sample: "DistName | np.ndarray | PlotDataSet" = "normal",
+        baseline: "DistName | PlotDataSet | Any" = "normal",
         dots: int = 30,
         edge_precision: float = 1e-2,
         fmt: str = "o",
@@ -783,10 +981,10 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
         Parameters
         ----------
-        dist_or_sample : DistName | np.ndarray | PlotDataSet, optional
+        baseline : DistName | PlotDataSet | Any, optional
             Specifies the distribution to compare with. If str, specifies a
-            theoretical distribution; if np.ndarray or PlotDataSet, specifies
-            another real sample. By default 'normal'.
+            theoretical distribution; if PlotDataSet or Any, specifies another
+            sample. By default 'normal'.
         dots : int, optional
             Number of dots, by default 30.
         edge_precision : float, optional
@@ -807,9 +1005,8 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
     def ppplot(
         self,
-        dist_or_sample: "DistName | np.ndarray | PlotDataSet" = "normal",
+        baseline: "DistName | PlotDataSet | Any" = "normal",
         dots: int = 30,
-        edge_precision: float = 1e-6,
         fmt: str = "o",
         **kwargs: Unpack[SettingDict],
     ) -> Artist:
@@ -818,15 +1015,12 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
         Parameters
         ----------
-        dist_or_sample : DistName | np.ndarray | PlotDataSet, optional
+        baseline : DistName | PlotDataSet | Any, optional
             Specifies the distribution to compare with. If str, specifies a
-            theoretical distribution; if np.ndarray or PlotDataSet, specifies
-            another real sample. By default 'normal'.
+            theoretical distribution; if PlotDataSet or Any, specifies another
+            sample. By default 'normal'.
         dots : int, optional
             Number of dots, by default 30.
-        edge_precision : float, optional
-            Specifies the lowest quantile (`=edge_precision`) and the highest
-            quantile (`=1-edge_precision`), by default 1e-6.
         fmt : str, optional
             A format string, e.g. 'ro' for red circles, by default 'o'.
         **kwargs : **SettingDict
@@ -838,13 +1032,13 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             An instance of Artist.
 
         """
+        edge_precision = 1e-6
         return self._get_artist(PPPlot, locals())
 
     def ksplot(
         self,
-        dist_or_sample: "DistName | np.ndarray | PlotDataSet" = "normal",
+        baseline: "DistName | np.ndarray | PlotDataSet" = "normal",
         dots: int = 1000,
-        edge_precision: float = 1e-6,
         fmt: str = "",
         **kwargs: Unpack[SettingDict],
     ) -> Artist:
@@ -853,15 +1047,12 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
         Parameters
         ----------
-        dist_or_sample : DistName | np.ndarray | PlotDataSet, optional
+        baseline : DistName | np.ndarray | PlotDataSet, optional
             Specifies the distribution to compare with. If str, specifies a
             theoretical distribution; if np.ndarray or PlotDataSet, specifies
             another real sample. By default 'normal'.
         dots : int, optional
             Number of dots, by default 1000.
-        edge_precision : float, optional
-            Specifies the lowest quantile (`=edge_precision`) and the highest
-            quantile (`=1-edge_precision`), by default 1e-6.
         fmt : str, optional
             A format string, e.g. 'ro' for red circles, by default ''.
         **kwargs : **SettingDict
@@ -873,6 +1064,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             An instance of Artist.
 
         """
+        edge_precision = 1e-6
         return self._get_artist(KSPlot, locals())
 
     def corrmap(

@@ -9,6 +9,8 @@ NOTE: this module is private. All functions and objects are available in the mai
 from typing import TYPE_CHECKING, Optional
 
 import numpy as np
+from matplotlib.ticker import FixedLocator
+import pandas as pd
 from validating import dataclass
 
 from ..setting import PlotSettable
@@ -32,7 +34,7 @@ class LineChart(Plotter):
     fmt: str
     scatter: bool
     sorted: bool
-    rolling: Optional[int]
+    rolling: Optional[int | list[int]]
 
     def paint(self, ax: "AxesWrapper", **_) -> None:
         ax.set_axes(title=ax.get_setting("title", "Line Chart"))
@@ -57,22 +59,69 @@ class LineChart(Plotter):
                 zip(xticks, self.data, strict=True), key=lambda pair: pair[0]
             )
             xticks, data = zip(*paired, strict=True)
+            data_array = np.array(data, dtype=float)
         else:
-            data = self.data
+            data_array = self.data
 
-        if self.rolling is not None:
-            if self.rolling < 1:
-                raise ValueError(
-                    f"rolling must be a positive integer, got {self.rolling}"
+        rolling_list = self.__normalize_rolling(self.rolling)
+        if rolling_list is None:
+            data_and_labels = [(data_array, self.label)]
+        else:
+            data_and_labels = [
+                (
+                    self.__rolling_mean(data_array, window),
+                    f"rolling({self.label}, {window})" if window > 1 else self.label,
                 )
-            data = np.convolve(
-                np.asarray(data, dtype=float),
-                np.ones(self.rolling, dtype=float),
-                mode="full",
-            )[: len(data)] / np.minimum(
-                np.arange(1, len(data) + 1), self.rolling
-            )
+                for window in rolling_list
+            ]
 
-        ax.ax.plot(xticks, data, self.fmt, label=self.label)
-        if self.scatter:
-            ax.ax.scatter(xticks, data, zorder=2.0)
+        for rolling_data, label in data_and_labels:
+            ax.ax.plot(xticks, rolling_data, self.fmt, label=label)
+            if self.scatter:
+                ax.ax.scatter(xticks, rolling_data, zorder=2.0)
+
+        # Disable matplotlib's default horizontal margins for tighter x-limits.
+        ax.ax.margins(x=0)
+        self.__ensure_rightmost_xtick_label(ax, xticks)
+
+    def __ensure_rightmost_xtick_label(self, ax: "AxesWrapper", xticks) -> None:
+        xticks_array = np.asarray(list(xticks))
+        if xticks_array.size == 0:
+            return
+        if not (
+            np.issubdtype(xticks_array.dtype, np.number)
+            or np.issubdtype(xticks_array.dtype, np.datetime64)
+        ):
+            return
+
+        rightmost = float(ax.ax.convert_xunits(xticks_array[-1]))
+        current_ticks = np.asarray(ax.ax.get_xticks(), dtype=float)
+        if np.any(np.isclose(current_ticks, rightmost)):
+            return
+
+        merged_ticks = np.sort(np.append(current_ticks, rightmost))
+        ax.ax.xaxis.set_major_locator(FixedLocator(merged_ticks))
+
+    def __normalize_rolling(
+        self, rolling: Optional[int | list[int]]
+    ) -> Optional[list[int]]:
+        if rolling is None:
+            return None
+        if isinstance(rolling, int):
+            if rolling < 1:
+                raise ValueError(f"rolling must be a positive integer, got {rolling}")
+            return [rolling]
+        rolling_list = list(rolling)
+        if not rolling_list:
+            raise ValueError("rolling list cannot be empty")
+        for n in rolling_list:
+            if not isinstance(n, int) or n < 1:
+                raise ValueError(
+                    f"rolling items must be positive integers, got {rolling_list!r}"
+                )
+        return rolling_list
+
+    def __rolling_mean(self, data: np.ndarray, n: int) -> np.ndarray:
+        if n == 1:
+            return data
+        return pd.Series(data).rolling(window=n, min_periods=1).mean().to_numpy()
