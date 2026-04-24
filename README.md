@@ -21,11 +21,18 @@ seaborn
 ```
 
 ## Features
-- Data-as-object workflow with `dp.data(...)` and `PlotDataSet`.
-- Chainable transforms such as `zscore()`, `log10()`, `rank()`, `rolling()`, and more.
-- Statistical plotting methods including histogram, line/scatter, QQ/PP/KS plots, and correlation map.
-- Unified plotting settings across figure / axes / dataset scopes.
-- Built on top of `matplotlib`, `numpy`, `scipy`, and `seaborn`.
+`dataplot` focuses on an **analysis-first plotting workflow**: data processing and visual diagnostics are written in one concise chain.
+
+| Capability | What it gives you | Typical API |
+| --- | --- | --- |
+| 📦 Data-as-object API | Treat raw arrays/series as first-class plotting objects with metadata and settings. | `dp.data(...)` |
+| 🔗 Composable transforms | Build reproducible feature pipelines before plotting. | `.rolling().demean().zscore().rank()` |
+| 📊 Statistical chart set | Switch between distribution, trend, and diagnostic views quickly. | `.hist()`, `.plot()`, `.scatter()`, `.qqplot()` |
+| 🧩 Artist-first composition | Compose multiple plots into one figure in a clean, deferred style. | `dp.figure(artist1, artist2, ...)` |
+| 🎛️ Layered settings model | Configure defaults at dataset / axes / figure scope with consistent fallback. | `set_plot()`, `set_axes()`, `set_figure()` |
+| 🐍 Scientific Python stack | Keep compatibility with familiar numeric and plotting ecosystems. | `numpy`, `pandas`, `scipy`, `matplotlib`, `seaborn` |
+
+In short: **less boilerplate, clearer analysis flow, and more reusable plotting code**.
 
 ## Quick Start
 ```py
@@ -43,24 +50,67 @@ fig
 
 ## Core Concepts
 ### `dp.data(...)`
-Wrap raw input into objects that support both math operations and plotting.
+`dp.data(...)` is the entry point of `dataplot`.
+It converts array-like input (for example `list`, `numpy.ndarray`, `pandas.Series`, or another `PlotDataSet`) into a unified `PlotDataSet` object.
+
+`PlotDataSet` is the core abstraction that carries:
+- **data values**
+- **transformation history**
+- **plot-level settings** (labels, style hints, etc.)
+
+This design keeps analysis context attached to the data itself.
+
+```py
+import dataplot as dp
+import numpy as np
+
+raw = np.random.randn(300)
+x = dp.data(raw, name="daily_return")
+```
+
+### Typical Workflow
+```text
+Raw data -> dp.data(...) -> transform chain -> artist(s) -> dp.figure(...)
+```
+
+You can think of `dataplot` as a 4-step loop:
+1. **Wrap** your data with `dp.data(...)`.
+2. **Transform** it with chainable operations (`rolling`, `zscore`, `rank`, ...).
+3. **Render** one or more `Artist` objects via plot methods.
+4. **Compose** artists into a figure and apply final figure/axes settings.
 
 ### Data Operations
-`PlotDataSet` supports arithmetic operators (`+ - * / **`) and transforms such as:
-- `log()` / `log10()` / `signedlog()` / `signedlog10()`
-- `pow()` / `signedpow()` / `root()` / `sqrt()` / `signedroot()` / `signedsqrt()`
-- `rolling()` / `demean()` / `zscore()` / `rank(pct=True)` / `cumsum()` / `abs()`
-- `resample()` / `reset()` / `undo_all()` / `copy()`
+`PlotDataSet` supports both arithmetic operators and built-in transforms:
+- **Arithmetic**: `+ - * / **`
+- **Log / power family**: `log()` / `log10()` / `signedlog()` / `signedlog10()` / `pow()` / `root()` / `sqrt()` / ...
+- **Statistical transforms**: `rolling()` / `demean()` / `zscore()` / `rank(pct=True)` / `cumsum()` / `abs()`
+- **State management**: `copy()` / `reset()` / `undo_all()` / `resample()`
+
+Operations are chainable, which is useful for quick experimentation:
+
+```py
+y = (
+    x
+    .rolling(5)
+    .demean()
+    .zscore()
+    .rank(pct=True)
+)
+```
 
 ### Plot Methods
-Each method returns an `Artist` object that can be passed to `dp.figure(...)`:
-- `hist(...)`
-- `plot(...)`
-- `scatter(...)`
-- `qqplot(...)`
-- `ppplot(...)`
-- `ksplot(...)`
-- `corrmap(...)`
+Every plot method returns an `Artist` object instead of drawing immediately.
+This enables deferred composition and clean multi-panel figure assembly:
+- **Distribution**: `hist(...)`
+- **Trend / relationship**: `plot(...)`, `scatter(...)`
+- **Goodness-of-fit diagnostics**: `qqplot(...)`, `ppplot(...)`, `ksplot(...)`
+- **Structure overview**: `corrmap(...)`
+
+```py
+a1 = x.hist(bins=40, alpha=0.7)
+a2 = x.qqplot(baseline="normal")
+fig = dp.figure(a1, a2, title="Distribution Check")
+```
 
 ## Plot Settings
 Common settings:
