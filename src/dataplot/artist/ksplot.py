@@ -38,6 +38,8 @@ class KSPlot(QQPlot):
         self.__plot(ax)
 
     def __plot(self, ax: "AxesWrapper") -> None:
+        if no_baseline := self.baseline is None:
+            self.baseline = "normal"
         xlabel, p, q1 = self._generate_dist(use_edge_precision=False)
         q2 = get_quantile(self.data, p)
         q1_mask = q1[np.isfinite(q1)]
@@ -50,6 +52,7 @@ class KSPlot(QQPlot):
 
         new_q1_mask = np.isfinite(q1)
         new_q2_mask = np.isfinite(q2)
-        ax.ax.plot(q1[new_q1_mask], p[new_q1_mask], self.fmt, label=xlabel)
+        if not no_baseline:
+            ax.ax.plot(q1[new_q1_mask], p[new_q1_mask], self.fmt, label=xlabel)
         ax.ax.plot(q2[new_q2_mask], p[new_q2_mask], self.fmt, label=self.label)
         ax.ax.margins(x=0)
