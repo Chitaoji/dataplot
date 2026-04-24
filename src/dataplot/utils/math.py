@@ -31,10 +31,15 @@ def linear_regression_1d(y: np.ndarray, x: np.ndarray) -> tuple[float, float]:
         np.nan_to_num(x, nan=np.nan, posinf=np.nan, neginf=np.nan),
         np.nan_to_num(y, nan=np.nan, posinf=np.nan, neginf=np.nan),
     )
-    xy_mean = np.nanmean(x * y)
-    x_mean = np.nanmean(x)
-    y_mean = np.nanmean(y)
-    b = (xy_mean - x_mean * y_mean) / np.nanvar(x)
+    nanmask = np.isnan(x) | np.isnan(y)
+    if nanmask.all():
+        raise ValueError("too many nan-values for x and y")
+    x_mask, y_mask = x[nanmask], y[nanmask]
+
+    xy_mean = (x_mask * y_mask).mean()
+    x_mean = x.mean()
+    y_mean = y.mean()
+    b = (xy_mean - x_mean * y_mean) / x.var()
     a = y_mean - x_mean * b
     return a, b
 
