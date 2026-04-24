@@ -94,7 +94,7 @@ a2 = x.qqplot(baseline="normal")
 fig = dp.figure(a1, a2, title="Distribution Check")
 ```
 
-## Plot Settings
+### Plot Settings
 Common settings:
 - `title`, `xlabel`, `ylabel`
 - `alpha`, `grid`, `grid_alpha`
