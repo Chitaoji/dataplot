@@ -47,6 +47,9 @@ class KSPlot(QQPlot):
         q1 = np.concatenate(([qmin], q1, [qmax]))
         q2 = np.concatenate(([qmin], q2, [qmax]))
         p = np.concatenate(([0.0], p, [1.0]))
-        ax.ax.plot(q1, p, self.fmt, label=xlabel)
-        ax.ax.plot(q2, p, self.fmt, label=self.label)
+
+        new_q1_mask = np.isfinite(q1)
+        new_q2_mask = np.isfinite(q2)
+        ax.ax.plot(q1[new_q1_mask], p[new_q1_mask], self.fmt, label=xlabel)
+        ax.ax.plot(q2[new_q2_mask], p[new_q2_mask], self.fmt, label=self.label)
         ax.ax.margins(x=0)
