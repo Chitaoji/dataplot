@@ -1,11 +1,11 @@
 import unittest
 
-from dataplot.utils.multi import (
+from src.dataplot.utils.multi import (
     UNSUBSCRIPTABLE,
     MultiObject,
     cleaner,
-    multiple,
     multipartial,
+    multiple,
     single,
 )
 
@@ -79,7 +79,3 @@ class TestMultiUtils(unittest.TestCase):
 
         direct = MultiObject([MaybeSubscriptable("ab"), MaybeSubscriptable("cd")])
         self.assertEqual(direct[1].value, "cd")
-
-
-if __name__ == "__main__":
-    unittest.main()

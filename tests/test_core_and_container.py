@@ -4,9 +4,8 @@ matplotlib.use("Agg")
 import unittest
 
 import numpy as np
-
-from dataplot.container import _draw_reference_lines, _parse_linear_expression
-from dataplot.core import data, figure
+from src.dataplot.container import _draw_reference_lines, _parse_linear_expression
+from src.dataplot.core import data, figure
 
 
 class TestCoreAndContainer(unittest.TestCase):
@@ -26,7 +25,7 @@ class TestCoreAndContainer(unittest.TestCase):
             _parse_linear_expression("1+2z", "x")
 
     def test_draw_reference_lines_adds_visible_lines_only(self):
-        figw = figure(active=True)
+        figw = figure()
         with figw as fig:
             ax = fig.axes[0].ax
             ax.set_xlim(0, 10)
@@ -54,7 +53,3 @@ class TestCoreAndContainer(unittest.TestCase):
 
         fig2 = figure(nrows=1, ncols=1)
         self.assertEqual((fig2.nrows, fig2.ncols), (1, 1))
-
-
-if __name__ == "__main__":
-    unittest.main()

@@ -1,8 +1,7 @@
 import unittest
 
 import numpy as np
-
-from dataplot.utils.math import get_prob, get_quantile, linear_regression_1d
+from src.dataplot.utils.math import get_prob, get_quantile, linear_regression_1d
 
 
 class TestMathUtils(unittest.TestCase):
@@ -30,7 +29,3 @@ class TestMathUtils(unittest.TestCase):
         probs = get_prob(data, q)
 
         self.assertTrue(np.allclose(probs, np.array([0.0, 2 / 3, 1.0])))
-
-
-if __name__ == "__main__":
-    unittest.main()
