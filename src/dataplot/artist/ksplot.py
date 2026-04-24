@@ -8,6 +8,7 @@ NOTE: this module is private. All functions and objects are available in the mai
 
 from typing import TYPE_CHECKING
 
+import numpy as np
 from validating import dataclass
 
 from ..utils.math import get_quantile
@@ -39,6 +40,13 @@ class KSPlot(QQPlot):
     def __plot(self, ax: "AxesWrapper") -> None:
         xlabel, p, q1 = self._generate_dist(use_edge_precision=False)
         q2 = get_quantile(self.data, p)
+        q1_mask = q1[np.isfinite(q1)]
+        q2_mask = q2[np.isfinite(q2)]
+        qmin = min(q1_mask[0], q2_mask[0])
+        qmax = max(q1_mask[-1], q2_mask[0])
+        q1 = np.concatenate(([qmin], q1, [qmax]))
+        q2 = np.concatenate(([qmin], q2, [qmax]))
+        p = np.concatenate(([0.0], p, [1.0]))
         ax.ax.plot(q1, p, self.fmt, label=xlabel)
         ax.ax.plot(q2, p, self.fmt, label=self.label)
         ax.ax.margins(x=0)
