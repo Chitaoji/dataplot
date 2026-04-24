@@ -1037,7 +1037,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
     def ksplot(
         self,
-        baseline: "DistName | np.ndarray | PlotDataSet" = "normal",
+        baseline: "DistName | PlotDataSet | Any" = "normal",
         dots: int = 1000,
         fmt: str = "",
         **kwargs: Unpack[SettingDict],
@@ -1047,7 +1047,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
         Parameters
         ----------
-        baseline : DistName | np.ndarray | PlotDataSet, optional
+        baseline : DistName | PlotDataSet | Any, optional
             Specifies the distribution to compare with. If str, specifies a
             theoretical distribution; if np.ndarray or PlotDataSet, specifies
             another real sample. By default 'normal'.
