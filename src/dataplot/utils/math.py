@@ -28,13 +28,18 @@ def linear_regression_1d(y: np.ndarray, x: np.ndarray) -> tuple[float, float]:
 
     """
     x, y = (
-        np.nan_to_num(x, posinf=np.nan, neginf=np.nan),
-        np.nan_to_num(y, posinf=np.nan, neginf=np.nan),
+        np.nan_to_num(x, nan=np.nan, posinf=np.nan, neginf=np.nan),
+        np.nan_to_num(y, nan=np.nan, posinf=np.nan, neginf=np.nan),
     )
-    xy_mean = np.nanmean(x * y)
-    x_mean = np.nanmean(x)
-    y_mean = np.nanmean(y)
-    b = (xy_mean - x_mean * y_mean) / np.nanvar(x)
+    nanmask = np.isfinite(x) & np.isfinite(y)
+    if nanmask.sum() < 2:
+        raise ValueError("too few finite-values for x and y")
+    x_mask, y_mask = x[nanmask], y[nanmask]
+
+    xy_mean = (x_mask * y_mask).mean()
+    x_mean = x_mask.mean()
+    y_mean = y_mask.mean()
+    b = (xy_mean - x_mean * y_mean) / x_mask.var()
     a = y_mean - x_mean * b
     return a, b
 
@@ -57,7 +62,9 @@ def get_quantile(data: np.ndarray, p: np.ndarray) -> np.ndarray:
         Quantiles.
 
     """
-    return np.nanquantile(np.nan_to_num(data, posinf=np.nan, neginf=np.nan), p)
+    return np.nanquantile(
+        np.nan_to_num(data, nan=np.nan, posinf=np.nan, neginf=np.nan), p
+    )
 
 
 def get_prob(data: np.ndarray, q: np.ndarray) -> np.ndarray:
@@ -77,4 +84,5 @@ def get_prob(data: np.ndarray, q: np.ndarray) -> np.ndarray:
         Cummulative probabilities.
 
     """
+    data = np.nan_to_num(data, nan=np.nan, posinf=np.nan, neginf=np.nan)
     return np.array([np.sum(data <= x) for x in q]) / np.isfinite(data).sum()

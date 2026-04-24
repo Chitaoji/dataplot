@@ -6,7 +6,7 @@ NOTE: this module is private. All functions and objects are available in the mai
 
 """
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Any, Optional
 
 import numpy as np
 from matplotlib.ticker import FixedLocator
@@ -29,7 +29,7 @@ class ScatterChart(Plotter):
 
     """
 
-    xticks: Optional["np.ndarray | PlotDataSet"]
+    xticks: Optional["PlotDataSet | Any"]
     fmt: str
 
     def paint(self, ax: "AxesWrapper", **_) -> None:
@@ -38,13 +38,14 @@ class ScatterChart(Plotter):
         self.__plot(ax)
 
     def __plot(self, ax: "AxesWrapper") -> None:
-        if isinstance(self.xticks, PlotSettable):
+        if self.xticks is None:
+            xticks = np.array(range(len(self.data)))
+        elif isinstance(self.xticks, PlotSettable):
             xticks = self.xticks.data
         else:
-            xticks = self.xticks
-        if xticks is None:
-            xticks = range(len(self.data))
-        elif (len_t := len(xticks)) != (len_d := len(self.data)):
+            xticks = np.array(self.xticks)
+
+        if (len_t := len(xticks)) != (len_d := len(self.data)):
             raise ValueError(
                 "x-ticks and data must have the same length, but have "
                 f"lengths {len_t} and {len_d}"
