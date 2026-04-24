@@ -28,22 +28,17 @@ seaborn
 - Built on top of `matplotlib`, `numpy`, `scipy`, and `seaborn`.
 
 ## Quick Start
-```python
+```py
+import dataplot as dp
 import numpy as np
 
-arr = np.random.normal(loc=0, scale=1, size=500)
-x = dp.data(arr)
+x = dp.data(np.random.randn(500))
 
-artist1 = x.zscore().hist(bins=30)
-artist2 = x.zscore().qqplot(baseline="normal")
+artist1 = x.hist(bins=30)
+artist2 = x.qqplot(baseline="normal")
 
-dp.figure(
-    artist1,
-    artist2,
-    ncols=2,
-    title="Distribution diagnostics",
-    style="seaborn-v0_8-whitegrid",
-)
+fig = dp.figure(artist1, artist2, title="Distribution diagnostics")
+fig
 ```
 
 ## Core Concepts
