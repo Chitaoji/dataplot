@@ -129,6 +129,60 @@ class MultiObject(Generic[T]):
         signature = self.__class__.__name__ + repr_not_none(self)
         return f"{signature}"
 
+    def __neg__(self) -> "MultiObject":
+        return self.__create_new([-x for x in self.__items])
+
+    def __add__(self, __other: Any) -> "MultiObject":
+        return self.__binary_operation(__other, "__add__")
+
+    def __radd__(self, __other: Any) -> "MultiObject":
+        return self.__binary_operation(__other, "__radd__")
+
+    def __sub__(self, __other: Any) -> "MultiObject":
+        return self.__binary_operation(__other, "__sub__")
+
+    def __rsub__(self, __other: Any) -> "MultiObject":
+        return self.__binary_operation(__other, "__rsub__")
+
+    def __mul__(self, __other: Any) -> "MultiObject":
+        return self.__binary_operation(__other, "__mul__")
+
+    def __rmul__(self, __other: Any) -> "MultiObject":
+        return self.__binary_operation(__other, "__rmul__")
+
+    def __truediv__(self, __other: Any) -> "MultiObject":
+        return self.__binary_operation(__other, "__truediv__")
+
+    def __rtruediv__(self, __other: Any) -> "MultiObject":
+        return self.__binary_operation(__other, "__rtruediv__")
+
+    def __pow__(self, __other: Any) -> "MultiObject":
+        return self.__binary_operation(__other, "__pow__")
+
+    def __rpow__(self, __other: Any) -> "MultiObject":
+        return self.__binary_operation(__other, "__rpow__")
+
+    def __binary_operation(self, other: Any, method: str) -> "MultiObject":
+        if isinstance(other, MultiObject):
+            if len(self.__items) != len(other.__multiobjects__):
+                raise ValueError("MultiObject with different lengths cannot be operated")
+            returns = [
+                getattr(x, method)(y) for x, y in zip(self.__items, other.__multiobjects__)
+            ]
+            return self.__create_new(returns)
+        returns = [getattr(x, method)(other) for x in self.__items]
+        return self.__create_new(returns)
+
+    def __create_new(self, items: list[Any]) -> "MultiObject":
+        if self.__class__ is MultiObject:
+            return MultiObject(
+                items,
+                call_reducer=self.__call_reducer,
+                call_reflex=self.__call_reflex,
+                attr_reducer=self.__attr_reducer,
+            )
+        return self.__class__(*items)
+
     @property
     def __multiobjects__(self) -> list[T]:
         return self.__items
