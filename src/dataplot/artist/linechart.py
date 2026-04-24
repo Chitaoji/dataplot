@@ -42,13 +42,14 @@ class LineChart(Plotter):
         self.__plot(ax)
 
     def __plot(self, ax: "AxesWrapper") -> None:
-        if isinstance(self.xticks, PlotSettable):
+        if self.xticks is None:
+            xticks = np.array(range(len(self.data)))
+        elif isinstance(self.xticks, PlotSettable):
             xticks = self.xticks.data
         else:
             xticks = np.array(self.xticks)
-        if xticks is None:
-            xticks = range(len(self.data))
-        elif (len_t := len(xticks)) != (len_d := len(self.data)):
+
+        if (len_t := len(xticks)) != (len_d := len(self.data)):
             raise ValueError(
                 "x-ticks and data must have the same length, but have "
                 f"lengths {len_t} and {len_d}"

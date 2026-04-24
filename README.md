@@ -131,6 +131,8 @@ seaborn
 This project falls under the BSD 3-Clause License.
 
 ## History
+### v0.1.11
+
 ### v0.1.10
 * Renamed `dist_or_sample=` to `baseline=` in `PlotDataSet.qqplot()` for clearer baseline specification.
 * Removed `edge_precision=` from `PlotDataSet.ppplot()` and `PlotDataSet.ksplot()`, and refined probability-range handling in the related diagnostic plotting flow.
