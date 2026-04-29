@@ -194,9 +194,6 @@ class PlottableData(Data, PlotSettable, metaclass=ABCMeta):
             A dictionary controlling the appearance of the title text.
         legend_loc : LegendLoc, optional
             Location of the legend.
-        format_name : bool, optional
-            Determines whether to format the name (to show the operations done
-            on the data).
         subplots_adjust : SubplotDict, optional
             Adjusts the subplot layout parameters including: left, right, bottom,
             top, wspace, and hspace. See `SubplotDict` for more details.
@@ -323,10 +320,7 @@ class PlottableData(Data, PlotSettable, metaclass=ABCMeta):
 
         """
         if isinstance(xticks, PlotSettable) and "xlabel" not in kwargs:
-            if kwargs.get("format_name", True):
-                kwargs["xlabel"] = xticks.formatted_name()
-            else:
-                kwargs["xlabel"] = xticks.name
+            kwargs["xlabel"] = xticks.formatted_name()
         return self._get_artist(LineChart, locals())
 
     def scatter(
@@ -356,10 +350,7 @@ class PlottableData(Data, PlotSettable, metaclass=ABCMeta):
 
         """
         if isinstance(xticks, PlotSettable) and "xlabel" not in kwargs:
-            if kwargs.get("format_name", True):
-                kwargs["xlabel"] = xticks.formatted_name()
-            else:
-                kwargs["xlabel"] = xticks.name
+            kwargs["xlabel"] = xticks.formatted_name()
         return self._get_artist(ScatterChart, locals())
 
     def qqplot(
@@ -489,11 +480,9 @@ class PlottableData(Data, PlotSettable, metaclass=ABCMeta):
         params: dict[str, Any] = {}
         for key in cls.__init__.__code__.co_varnames[1:]:
             params[key] = local[key]
-        if "format_name" in local["kwargs"] and not local["kwargs"]["format_name"]:
-            name = self.name
-        else:
-            name = self.formatted_name()
-        plotter = self.customize(cls, data=self.data, name=name, **params)
+        plotter = self.customize(
+            cls, data=self.data, name=self.formatted_name(), **params
+        )
         artist = single(self.customize)(Artist, plotter=plotter)
         if local["kwargs"]:
             artist.plotter.load(local["kwargs"])
