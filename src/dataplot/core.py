@@ -166,7 +166,7 @@ def data(*x: Any, name: Optional[str | list[str]] = None) -> PlottableData:
         if isinstance(value, PlottableData):
             normalized_data.append(np.array(value.data))
         else:
-            normalized_data.append(np.array(value))
+            normalized_data.append(np.array(value).reshape(-1))
 
     if len(expanded_data) > 1:
         if name is None:
