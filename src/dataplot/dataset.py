@@ -141,45 +141,45 @@ class PlottableData(PlotSettable, metaclass=ABCMeta):
         new_data = -self.data
         return self.__create(new_fmt, new_data, priority=40)
 
-    def __add__(self, __other: "float | int | PlottableData") -> Self:
+    def __add__(self, __other: float | int | Self) -> Self:
         return self.__binary_operation(__other, "+", np.add, priority=30)
 
-    def __radd__(self, __other: "float | int | PlottableData") -> Self:
+    def __radd__(self, __other: float | int | Self) -> Self:
         return self.__binary_operation(__other, "+", np.add, reverse=True, priority=30)
 
-    def __sub__(self, __other: "float | int | PlottableData") -> Self:
+    def __sub__(self, __other: float | int | Self) -> Self:
         return self.__binary_operation(__other, "-", np.subtract, priority=29)
 
-    def __rsub__(self, __other: "float | int | PlottableData") -> Self:
+    def __rsub__(self, __other: float | int | Self) -> Self:
         return self.__binary_operation(
             __other, "-", np.subtract, reverse=True, priority=29
         )
 
-    def __mul__(self, __other: "float | int | PlottableData") -> Self:
+    def __mul__(self, __other: float | int | Self) -> Self:
         return self.__binary_operation(__other, "*", np.multiply, priority=20)
 
-    def __rmul__(self, __other: "float | int | PlottableData") -> Self:
+    def __rmul__(self, __other: float | int | Self) -> Self:
         return self.__binary_operation(
             __other, "*", np.multiply, reverse=True, priority=20
         )
 
-    def __truediv__(self, __other: "float | int | PlottableData") -> Self:
+    def __truediv__(self, __other: float | int | Self) -> Self:
         return self.__binary_operation(__other, "/", np.true_divide, priority=19)
 
-    def __rtruediv__(self, __other: "float | int | PlottableData") -> Self:
+    def __rtruediv__(self, __other: float | int | Self) -> Self:
         return self.__binary_operation(
             __other, "/", np.true_divide, reverse=True, priority=19
         )
 
-    def __pow__(self, __other: "float | int | PlottableData") -> Self:
+    def __pow__(self, __other: float | int | Self) -> Self:
         return self.__binary_operation(__other, "**", np.power)
 
-    def __rpow__(self, __other: "float | int | PlottableData") -> Self:
+    def __rpow__(self, __other: float | int | Self) -> Self:
         return self.__binary_operation(__other, "**", np.power, reverse=True)
 
     def __binary_operation(
         self,
-        other: "float | int | PlottableData | Any",
+        other: float | int | Self,
         sign: str,
         func: Callable[[Any, Any], np.ndarray],
         reverse: bool = False,
@@ -245,7 +245,7 @@ class PlottableData(PlotSettable, metaclass=ABCMeta):
             priority -= 1
         return self.__remove_brackets(self.fmtb.format(self.label), priority=priority)
 
-    def join(self, *others: "PlottableData") -> Self:
+    def join(self, *others: Self) -> Self:
         """
         Merge two or more `PlottableData` instances.
 
@@ -917,7 +917,7 @@ class PlottableData(PlotSettable, metaclass=ABCMeta):
 
     def plot(
         self,
-        xticks: Optional["PlottableData | Any"] = None,
+        xticks: Self | Any = None,
         fmt: str = "",
         scatter: bool = False,
         sorted: bool = False,
@@ -964,7 +964,7 @@ class PlottableData(PlotSettable, metaclass=ABCMeta):
 
     def scatter(
         self,
-        xticks: Optional["PlottableData | Any"] = None,
+        xticks: Self | Any = None,
         fmt: str = "o",
         **kwargs: Unpack[SettingDict],
     ) -> Artist:
@@ -997,7 +997,7 @@ class PlottableData(PlotSettable, metaclass=ABCMeta):
 
     def qqplot(
         self,
-        baseline: "DistName | PlottableData | Any" = "normal",
+        baseline: DistName | Self | Any = "normal",
         dots: int = 30,
         edge_precision: float = 1e-2,
         fmt: str = "o",
@@ -1032,7 +1032,7 @@ class PlottableData(PlotSettable, metaclass=ABCMeta):
 
     def ppplot(
         self,
-        baseline: "DistName | PlottableData | Any" = "normal",
+        baseline: DistName | Self | Any = "normal",
         dots: int = 30,
         fmt: str = "o",
         **kwargs: Unpack[SettingDict],
@@ -1064,7 +1064,7 @@ class PlottableData(PlotSettable, metaclass=ABCMeta):
 
     def ksplot(
         self,
-        baseline: "DistName | PlottableData | Any" = "normal",
+        baseline: DistName | Self | Any = "normal",
         dots: int = 1000,
         fmt: str = "",
         **kwargs: Unpack[SettingDict],
