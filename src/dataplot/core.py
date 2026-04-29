@@ -18,7 +18,7 @@ from validating import validate
 
 from ._typing import FigureSettingDict
 from .container import FigWrapper
-from .dataset import PlottableData, PlottableDatas
+from .plottable import PlottableData, PlottableDatas
 
 if TYPE_CHECKING:
     from .artist import Artist

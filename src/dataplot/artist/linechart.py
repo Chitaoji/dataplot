@@ -18,7 +18,7 @@ from .base import Plotter
 
 if TYPE_CHECKING:
     from ..container import AxesWrapper
-    from ..dataset import PlottableData
+    from ..plottable import PlottableData
 
 __all__ = ["LineChart"]
 
