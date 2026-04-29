@@ -89,9 +89,9 @@ class QQPlot(Plotter):
     @staticmethod
     def _get_ppf(dist: DistName, p: np.ndarray) -> np.ndarray:
         match dist:
-            case "normal":
+            case "norm":
                 return stats.norm.ppf(p)
-            case "expon":
+            case "exp":
                 return stats.expon.ppf(p)
             case _:
                 raise ValueError(f"no such distribution: {dist!r}")
