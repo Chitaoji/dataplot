@@ -125,6 +125,9 @@ This project falls under the BSD 3-Clause License.
 
 ## 🕒 History
 ### v0.1.13
+* Removed the legacy `label` alias from `Data`/`PlottableData` internals and completed the naming shift to `name` for a more consistent API.
+* Renamed `normrank()` to `ranknorm()` for method-name consistency with existing rank-normalization terminology.
+* Refined README presentation with updated section icons and clearer visual structure.
 
 ### v0.1.12
 * Added rank-normalization support via `PlottableData.ranknorm(...)`, using normal-quantile mapping for percentile ranks.
