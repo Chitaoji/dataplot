@@ -38,13 +38,13 @@ class Data(metaclass=ABCMeta):
     """
 
     data: np.ndarray
-    label: Optional[str] = attr(default=None)
+    name: Optional[str] = attr(default=None)
     fmtb: str = attr(init=False, default="{0}")
     original_data: np.ndarray = attr(init=False)
     priority: int = attr(init=False, default=0)
 
     def __post_init__(self) -> None:
-        self.label = "x" if self.label is None else self.label
+        self.name = "x" if self.name is None else self.name
         self.original_data = self.data
 
     def __getitem__(self, __key: int):
@@ -126,13 +126,14 @@ class Data(metaclass=ABCMeta):
         return string
 
     def _create_data(
-        self, fmt: str, data: np.ndarray, priority: int = 0, label: Optional[str] = None
+        self, fmt: str, data: np.ndarray, priority: int = 0, name: Optional[str] = None
     ) -> Self:
-        obj = self.__class__(self.original_data, self.label if label is None else label)
+        obj = self.__class__(self.original_data, self.name if name is None else name)
         obj.fmtb = fmt
         obj.priority = priority
         obj.data = data
         return obj
+
 
     @property
     def format(self) -> str:
@@ -164,7 +165,7 @@ class Data(metaclass=ABCMeta):
         """
         if priority == self.priority and priority in (19, 29):
             priority -= 1
-        return self.__remove_brackets(self.fmtb.format(self.label), priority=priority)
+        return self.__remove_brackets(self.fmtb.format(self.name), priority=priority)
 
     def resample(self, n: int, rule: ResampleRule = "head") -> Self:
         """

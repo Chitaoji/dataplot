@@ -61,8 +61,8 @@ class PlottableData(Data, PlotSettable, metaclass=ABCMeta):
     ----------
     data : np.ndarray
         Input data.
-    label : str, optional
-        Label of the data. If set to None, use "x" as the label. By default None.
+    name : str, optional
+        Name of the data. If set to None, use "x" as the default. By default None.
 
     """
 
@@ -123,21 +123,21 @@ class PlottableData(Data, PlotSettable, metaclass=ABCMeta):
         return obj
 
     def set_label(
-        self, label: Optional[str] = None, reset_format: bool = True, /, **kwargs: str
+        self, name: Optional[str] = None, reset_format: bool = True, /, **kwargs: str
     ) -> Self:
         """
         Set the labels.
 
         Parameters
         ----------
-        label : str, optional
-            The new label (if specified), by default None.
+        name : str, optional
+            The new name (if specified), by default None.
         reset_format : bool, optional
             Determines whether to reset the format of the label (which shows
             the operations done on the data), by default True.
         **kwargs : str
-            Works as a mapper to find the new label. If `self.label` is in
-            `kwargs`, the label will be set to `kwargs[self.label]`.
+            Works as a mapper to find the new name. If `self.name` is in
+            `kwargs`, the name will be set to `kwargs[self.name]`.
 
         Returns
         -------
@@ -145,17 +145,17 @@ class PlottableData(Data, PlotSettable, metaclass=ABCMeta):
             A new instance of self.__class__.
 
         """
-        if isinstance(label, str):
-            new_label = label
-        elif self.label in kwargs:
-            new_label = kwargs[self.label]
+        if isinstance(name, str):
+            new_name = name
+        elif self.name in kwargs:
+            new_name = kwargs[self.name]
         else:
-            new_label = self.label
+            new_name = self.name
         return self._create_data(
             "{0}" if reset_format else self.fmtb,
             self.data,
             priority=self.priority,
-            label=new_label,
+            name=new_name,
         )
 
     @overload
@@ -334,7 +334,7 @@ class PlottableData(Data, PlotSettable, metaclass=ABCMeta):
             if kwargs.get("format_label", True):
                 kwargs["xlabel"] = xticks.formatted_label()
             else:
-                kwargs["xlabel"] = xticks.label
+                kwargs["xlabel"] = xticks.name
         return self._get_artist(LineChart, locals())
 
     def scatter(
@@ -367,7 +367,7 @@ class PlottableData(Data, PlotSettable, metaclass=ABCMeta):
             if kwargs.get("format_label", True):
                 kwargs["xlabel"] = xticks.formatted_label()
             else:
-                kwargs["xlabel"] = xticks.label
+                kwargs["xlabel"] = xticks.name
         return self._get_artist(ScatterChart, locals())
 
     def qqplot(
@@ -498,7 +498,7 @@ class PlottableData(Data, PlotSettable, metaclass=ABCMeta):
         for key in cls.__init__.__code__.co_varnames[1:]:
             params[key] = local[key]
         if "format_label" in local["kwargs"] and not local["kwargs"]["format_label"]:
-            label = self.label
+            label = self.name
         else:
             label = self.formatted_label()
         plotter = self.customize(cls, data=self.data, label=label, **params)
@@ -514,7 +514,7 @@ class PlottableData(Data, PlotSettable, metaclass=ABCMeta):
         obj = self.customize(
             self.__class__,
             self.original_data,
-            self.label if label is None else label,
+            self.name if label is None else label,
             fmtb=fmt,
             priority=priority,
         )
