@@ -594,5 +594,4 @@ class Data(metaclass=ABCMeta):
             A new instance of self.__class__.
 
         """
-        self.fmtb = "{0}"
-        self.data = self.original_data
+        return self._create_data("{0}", self.original_data)
