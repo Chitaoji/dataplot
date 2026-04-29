@@ -96,7 +96,7 @@ class PlottableData(PlotSettable, metaclass=ABCMeta):
 
     @classmethod
     def __subclasshook__(cls, __subclass: type) -> bool:
-        if __subclass is PlottableData or issubclass(__subclass, PlottableDatas):
+        if __subclass is PlottableData or issubclass(__subclass, PlottableDataSet):
             return True
         return False
 
@@ -260,7 +260,7 @@ class PlottableData(PlotSettable, metaclass=ABCMeta):
             A new instance of self.__class__.
 
         """
-        return PlottableDatas(self, *others)
+        return PlottableDataSet(self, *others)
 
     def resample(self, n: int, rule: ResampleRule = "head") -> Self:
         """
@@ -1134,7 +1134,7 @@ class PlottableData(PlotSettable, metaclass=ABCMeta):
         return artist
 
 
-class PlottableDatas(MultiObject[PlottableData]):
+class PlottableDataSet(MultiObject[PlottableData]):
     """A duck subclass of `PlottableData`."""
 
     def __init__(self, *args: Any) -> None:
@@ -1159,7 +1159,7 @@ class PlottableDatas(MultiObject[PlottableData]):
         PlottableData.batched(self, n)
         m = MultiObject()
         for i in range(0, len(self.__multiobjects__), n):
-            m.__multiobjects__.append(PlottableDatas(*self.__multiobjects__[i : i + n]))
+            m.__multiobjects__.append(PlottableDataSet(*self.__multiobjects__[i : i + n]))
         return m
 
     def __dataset_attr_reducer(self, n: str) -> Callable:
