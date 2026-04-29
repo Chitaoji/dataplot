@@ -168,9 +168,6 @@ class Data(metaclass=ABCMeta):
             new_data[valid_mask] = norm.ppf(p)
         return self._create_data(f"rank_normalize({self.format})", new_data)
 
-    def ranknorm(self) -> Self:
-        return self.normrank()
-
     def log(self) -> Self:
         return self._create_data(
             f"log({self.format})", np.log(np.where(self.data > 0, self.data, np.nan))
