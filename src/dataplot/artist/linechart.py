@@ -13,7 +13,7 @@ import pandas as pd
 from matplotlib.ticker import FixedLocator
 from validating import dataclass
 
-from ..setting import PlotSettable
+from ..database import Data
 from .base import Plotter
 
 if TYPE_CHECKING:
@@ -44,7 +44,7 @@ class LineChart(Plotter):
     def __plot(self, ax: "AxesWrapper") -> None:
         if self.xticks is None:
             xticks = np.array(range(len(self.data)))
-        elif isinstance(self.xticks, PlotSettable):
+        elif isinstance(self.xticks, Data):
             xticks = self.xticks.data
         else:
             xticks = np.array(self.xticks)

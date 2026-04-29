@@ -13,7 +13,7 @@ from scipy import stats
 from validating import attr, dataclass
 
 from .._typing import DistName
-from ..setting import PlotSettable
+from ..database import Data
 from ..utils.math import get_quantile, linear_regression_1d
 from .base import Plotter
 
@@ -68,7 +68,7 @@ class QQPlot(Plotter):
         if isinstance(x := self.baseline, str):
             xlabel = x + "-distribution"
             q = self._get_ppf(x, p)
-        elif isinstance(x, PlotSettable):
+        elif isinstance(x, Data):
             xlabel = x.formatted_name()
             q = get_quantile(x.data, p)
         else:

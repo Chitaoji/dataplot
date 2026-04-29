@@ -319,7 +319,7 @@ class PlottableData(Data, PlotSettable, metaclass=ABCMeta):
             An instance of Artist.
 
         """
-        if isinstance(xticks, PlotSettable) and "xlabel" not in kwargs:
+        if isinstance(xticks, Data) and "xlabel" not in kwargs:
             kwargs["xlabel"] = xticks.formatted_name()
         return self._get_artist(LineChart, locals())
 
@@ -349,7 +349,7 @@ class PlottableData(Data, PlotSettable, metaclass=ABCMeta):
             An instance of Artist.
 
         """
-        if isinstance(xticks, PlotSettable) and "xlabel" not in kwargs:
+        if isinstance(xticks, Data) and "xlabel" not in kwargs:
             kwargs["xlabel"] = xticks.formatted_name()
         return self._get_artist(ScatterChart, locals())
 
