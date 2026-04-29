@@ -95,7 +95,8 @@ class Data(metaclass=ABCMeta):
                 priority,
             )
         raise ValueError(
-            f"{sign!r} not supported between instances of 'Data' and {other.__class__.__name__!r}"
+            f"{sign!r} not supported between instances of 'Data' "
+            f"and {other.__class__.__name__!r}"
         )
 
     def __remove_brackets(self, string: str, priority: int = 0):
@@ -162,11 +163,6 @@ class Data(metaclass=ABCMeta):
         Self
             A new instance of self.__class__.
 
-        Raises
-        ------
-        ValueError
-            Raised when receiving illegal rule.
-
         """
         match rule:
             case "random":
@@ -176,8 +172,6 @@ class Data(metaclass=ABCMeta):
                 new_data = self.data[:n]
             case "tail":
                 new_data = self.data[-n:]
-            case _:
-                raise ValueError(f"rule not supported: {rule!r}")
         return self._create_data(f"resample({self.format}, {n})", new_data)
 
     def rank(self, pct: bool = True) -> Self:
@@ -359,38 +353,18 @@ class Data(metaclass=ABCMeta):
         Parameters
         ----------
         n : int, optional
-            Root degree, by default 2.
+            Root degree, must be a positive integer. By default 2.
 
         Returns
         -------
         Self
             A new instance of self.__class__.
 
-        Raises
-        ------
-        ValueError
-            Raised when n is zero.
-
         """
-        if n == 0:
-            raise ValueError("root degree must not be zero")
+        assert n > 0
         return self._create_data(
             f"root({self.format}, {n})", np.power(self.data, 1 / n)
         )
-
-    def sqrt(self) -> Self:
-        """
-        Perform a square-root operation on the data.
-
-        Equivalent to calling `root(2)`.
-
-        Returns
-        -------
-        Self
-            A new instance of self.__class__.
-
-        """
-        return self.root(2)
 
     def signedroot(self, n: int = 2) -> Self:
         """
@@ -405,26 +379,34 @@ class Data(metaclass=ABCMeta):
         Parameters
         ----------
         n : int, optional
-            Root degree, by default 2.
+            Root degree, must be a positive integer. By default 2.
 
         Returns
         -------
         Self
             A new instance of self.__class__.
 
-        Raises
-        ------
-        ValueError
-            Raised when n is zero.
-
         """
-        if n == 0:
-            raise ValueError("root degree must not be zero")
+        assert n > 0
         power = 1 / n
         new_data = np.power(np.where(self.data > 0, self.data, np.nan), power)
         new_data[self.data < 0] = -np.power(-self.data[self.data < 0], power)
         new_data[self.data == 0] = 0
         return self._create_data(f"signedroot({self.format}, {n})", new_data)
+
+    def sqrt(self) -> Self:
+        """
+        Perform a square-root operation on the data.
+
+        Equivalent to calling `root(2)`.
+
+        Returns
+        -------
+        Self
+            A new instance of self.__class__.
+
+        """
+        return self.root(2)
 
     def signedsqrt(self) -> Self:
         """
@@ -456,8 +438,7 @@ class Data(metaclass=ABCMeta):
             A new instance of self.__class__.
 
         """
-        if n < 1:
-            raise ValueError(f"rolling window must be a positive integer, got {n}")
+        assert n > 0
         new_data = np.convolve(
             np.asarray(self.data, dtype=float), np.ones(n, dtype=float), mode="full"
         )[: len(self.data)] / np.minimum(np.arange(1, len(self.data) + 1), n)
