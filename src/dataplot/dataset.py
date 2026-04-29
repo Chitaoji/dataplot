@@ -20,6 +20,7 @@ from typing import (
 )
 
 import numpy as np
+from scipy.stats import norm
 from validating import attr, dataclass
 
 from ._typing import DistName, ResampleRule, SettingDict
@@ -694,6 +695,35 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
         new_fmt = f"rank({self.format}, pct=True)" if pct else f"rank({self.format})"
         return self.__create(new_fmt, ranks)
+
+    def rank_normalize(self) -> Self:
+        """
+        Rank-normalize the data values into standard normal scores.
+
+        This applies a rank-based inverse normal transformation:
+        1) compute average ranks for finite observations;
+        2) convert to plotting probabilities using (rank - 0.5) / n;
+        3) map probabilities through the standard normal inverse CDF.
+
+        Non-finite values (nan/inf) are kept as nan in the output.
+
+        Returns
+        -------
+        Self
+            A new instance of self.__class__.
+
+        """
+        ranks = self.rank(pct=False).data
+        valid_mask = np.isfinite(ranks)
+        new_data = np.full(self.data.shape, np.nan, dtype=float)
+
+        if np.any(valid_mask):
+            n = np.count_nonzero(valid_mask)
+            p = (ranks[valid_mask] - 0.5) / n
+            new_data[valid_mask] = norm.ppf(p)
+
+        new_fmt = f"rank_normalize({self.format})"
+        return self.__create(new_fmt, new_data)
 
     def copy(self) -> Self:
         return self.__create(self.fmtb, self.data, priority=self.priority)
