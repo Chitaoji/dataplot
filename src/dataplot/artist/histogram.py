@@ -106,32 +106,18 @@ class Histogram(Plotter):
                 warnings.filterwarnings("ignore", category=RuntimeWarning)
                 if dist == "norm":
                     loc, scale = stats.norm.fit(sample)
-                    params: tuple[float, ...] = (loc, scale)
+                    return stats.norm.pdf(x, loc=loc, scale=scale)
                 elif dist == "skew-norm":
                     a, loc, scale = stats.skewnorm.fit(sample)
-                    params = (a, loc, scale)
+                    return stats.skewnorm.pdf(x, a, loc=loc, scale=scale)
                 elif dist == "t":
                     df, loc, scale = stats.t.fit(sample)
-                    params = (df, loc, scale)
+                    return stats.t.pdf(x, df, loc=loc, scale=scale)
                 else:
                     # Jones-Faddy skew-t: captures skewness and heavy tails.
                     # a, b affect skewness and kurtosis; loc/scale shift/scale.
                     a, b, loc, scale = stats.jf_skew_t.fit(sample)
-                    params = (a, b, loc, scale)
+                    return stats.jf_skew_t.pdf(x, a, b, loc=loc, scale=scale)
         except Exception:
             return np.zeros_like(x, dtype=float)
-        if (not np.all(np.isfinite(params))) or params[-1] <= 0:
-            return np.zeros_like(x, dtype=float)
-        if dist == "norm":
-            loc, scale = params
-            return stats.norm.pdf(x, loc=loc, scale=scale)
-        if dist == "skew-norm":
-            a, loc, scale = params
-            return stats.skewnorm.pdf(x, a, loc=loc, scale=scale)
-        if dist == "t":
-            df, loc, scale = params
-            return stats.t.pdf(x, df, loc=loc, scale=scale)
-        a, b, loc, scale = params
-        if a <= 0 or b <= 0:
-            return np.zeros_like(x, dtype=float)
-        return stats.jf_skew_t.pdf(x, a, b, loc=loc, scale=scale)
+        return np.zeros_like(x, dtype=float)
