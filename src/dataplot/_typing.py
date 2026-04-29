@@ -81,7 +81,7 @@ ColorId = (
 )
 VerticalAlignment = Literal["baseline", "bottom", "center", "center_baseline", "top"]
 HorizontalAlignment = Literal["left", "center", "right"]
-DistName = Literal["normal", "expon"]
+DistName = Literal["norm", "exp"]
 SettingKey = Literal[
     "title",
     "xlabel",

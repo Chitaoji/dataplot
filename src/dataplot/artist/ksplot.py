@@ -39,7 +39,7 @@ class KSPlot(QQPlot):
 
     def __plot(self, ax: "AxesWrapper") -> None:
         if no_baseline := self.baseline is None:
-            self.baseline = "normal"
+            self.baseline = "norm"
         xlabel, p, q1 = self._generate_dist(use_edge_precision=False)
         q2 = get_quantile(self.data, p)
         q1_mask = q1[np.isfinite(q1)]
