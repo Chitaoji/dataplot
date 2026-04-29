@@ -28,7 +28,7 @@ import dataplot as dp
 import numpy as np
 
 raw = np.random.randn(300)
-x = dp.data(raw, label="daily_return")
+x = dp.data(raw, name="daily_return")
 
 artist1 = x.hist(bins=30, alpha=0.7)
 artist2 = x.qqplot(baseline="normal")
@@ -54,7 +54,7 @@ import dataplot as dp
 import numpy as np
 
 raw = np.random.randn(300)
-x = dp.data(raw, label="daily_return")
+x = dp.data(raw, name="daily_return")
 ```
 
 ### Typical Workflow
