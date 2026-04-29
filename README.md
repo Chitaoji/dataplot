@@ -131,6 +131,8 @@ seaborn
 This project falls under the BSD 3-Clause License.
 
 ## History
+### v0.1.12
+
 ### v0.1.11
 * Added arithmetic operator support to `MultiObject` (including reflected operators), enabling element-wise math workflows for grouped `PlottableData` objects with length checks.
 * Improved numerical robustness in `utils.math` by consistently sanitizing `NaN`/`Inf` inputs and validating finite sample counts in 1D linear regression.
