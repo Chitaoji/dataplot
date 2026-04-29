@@ -124,6 +124,8 @@ Common settings:
 This project falls under the BSD 3-Clause License.
 
 ## 🕒 History
+### v0.1.13
+
 ### v0.1.12
 * Added rank-normalization support via `PlottableData.ranknorm(...)`, using normal-quantile mapping for percentile ranks.
 * Optimized rank computation by vectorizing tie handling in `PlottableData.rank(...)`.
