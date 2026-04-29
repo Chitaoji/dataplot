@@ -21,16 +21,16 @@ with lazyr.setverbose(0):
     lazyr.register("scipy.stats")
     lazyr.register("seaborn")
 
-from . import container, core, data, plottable, setting
+from . import container, core, database, plottable, setting
 from .container import *
 from .core import *
-from .data import *
+from .database import *
 from .plottable import *
 from .setting import *
 
 __all__: list[str] = []
 __all__.extend(core.__all__)
-__all__.extend(data.__all__)
+__all__.extend(database.__all__)
 __all__.extend(setting.__all__)
 __all__.extend(container.__all__)
 __all__.extend(plottable.__all__)

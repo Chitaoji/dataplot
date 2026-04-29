@@ -57,19 +57,25 @@ class Data(metaclass=ABCMeta):
         return self.__binary_operation(__other, "-", np.subtract, priority=29)
 
     def __rsub__(self, __other: float | int | Self) -> Self:
-        return self.__binary_operation(__other, "-", np.subtract, reverse=True, priority=29)
+        return self.__binary_operation(
+            __other, "-", np.subtract, reverse=True, priority=29
+        )
 
     def __mul__(self, __other: float | int | Self) -> Self:
         return self.__binary_operation(__other, "*", np.multiply, priority=20)
 
     def __rmul__(self, __other: float | int | Self) -> Self:
-        return self.__binary_operation(__other, "*", np.multiply, reverse=True, priority=20)
+        return self.__binary_operation(
+            __other, "*", np.multiply, reverse=True, priority=20
+        )
 
     def __truediv__(self, __other: float | int | Self) -> Self:
         return self.__binary_operation(__other, "/", np.true_divide, priority=19)
 
     def __rtruediv__(self, __other: float | int | Self) -> Self:
-        return self.__binary_operation(__other, "/", np.true_divide, reverse=True, priority=19)
+        return self.__binary_operation(
+            __other, "/", np.true_divide, reverse=True, priority=19
+        )
 
     def __pow__(self, __other: float | int | Self) -> Self:
         return self.__binary_operation(__other, "**", np.power)
@@ -87,10 +93,14 @@ class Data(metaclass=ABCMeta):
     ) -> Self:
         if reverse:
             this_fmt = self.__remove_brackets(self.fmtb, priority=priority)
-            return self._create_data(f"({other}{sign}{this_fmt})", func(other, self.data), priority)
+            return self._create_data(
+                f"({other}{sign}{this_fmt})", func(other, self.data), priority
+            )
         this_fmt = self.__remove_brackets(self.fmtb, priority=priority + 1)
         if isinstance(other, (float, int)):
-            return self._create_data(f"({this_fmt}{sign}{other})", func(self.data, other), priority)
+            return self._create_data(
+                f"({this_fmt}{sign}{other})", func(self.data, other), priority
+            )
         if isinstance(other, Data):
             return self._create_data(
                 f"({this_fmt}{sign}{other.formatted_label(priority=priority)})",
@@ -168,7 +178,8 @@ class Data(metaclass=ABCMeta):
 
     def log10(self) -> Self:
         return self._create_data(
-            f"log10({self.format})", np.log10(np.where(self.data > 0, self.data, np.nan))
+            f"log10({self.format})",
+            np.log10(np.where(self.data > 0, self.data, np.nan)),
         )
 
     def signedlog(self) -> Self:
@@ -195,7 +206,9 @@ class Data(metaclass=ABCMeta):
     def root(self, n: int = 2) -> Self:
         if n == 0:
             raise ValueError("root degree must not be zero")
-        return self._create_data(f"root({self.format}, {n})", np.power(self.data, 1 / n))
+        return self._create_data(
+            f"root({self.format}, {n})", np.power(self.data, 1 / n)
+        )
 
     def sqrt(self) -> Self:
         return self.root(2)

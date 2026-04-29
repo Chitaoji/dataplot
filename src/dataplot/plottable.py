@@ -11,6 +11,7 @@ from functools import partial
 from typing import (
     TYPE_CHECKING,
     Any,
+    Callable,
     Literal,
     Optional,
     Self,
@@ -32,8 +33,8 @@ from .artist import (
     QQPlot,
     ScatterChart,
 )
+from .database import Data
 from .setting import PlotSettable, PlotSettings
-from .data import Data
 from .utils.multi import (
     REMAIN,
     MultiObject,
@@ -107,7 +108,6 @@ class PlottableData(PlotSettable, Data, metaclass=ABCMeta):
         not_none = self.settings._repr_changes()
         return f"{self.formatted_label()}{': ' if not_none else ''}{not_none}"
 
-
     def join(self, *others: "PlottableData") -> Self:
         """
         Merge two or more `PlottableData` instances.
@@ -124,7 +124,6 @@ class PlottableData(PlotSettable, Data, metaclass=ABCMeta):
 
         """
         return PlottableDataSet(self, *others)
-
 
     def copy(self) -> Self:
         return self._create_data(self.fmtb, self.data, priority=self.priority)
@@ -563,7 +562,9 @@ class PlottableDataSet(MultiObject[PlottableData]):
         PlottableData.batched(self, n)
         m = MultiObject()
         for i in range(0, len(self.__multiobjects__), n):
-            m.__multiobjects__.append(PlottableDataSet(*self.__multiobjects__[i : i + n]))
+            m.__multiobjects__.append(
+                PlottableDataSet(*self.__multiobjects__[i : i + n])
+            )
         return m
 
     def __dataset_attr_reducer(self, n: str) -> Callable:
@@ -600,4 +601,3 @@ class PlottableDataSet(MultiObject[PlottableData]):
         if all(i is None for i in x):
             return None
         return REMAIN
-    settings: PlotSettings = attr(init=False, default_factory=PlotSettings)
