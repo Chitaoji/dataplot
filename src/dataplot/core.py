@@ -18,7 +18,7 @@ from validating import validate
 
 from ._typing import FigureSettingDict
 from .container import FigWrapper
-from .plottable import PlottableData, PlottableDatas
+from .plottable import PlottableData, PlottableDataSet
 
 if TYPE_CHECKING:
     from .artist import Artist
@@ -154,7 +154,7 @@ def data(*x: Any, label: Optional[str | list[str]] = None) -> PlottableData:
     expanded_names: list[Optional[str]] = []
     inferred_names = _infer_var_names(*x)
     for i, value in enumerate(x):
-        if isinstance(value, PlottableDatas):
+        if isinstance(value, PlottableDataSet):
             expanded_data.extend(value.__multiobjects__)
             expanded_names.extend([None] * len(value.__multiobjects__))
         else:
@@ -187,7 +187,7 @@ def data(*x: Any, label: Optional[str | list[str]] = None) -> PlottableData:
         elif len(label) != len(expanded_data):
             raise ValueError(f"expected {len(expanded_data)} labels, got {len(label)}")
         datas = [PlottableData(d, lb) for d, lb in zip(normalized_data, label)]
-        return PlottableDatas(*datas)
+        return PlottableDataSet(*datas)
 
     if isinstance(label, list):
         raise ValueError(
