@@ -680,14 +680,11 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             order = np.argsort(valid_data, kind="mergesort")
             sorted_data = valid_data[order]
             ranked = np.empty(valid_data.size, dtype=float)
-
-            i = 0
-            while i < valid_data.size:
-                j = i + 1
-                while j < valid_data.size and sorted_data[j] == sorted_data[i]:
-                    j += 1
-                ranked[order[i:j]] = (i + 1 + j) / 2
-                i = j
+            change_points = np.flatnonzero(np.diff(sorted_data) != 0) + 1
+            starts = np.concatenate(([0], change_points))
+            ends = np.concatenate((change_points, [valid_data.size]))
+            avg_ranks = (starts + 1 + ends) / 2.0
+            ranked[order] = np.repeat(avg_ranks, ends - starts)
 
             if pct:
                 ranked /= valid_data.size
