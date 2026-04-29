@@ -132,10 +132,10 @@ This project falls under the BSD 3-Clause License.
 
 ## History
 ### v0.1.12
-* Added rank-normalization support via `PlottableData.rank_normalize(...)`, using normal-quantile mapping for percentile ranks.
+* Added rank-normalization support via `PlottableData.ranknorm(...)`, using normal-quantile mapping for percentile ranks.
 * Optimized rank computation by vectorizing tie handling in `PlottableData.rank(...)`.
 * Completed the naming migration from `PlotDataSet`/`PlottableDatas` to `PlottableData`/`PlottableDataSet` for clearer API consistency.
-* Refactored `dp.data(...)` internals around a dedicated `Data` class and kept plotting settings stored on `PlottableData`.
+* Refactored `PlottableData` by moving its data-processing logic into a new parent class `Data`, keeping only plotting settings.
 
 ### v0.1.11
 * Added arithmetic operator support to `MultiObject` (including reflected operators), enabling element-wise math workflows for grouped `PlottableData` objects with length checks.
