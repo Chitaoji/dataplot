@@ -64,26 +64,6 @@ class PlottableData(Data, PlotSettable, metaclass=ABCMeta):
     label : str, optional
         Label of the data. If set to None, use "x" as the label. By default None.
 
-    Properties
-    ----------
-    fmt : str
-        A string recording the mathmatical operations done on the data.
-    original_data : np.ndarray
-        Original input data.
-    settings : PlotSettings
-        Settings for plot (whether a figure or an axes).
-    priority : int
-        Priority of the latest mathmatical operation, where:
-        0 : Highest priority, refering to `repr()` and some of unary operations;
-        10 : Refers to binary operations that are prior to / (e.g., **);
-        19 : Particularly refers to /;
-        20 : Particularly refers to *;
-        29 : Particularly refers to binary -;
-        30 : Particularly refers to +;
-        40 : Particularly refers to unary -.
-            Note that / and binary - are distinguished from * or + because the
-            former ones disobey the associative law.
-
     """
 
     @classmethod

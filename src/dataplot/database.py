@@ -15,7 +15,27 @@ __all__ = ["Data"]
 
 @dataclass(validate_methods=True)
 class Data(metaclass=ABCMeta):
-    """Calculation-focused base class for plottable datasets."""
+    """Calculation-focused base class for plottable datasets.
+
+    Attributes
+    ----------
+    fmtb : str
+        Format with brackets.
+    original_data : np.ndarray
+        The original data array.
+    priority : int
+        Priority of the latest mathmatical operation, where:
+        -  0 : is the highest priority, refering to `repr()` and some unary operations.
+        - 10 : refers to binary operations that are prior to / (e.g., **).
+        - 19 : particularly refers to /.
+        - 20 : particularly refers to *.
+        - 29 : particularly refers to binary -.
+        - 30 : particularly refers to +.
+        - 40 : particularly refers to unary -.
+        * Note that / and binary - are distinguished from * or + because the
+        former ones disobey the associative law.
+
+    """
 
     data: np.ndarray
     label: Optional[str] = attr(default=None)
@@ -117,7 +137,7 @@ class Data(metaclass=ABCMeta):
     @property
     def format(self) -> str:
         """
-        Return the label format.
+        Return a format string recording the mathmatical operations done on the data.
 
         Returns
         -------
@@ -129,8 +149,7 @@ class Data(metaclass=ABCMeta):
 
     def formatted_label(self, priority: int = 0) -> str:
         """
-        Return the formatted label, but remove the pair of brackets at both ends
-        of the string if neccessary.
+        Return the label formatted by `self.format`.
 
         Parameters
         ----------
