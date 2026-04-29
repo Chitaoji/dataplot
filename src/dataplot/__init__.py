@@ -53,7 +53,7 @@ fig
 ```
 
 ## 🧠 Core Concepts
-### `dp.data(...)`
+### 📥 `dp.data(...)`
 `dp.data(...)` is the entry point of `dataplot`.
 It converts array-like input (for example `list`, `numpy.ndarray`, `pandas.Series`, or
 another `PlottableData`) into a unified `PlottableData` object.
@@ -73,7 +73,7 @@ raw = np.random.randn(300)
 x = dp.data(raw, name="daily_return")
 ```
 
-### Typical Workflow
+### 🔄 Typical Workflow
 ```text
 Raw data -> dp.data(...) -> transform chain -> artist(s) -> dp.figure(...)
 ```
@@ -84,7 +84,7 @@ You can think of `dataplot` as a 4-step loop:
 3. **Render** one or more `Artist` objects via plot methods.
 4. **Compose** artists into a figure and apply final figure/axes settings.
 
-### Data Operations
+### 🔢 Data Operations
 `PlottableData` supports both arithmetic operators and built-in transforms:
 - **Arithmetic**: `+ - * / **`
 - **Log / power family**: `log()` / `log10()` / `signedlog()` / `signedlog10()` /
@@ -99,7 +99,7 @@ Operations are chainable, which is useful for quick experimentation:
 x.zscore().rolling(5).rank(pct=True)
 ```
 
-### Plot Methods
+### 📈 Plot Methods
 Every plot method returns an `Artist` object instead of drawing immediately.
 This enables deferred composition and clean multi-panel figure assembly:
 - **Distribution**: `hist(...)`
@@ -117,7 +117,7 @@ fig = dp.figure(artist1, artist2, title="Distribution diagnostics")
 fig  # show both plots
 ```
 
-### Plot Settings
+### ⚙️ Plot Settings
 Common settings:
 - `title`, `xlabel`, `ylabel`
 - `alpha`, `grid`, `grid_alpha`
