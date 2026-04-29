@@ -1,5 +1,5 @@
 """
-Contains the dataset interface: PlotData.
+Contains the dataset interface: PlottableData.
 
 NOTE: this module is private. All functions and objects are available in the main
 `dataplot` namespace - use that instead.
