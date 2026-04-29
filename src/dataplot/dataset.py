@@ -245,7 +245,7 @@ class PlottableData(PlotSettable, metaclass=ABCMeta):
             priority -= 1
         return self.__remove_brackets(self.fmtb.format(self.label), priority=priority)
 
-    def join(self, *others: Self) -> Self:
+    def join(self, *others: "PlottableData") -> Self:
         """
         Merge two or more `PlottableData` instances.
 
