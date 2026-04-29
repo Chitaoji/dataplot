@@ -587,3 +587,11 @@ class Data(metaclass=ABCMeta):
 
         """
         return self._create_data(f"csum({self.format})", np.cumsum(self.data))
+
+    def undo_all(self) -> None:
+        """
+        Undo all the operations performed on the data and clean the records.
+
+        """
+        self.fmtb = "{0}"
+        self.data = self.original_data

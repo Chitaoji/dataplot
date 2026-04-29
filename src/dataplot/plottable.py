@@ -19,8 +19,7 @@ from typing import (
     overload,
 )
 
-import numpy as np
-from validating import attr, dataclass
+from validating import dataclass
 
 from ._typing import DistName, SettingDict
 from .artist import (
@@ -34,7 +33,7 @@ from .artist import (
     ScatterChart,
 )
 from .database import Data
-from .setting import PlotSettable, PlotSettings
+from .setting import PlotSettable
 from .utils.multi import (
     REMAIN,
     MultiObject,
@@ -50,7 +49,7 @@ __all__ = ["PlottableData"]
 
 
 @dataclass(validate_methods=True)
-class PlottableData(PlotSettable, Data, metaclass=ABCMeta):
+class PlottableData(Data, PlotSettable, metaclass=ABCMeta):
     """
     A dataset class providing methods for mathematical operations and plotting.
 
@@ -141,14 +140,6 @@ class PlottableData(PlotSettable, Data, metaclass=ABCMeta):
         obj = self.copy()
         obj.settings.reset()
         return obj
-
-    def undo_all(self) -> None:
-        """
-        Undo all the operations performed on the data and clean the records.
-
-        """
-        self.fmtb = "{0}"
-        self.data = self.original_data
 
     def set_label(
         self, label: Optional[str] = None, reset_format: bool = True, /, **kwargs: str
