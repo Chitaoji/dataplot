@@ -30,19 +30,6 @@ class Data(metaclass=ABCMeta):
     def __getitem__(self, __key: int):
         return UNSUBSCRIPTABLE
 
-    def _create_data(
-        self, fmt: str, data: np.ndarray, priority: int = 0, label: Optional[str] = None
-    ) -> Self:
-        obj = self.customize(
-            self.__class__,
-            self.original_data,
-            self.label if label is None else label,
-            fmtb=fmt,
-            priority=priority,
-        )
-        obj.data = data
-        return obj
-
     def __neg__(self) -> Self:
         new_fmt = f"(-{self.__remove_brackets(self.fmtb, priority=28)})"
         return self._create_data(new_fmt, -self.data, priority=40)

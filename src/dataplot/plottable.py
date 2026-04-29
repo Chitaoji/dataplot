@@ -19,6 +19,7 @@ from typing import (
     overload,
 )
 
+import numpy as np
 from validating import dataclass
 
 from ._typing import DistName, SettingDict
@@ -526,6 +527,19 @@ class PlottableData(Data, PlotSettable, metaclass=ABCMeta):
             artist.plotter.load(local["kwargs"])
             artist.load(local["kwargs"])
         return artist
+
+    def _create_data(
+        self, fmt: str, data: np.ndarray, priority: int = 0, label: Optional[str] = None
+    ) -> Self:
+        obj = self.customize(
+            self.__class__,
+            self.original_data,
+            self.label if label is None else label,
+            fmtb=fmt,
+            priority=priority,
+        )
+        obj.data = data
+        return obj
 
 
 class PlottableDataSet(MultiObject[PlottableData]):
