@@ -8,6 +8,11 @@ A lightweight plotting library for data science that unifies data transformation
 $ pip install dataplot
 ```
 
+## 📦 Requirements
+```txt
+numpy, pandas, scipy, matplotlib, seaborn, validating, lazyr, loggings
+```
+
 ## ✨ Features
 `dataplot` focuses on an **analysis-first plotting workflow**: data processing and visual diagnostics are written in one concise chain.
 
@@ -107,18 +112,6 @@ Common settings:
 - `fontdict`, `legend_loc`
 - `subplots_adjust`
 - `reference_lines` (for example: `"y=x"`, `"y=0"`, `"x=1"`)
-
-## 📦 Requirements
-```txt
-validating
-lazyr
-loggings
-matplotlib
-numpy
-pandas
-scipy
-seaborn
-```
 
 ## 🔗 See Also
 ### Github repository
