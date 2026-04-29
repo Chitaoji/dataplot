@@ -239,7 +239,7 @@ class PlottableData(Data, PlotSettable, metaclass=ABCMeta):
         density: bool = True,
         log: bool = False,
         same_bin: bool = True,
-        fit: Literal["norm", "skew-norm", "t", "skew-t"] | None = "skew-t",
+        fit: Literal["norm", "skew-norm", "t", "skew-t"] | None = "norm",
         stats: bool = True,
         **kwargs: Unpack[SettingDict],
     ) -> Artist:
@@ -264,7 +264,7 @@ class PlottableData(Data, PlotSettable, metaclass=ABCMeta):
         fit : Literal["norm", "skew-norm", "t", "skew-t"] | None, optional
             Distribution used to fit a curve to the histogram, only available when
             `density=True`. Set to ``None`` to disable fitting. By default
-            ``"skew-t"``.
+            ``"norm"``.
         stats : bool, optional
             Determines whether to show the statistics, including the calculated mean,
             standard deviation, skewness, and kurtosis of the input, by default True.
