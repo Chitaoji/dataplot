@@ -693,7 +693,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         new_fmt = f"rank({self.format}, pct=True)" if pct else f"rank({self.format})"
         return self.__create(new_fmt, ranks)
 
-    def rank_normalize(self) -> Self:
+    def ranknorm(self) -> Self:
         """
         Rank-normalize the data values into standard normal scores.
 
