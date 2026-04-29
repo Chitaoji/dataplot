@@ -19,7 +19,7 @@ from .base import Plotter
 
 if TYPE_CHECKING:
     from ..container import AxesWrapper
-    from ..dataset import PlotDataSet
+    from ..dataset import PlottableData
 
 __all__ = ["QQPlot"]
 
@@ -31,7 +31,7 @@ class QQPlot(Plotter):
 
     """
 
-    baseline: "DistName | PlotDataSet | Any"
+    baseline: "DistName | PlottableData | Any"
     dots: int
     edge_precision: float = attr(slb=0.0, sub=0.5)
     fmt: str
