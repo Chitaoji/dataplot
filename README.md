@@ -73,7 +73,7 @@ You can think of `dataplot` as a 4-step loop:
 3. **Render** one or more `Artist` objects via plot methods.
 4. **Compose** artists into a figure and apply final figure/axes settings.
 
-### 🧮 Data Operations
+### 🔢 Data Operations
 `PlottableData` supports both arithmetic operators and built-in transforms:
 - **Arithmetic**: `+ - * / **`
 - **Log / power family**: `log()` / `log10()` / `signedlog()` / `signedlog10()` / `pow()` / `root()` / `sqrt()` / ...
