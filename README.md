@@ -40,9 +40,9 @@ fig
 ## Core Concepts
 ### `dp.data(...)`
 `dp.data(...)` is the entry point of `dataplot`.
-It converts array-like input (for example `list`, `numpy.ndarray`, `pandas.Series`, or another `PlotDataSet`) into a unified `PlotDataSet` object.
+It converts array-like input (for example `list`, `numpy.ndarray`, `pandas.Series`, or another `PlottableData`) into a unified `PlottableData` object.
 
-`PlotDataSet` is the core abstraction that carries:
+`PlottableData` is the core abstraction that carries:
 - **data values**
 - **transformation history**
 - **plot-level settings** (labels, style hints, etc.)
@@ -69,7 +69,7 @@ You can think of `dataplot` as a 4-step loop:
 4. **Compose** artists into a figure and apply final figure/axes settings.
 
 ### Data Operations
-`PlotDataSet` supports both arithmetic operators and built-in transforms:
+`PlottableData` supports both arithmetic operators and built-in transforms:
 - **Arithmetic**: `+ - * / **`
 - **Log / power family**: `log()` / `log10()` / `signedlog()` / `signedlog10()` / `pow()` / `root()` / `sqrt()` / ...
 - **Statistical transforms**: `rolling()` / `demean()` / `zscore()` / `rank(pct=True)` / `cumsum()` / `abs()`
@@ -132,18 +132,18 @@ This project falls under the BSD 3-Clause License.
 
 ## History
 ### v0.1.11
-* Added arithmetic operator support to `MultiObject` (including reflected operators), enabling element-wise math workflows for grouped `PlotDataSet` objects with length checks.
+* Added arithmetic operator support to `MultiObject` (including reflected operators), enabling element-wise math workflows for grouped `PlottableData` objects with length checks.
 * Improved numerical robustness in `utils.math` by consistently sanitizing `NaN`/`Inf` inputs and validating finite sample counts in 1D linear regression.
-* Refined `PlotDataSet.plot()` / `PlotDataSet.scatter()` x-tick handling to accept broader array-like inputs and convert them consistently.
+* Refined `PlottableData.plot()` / `PlottableData.scatter()` x-tick handling to accept broader array-like inputs and convert them consistently.
 * Added and expanded unit tests for core/container behavior and utility modules.
 
 ### v0.1.10
-* Renamed `dist_or_sample=` to `baseline=` in `PlotDataSet.qqplot()` for clearer baseline specification.
-* Removed `edge_precision=` from `PlotDataSet.ppplot()` and `PlotDataSet.ksplot()`, and refined probability-range handling in the related diagnostic plotting flow.
+* Renamed `dist_or_sample=` to `baseline=` in `PlottableData.qqplot()` for clearer baseline specification.
+* Removed `edge_precision=` from `PlottableData.ppplot()` and `PlottableData.ksplot()`, and refined probability-range handling in the related diagnostic plotting flow.
 * Improved QQ/PP plot readability by updating default axis labels and ensuring the rightmost x-axis tick label is preserved.
 
 ### v0.1.9
-* New method `PlotDataSet.rank(pct=True)` for rank transformation, supporting `pct=False` to return raw ranks.
+* New method `PlottableData.rank(pct=True)` for rank transformation, supporting `pct=False` to return raw ranks.
 * Updated scatter behavior with improved defaults and removed implicit x-axis sorting.
 * Refactored plotting APIs to remove the `ax` constructor argument for a cleaner artist construction flow.
 
@@ -156,12 +156,12 @@ This project falls under the BSD 3-Clause License.
 * Added dependency `loggings` and updated warning emission in figure setting flows.
 
 ### v0.1.7
-* `dp.data(...)` can accept `PlotDataSet` objects now.
+* `dp.data(...)` can accept `PlottableData` objects now.
 * `FigWrapper.__enter__()` now returns a copy safely via `_entered_copy`.
 * Internal maintenance and stability refinements.
 
 ### v0.1.6
-* New method `PlotDataSet.scatter()` to draw true scatter charts while keeping `PlotDataSet.plot()` as line chart behavior.
+* New method `PlottableData.scatter()` to draw true scatter charts while keeping `PlottableData.plot()` as line chart behavior.
 * Improved automatic label inference for `dp.data(...)`, plotting labels, and x-axis labels in interactive contexts.
 * Plot builders now use deferred drawing; removed `dp.show()` and improved axis/figure rendering in object representations.
 * Refined rendering stability with fixes for empty-axis cleanup and figure re-rendering in `FigWrapper.__repr__`.
@@ -174,29 +174,29 @@ This project falls under the BSD 3-Clause License.
 * Fixed issue: incorrectly displayed histogram statistics when the x-label had been modified by the user.
 
 ### v0.1.3
-* Allowed users to set the plot-settings by kwargs in artist methods like `PlotDataSet.hist()`, `PlotDataSet.plot()`, etc.
-* New operation methods `PlotDataSet.signedpow()` and `PlotDataSet.log10()`.
-* Renamed `PlotDataSet.signlog()` to `.signedlog()`; renamed `PlotDataSet.opclear()` to `.undo_all()`; removed `PlotDataSet.opclear_records_only()`.
-* New optional parameter `format_label=` for `PlotDataSet.set_plot()` to decide whether to format the label when painting on the axes.
+* Allowed users to set the plot-settings by kwargs in artist methods like `PlottableData.hist()`, `PlottableData.plot()`, etc.
+* New operation methods `PlottableData.signedpow()` and `PlottableData.log10()`.
+* Renamed `PlottableData.signlog()` to `.signedlog()`; renamed `PlottableData.opclear()` to `.undo_all()`; removed `PlottableData.opclear_records_only()`.
+* New optional parameter `format_label=` for `PlottableData.set_plot()` to decide whether to format the label when painting on the axes.
 * When defining the data classes, used *dataclasses* instead of *attrs* for a faster import.
 
 ### v0.1.2
-* New methods `PlotDataSet.corrmap()`, `PlotDataSet.ppplot()`, and `PlotDataSet.resample()`.
-* New optional parameter `fmt=` for `PlotDataSet.plot()`, `PlotDataSet.qqplot()`, `PlotDataSet.ppplot()`, and `PlotDataSet.ksplot()`.
+* New methods `PlottableData.corrmap()`, `PlottableData.ppplot()`, and `PlottableData.resample()`.
+* New optional parameter `fmt=` for `PlottableData.plot()`, `PlottableData.qqplot()`, `PlottableData.ppplot()`, and `PlottableData.ksplot()`.
 * Bugfix.
 
 ### v0.1.1
 * New module-level function `dp.show()`.
-* New methods `PlotDataSet.qqplot()`, `PlotDataSet.ksplot()` and `PlotDataSet.abs()`.
+* New methods `PlottableData.qqplot()`, `PlottableData.ksplot()` and `PlottableData.abs()`.
 * All the plotting method (e.g., `.hist()`) will now return an `Artist` object instead of None.
 * New plot settings: `grid` and `grid_alpha`.
-* Parameters of `FigWrapper.set_figure()`, `AxesWrapper.set_axes()` and `PlotDataSet.set_plot()` are keyword-only now.
+* Parameters of `FigWrapper.set_figure()`, `AxesWrapper.set_axes()` and `PlottableData.set_plot()` are keyword-only now.
 * The returns of `.set_figure()` and `.set_axes()` will be None (instead of `self`) to avoid misunderstandings.
-* New optional parameter `inplace=` for `PlotDataSet.set_plot()` to decide whether the changes will happen in-place (which is the only option before) or in a new copy.
-* Parameter `ticks=` for `PlotDataSet.plot()` can be set to a `PlotDataSet` object now.
+* New optional parameter `inplace=` for `PlottableData.set_plot()` to decide whether the changes will happen in-place (which is the only option before) or in a new copy.
+* Parameter `ticks=` for `PlottableData.plot()` can be set to a `PlottableData` object now.
 
 ### v0.1.0
-* `PlotDataSet` now supports binary operations including +, -, *, /, and **.
+* `PlottableData` now supports binary operations including +, -, *, /, and **.
 * New methods `FigWrapper.set_figure()` and `AxesWrapper.set_axes()` - use them instead of `*.set_plot()`.
 * Simplified the usage of `AxesWrapper`.
 * New plot settings: `subplots_adjust=`, `fontdict=` and `dpi=`.

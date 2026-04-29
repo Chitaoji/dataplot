@@ -17,7 +17,7 @@ from .base import Plotter
 
 if TYPE_CHECKING:
     from ..container import AxesWrapper
-    from ..dataset import PlotDataSet
+    from ..dataset import PlottableData
 
 __all__ = ["ScatterChart"]
 
@@ -29,7 +29,7 @@ class ScatterChart(Plotter):
 
     """
 
-    xticks: Optional["PlotDataSet | Any"]
+    xticks: Optional["PlottableData | Any"]
     fmt: str
 
     def paint(self, ax: "AxesWrapper", **_) -> None:

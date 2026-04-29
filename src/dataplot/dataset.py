@@ -47,11 +47,11 @@ if TYPE_CHECKING:
     from .artist import Plotter
 
 
-__all__ = ["PlotDataSet"]
+__all__ = ["PlottableData"]
 
 
 @dataclass(validate_methods=True)
-class PlotDataSet(PlotSettable, metaclass=ABCMeta):
+class PlottableData(PlotSettable, metaclass=ABCMeta):
     """
     A dataset class providing methods for mathematical operations and plotting.
 
@@ -96,7 +96,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
     @classmethod
     def __subclasshook__(cls, __subclass: type) -> bool:
-        if __subclass is PlotDataSet or issubclass(__subclass, PlotDataSets):
+        if __subclass is PlottableData or issubclass(__subclass, PlottableDatas):
             return True
         return False
 
@@ -141,45 +141,45 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         new_data = -self.data
         return self.__create(new_fmt, new_data, priority=40)
 
-    def __add__(self, __other: "float | int | PlotDataSet") -> Self:
+    def __add__(self, __other: "float | int | PlottableData") -> Self:
         return self.__binary_operation(__other, "+", np.add, priority=30)
 
-    def __radd__(self, __other: "float | int | PlotDataSet") -> Self:
+    def __radd__(self, __other: "float | int | PlottableData") -> Self:
         return self.__binary_operation(__other, "+", np.add, reverse=True, priority=30)
 
-    def __sub__(self, __other: "float | int | PlotDataSet") -> Self:
+    def __sub__(self, __other: "float | int | PlottableData") -> Self:
         return self.__binary_operation(__other, "-", np.subtract, priority=29)
 
-    def __rsub__(self, __other: "float | int | PlotDataSet") -> Self:
+    def __rsub__(self, __other: "float | int | PlottableData") -> Self:
         return self.__binary_operation(
             __other, "-", np.subtract, reverse=True, priority=29
         )
 
-    def __mul__(self, __other: "float | int | PlotDataSet") -> Self:
+    def __mul__(self, __other: "float | int | PlottableData") -> Self:
         return self.__binary_operation(__other, "*", np.multiply, priority=20)
 
-    def __rmul__(self, __other: "float | int | PlotDataSet") -> Self:
+    def __rmul__(self, __other: "float | int | PlottableData") -> Self:
         return self.__binary_operation(
             __other, "*", np.multiply, reverse=True, priority=20
         )
 
-    def __truediv__(self, __other: "float | int | PlotDataSet") -> Self:
+    def __truediv__(self, __other: "float | int | PlottableData") -> Self:
         return self.__binary_operation(__other, "/", np.true_divide, priority=19)
 
-    def __rtruediv__(self, __other: "float | int | PlotDataSet") -> Self:
+    def __rtruediv__(self, __other: "float | int | PlottableData") -> Self:
         return self.__binary_operation(
             __other, "/", np.true_divide, reverse=True, priority=19
         )
 
-    def __pow__(self, __other: "float | int | PlotDataSet") -> Self:
+    def __pow__(self, __other: "float | int | PlottableData") -> Self:
         return self.__binary_operation(__other, "**", np.power)
 
-    def __rpow__(self, __other: "float | int | PlotDataSet") -> Self:
+    def __rpow__(self, __other: "float | int | PlottableData") -> Self:
         return self.__binary_operation(__other, "**", np.power, reverse=True)
 
     def __binary_operation(
         self,
-        other: "float | int | PlotDataSet | Any",
+        other: "float | int | PlottableData | Any",
         sign: str,
         func: Callable[[Any, Any], np.ndarray],
         reverse: bool = False,
@@ -195,13 +195,13 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         if isinstance(other, (float, int)):
             new_fmt = f"({this_fmt}{sign}{other})"
             new_data = func(self.data, other)
-        elif isinstance(other, PlotDataSet):
+        elif isinstance(other, PlottableData):
             other_label = other.formatted_label(priority=priority)
             new_fmt = f"({this_fmt}{sign}{other_label})"
             new_data = func(self.data, other.data)
         else:
             raise ValueError(
-                f"{sign!r} not supported between instances of 'PlotDataSet' and "
+                f"{sign!r} not supported between instances of 'PlottableData' and "
                 f"{other.__class__.__name__!r}"
             )
         return self.__create(new_fmt, new_data, priority=priority)
@@ -245,13 +245,13 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             priority -= 1
         return self.__remove_brackets(self.fmtb.format(self.label), priority=priority)
 
-    def join(self, *others: "PlotDataSet") -> Self:
+    def join(self, *others: "PlottableData") -> Self:
         """
-        Merge two or more `PlotDataSet` instances.
+        Merge two or more `PlottableData` instances.
 
         Parameters
         ----------
-        *others : PlotDataSet
+        *others : PlottableData
             The instances to be merged.
 
         Returns
@@ -260,7 +260,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
             A new instance of self.__class__.
 
         """
-        return PlotDataSets(self, *others)
+        return PlottableDatas(self, *others)
 
     def resample(self, n: int, rule: ResampleRule = "head") -> Self:
         """
@@ -849,7 +849,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
     def batched(self, n: int = 1) -> Self:
         """
-        If this instance is joined by multiple `PlotDataSet` objects, batch the
+        If this instance is joined by multiple `PlottableData` objects, batch the
         objects into tuples of length n, otherwise return self.
 
         Use this together with `.plot()`, `.hist()`, etc.
@@ -917,7 +917,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
     def plot(
         self,
-        xticks: Optional["PlotDataSet | Any"] = None,
+        xticks: Optional["PlottableData | Any"] = None,
         fmt: str = "",
         scatter: bool = False,
         sorted: bool = False,
@@ -930,7 +930,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
         Parameters
         ----------
-        xticks : PlotDataSet | Any, optional
+        xticks : PlottableData | Any, optional
             Specifies the x-ticks for the line chart. If not provided, the x-ticks will
             be set to `range(len(data))`. By default None.
         fmt : str, optional
@@ -964,7 +964,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
     def scatter(
         self,
-        xticks: Optional["PlotDataSet | Any"] = None,
+        xticks: Optional["PlottableData | Any"] = None,
         fmt: str = "o",
         **kwargs: Unpack[SettingDict],
     ) -> Artist:
@@ -974,7 +974,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
         Parameters
         ----------
-        xticks : PlotDataSet | Any, optional
+        xticks : PlottableData | Any, optional
             Specifies the x-ticks for the chart. If not provided, the x-ticks will
             be set to `range(len(data))`. By default None.
         fmt : str, optional
@@ -997,7 +997,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
     def qqplot(
         self,
-        baseline: "DistName | PlotDataSet | Any" = "normal",
+        baseline: "DistName | PlottableData | Any" = "normal",
         dots: int = 30,
         edge_precision: float = 1e-2,
         fmt: str = "o",
@@ -1008,9 +1008,9 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
         Parameters
         ----------
-        baseline : DistName | PlotDataSet | Any, optional
+        baseline : DistName | PlottableData | Any, optional
             Specifies the distribution to compare with. If str, specifies a
-            theoretical distribution; if PlotDataSet or Any, specifies another
+            theoretical distribution; if PlottableData or Any, specifies another
             sample. By default 'normal'.
         dots : int, optional
             Number of dots, by default 30.
@@ -1032,7 +1032,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
     def ppplot(
         self,
-        baseline: "DistName | PlotDataSet | Any" = "normal",
+        baseline: "DistName | PlottableData | Any" = "normal",
         dots: int = 30,
         fmt: str = "o",
         **kwargs: Unpack[SettingDict],
@@ -1042,9 +1042,9 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
         Parameters
         ----------
-        baseline : DistName | PlotDataSet | Any, optional
+        baseline : DistName | PlottableData | Any, optional
             Specifies the distribution to compare with. If str, specifies a
-            theoretical distribution; if PlotDataSet or Any, specifies another
+            theoretical distribution; if PlottableData or Any, specifies another
             sample. By default 'normal'.
         dots : int, optional
             Number of dots, by default 30.
@@ -1064,7 +1064,7 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
     def ksplot(
         self,
-        baseline: "DistName | PlotDataSet | Any" = "normal",
+        baseline: "DistName | PlottableData | Any" = "normal",
         dots: int = 1000,
         fmt: str = "",
         **kwargs: Unpack[SettingDict],
@@ -1074,9 +1074,9 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
 
         Parameters
         ----------
-        baseline : DistName | PlotDataSet | Any, optional
+        baseline : DistName | PlottableData | Any, optional
             Specifies the distribution to compare with. If str, specifies a
-            theoretical distribution; if np.ndarray or PlotDataSet, specifies
+            theoretical distribution; if np.ndarray or PlottableData, specifies
             another real sample. By default 'normal'.
         dots : int, optional
             Number of dots, by default 1000.
@@ -1134,17 +1134,17 @@ class PlotDataSet(PlotSettable, metaclass=ABCMeta):
         return artist
 
 
-class PlotDataSets(MultiObject[PlotDataSet]):
-    """A duck subclass of `PlotDataSet`."""
+class PlottableDatas(MultiObject[PlottableData]):
+    """A duck subclass of `PlottableData`."""
 
     def __init__(self, *args: Any) -> None:
         if not args:
             raise ValueError("no args")
-        objs: list[PlotDataSet] = []
+        objs: list[PlottableData] = []
         for a in args:
             if isinstance(a, self.__class__):
                 objs.extend(a.__multiobjects__)
-            elif isinstance(a, PlotDataSet):
+            elif isinstance(a, PlottableData):
                 objs.append(a)
             else:
                 raise TypeError(f"invalid type: {a.__class__.__name__!r}")
@@ -1152,14 +1152,14 @@ class PlotDataSets(MultiObject[PlotDataSet]):
 
     def __repr__(self) -> str:
         data_info = "\n- ".join([x.data_info() for x in self.__multiobjects__])
-        return f"{PlotDataSet.__name__}\n- {data_info}"
+        return f"{PlottableData.__name__}\n- {data_info}"
 
     def batched(self, n: int = 1) -> MultiObject:
-        """Overrides `PlotDataSet.batched()`."""
-        PlotDataSet.batched(self, n)
+        """Overrides `PlottableData.batched()`."""
+        PlottableData.batched(self, n)
         m = MultiObject()
         for i in range(0, len(self.__multiobjects__), n):
-            m.__multiobjects__.append(PlotDataSets(*self.__multiobjects__[i : i + n]))
+            m.__multiobjects__.append(PlottableDatas(*self.__multiobjects__[i : i + n]))
         return m
 
     def __dataset_attr_reducer(self, n: str) -> Callable:
@@ -1175,7 +1175,7 @@ class PlotDataSets(MultiObject[PlotDataSet]):
                 | "join"
                 | "_get_artist"
             ):
-                return lambda _: partial(getattr(PlotDataSet, n), self)
+                return lambda _: partial(getattr(PlottableData, n), self)
             case "customize":
                 return multipartial(
                     call_reducer=multipartial(
@@ -1191,7 +1191,7 @@ class PlotDataSets(MultiObject[PlotDataSet]):
 
     @classmethod
     def __join_if_dataset(cls, x: list) -> Any:
-        if x and isinstance(x[0], PlotDataSet):
+        if x and isinstance(x[0], PlottableData):
             return cls(*x)
         if all(i is None for i in x):
             return None
