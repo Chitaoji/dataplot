@@ -35,17 +35,17 @@ class TestCoreAndContainer(unittest.TestCase):
 
     def test_data_returns_single_and_multiple_datasets_with_labels(self):
         x = [1, 2, 3]
-        ds_single = data(x, label="my_x")
-        self.assertEqual(ds_single.label, "my_x")
+        ds_single = data(x, name="my_x")
+        self.assertEqual(ds_single.name, "my_x")
 
-        ds_multi = data([1, 2], [3, 4], label=["a", "b"])
-        self.assertEqual([d.label for d in ds_multi.__multiobjects__], ["a", "b"])
+        ds_multi = data([1, 2], [3, 4], name=["a", "b"])
+        self.assertEqual([d.name for d in ds_multi.__multiobjects__], ["a", "b"])
 
     def test_data_label_validation_errors(self):
         with self.assertRaises(ValueError):
-            data([1, 2], [3, 4], label="single-label")
+            data([1, 2], [3, 4], name="single-label")
         with self.assertRaises(ValueError):
-            data([1, 2], label=["too", "many"])
+            data([1, 2], name=["too", "many"])
 
     def test_figure_auto_grid_shape(self):
         fig1 = figure()

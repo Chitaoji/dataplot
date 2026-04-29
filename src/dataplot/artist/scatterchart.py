@@ -51,7 +51,7 @@ class ScatterChart(Plotter):
                 f"lengths {len_t} and {len_d}"
             )
 
-        ax.ax.plot(xticks, self.data, self.fmt, linestyle="None", label=self.label)
+        ax.ax.plot(xticks, self.data, self.fmt, linestyle="None", label=self.name)
         self.__ensure_rightmost_xtick_label(ax, xticks)
 
     def __ensure_rightmost_xtick_label(self, ax: "AxesWrapper", xticks) -> None:

@@ -55,7 +55,7 @@ def _infer_var_names(*values: Any) -> list[Optional[str]]:
     if search_frame is None:
         return [None] * len(values)
 
-    labels: list[Optional[str]] = []
+    names: list[Optional[str]] = []
     try:
         for value in values:
             name = None
@@ -67,10 +67,10 @@ def _infer_var_names(*values: Any) -> list[Optional[str]]:
                 if name is None:
                     name = next((k for k, v in global_items if v is value), None)
                 current = current.f_back
-            labels.append(name)
+            names.append(name)
     finally:
         del search_frame
-    return labels
+    return names
 
 
 def _infer_assigned_name() -> Optional[str]:
@@ -125,7 +125,7 @@ def _infer_assigned_name() -> Optional[str]:
 
 
 @validate
-def data(*x: Any, label: Optional[str | list[str]] = None) -> PlottableData:
+def data(*x: Any, name: Optional[str | list[str]] = None) -> PlottableData:
     """
     Initializes a dataset interface which provides methods for mathematical
     operations and plotting.
@@ -135,11 +135,11 @@ def data(*x: Any, label: Optional[str | list[str]] = None) -> PlottableData:
     *x : np.ndarray | Any
         Input values, this takes one or multiple arrays, with each array
         representing a dataset.
-    label : str | list[str], optional
-        Label(s) of the data, this takes either a single string or a list of strings.
+    name : str | list[str], optional
+        Name(s) of the data, this takes either a single string or a list of strings.
         If a list, should be the same length as the number of input arrays, with
         each element corresponding to a specific array in `x`. If set to None,
-        use "x{i}" (i = 1, 2. 3, ...) as the label(s). By default None.
+        use "x{i}" (i = 1, 2. 3, ...) as the name(s). By default None.
 
     Returns
     -------
@@ -169,39 +169,37 @@ def data(*x: Any, label: Optional[str | list[str]] = None) -> PlottableData:
             normalized_data.append(np.array(value))
 
     if len(expanded_data) > 1:
-        if label is None:
-            label = []
+        if name is None:
+            name = []
             for i, (d, inferred_name) in enumerate(
                 zip(expanded_data, expanded_names), start=1
             ):
                 if isinstance(d, PlottableData):
-                    label.append(d.formatted_label())
+                    name.append(d.formatted_name())
                 else:
-                    label.append(
-                        inferred_name if inferred_name is not None else f"x{i}"
-                    )
-        elif isinstance(label, str):
+                    name.append(inferred_name if inferred_name is not None else f"x{i}")
+        elif isinstance(name, str):
             raise ValueError(
-                "for multiple datasets, please provide labels as a list of strings"
+                "for multiple datasets, please provide names as a list of strings"
             )
-        elif len(label) != len(expanded_data):
-            raise ValueError(f"expected {len(expanded_data)} labels, got {len(label)}")
-        datas = [PlottableData(d, lb) for d, lb in zip(normalized_data, label)]
+        elif len(name) != len(expanded_data):
+            raise ValueError(f"expected {len(expanded_data)} names, got {len(name)}")
+        datas = [PlottableData(d, lb) for d, lb in zip(normalized_data, name)]
         return PlottableDataSet(*datas)
 
-    if isinstance(label, list):
+    if isinstance(name, list):
         raise ValueError(
-            "it seems not necessary to provide a list of labels, since "
+            "it seems not necessary to provide a list of names, since "
             "the data has only one dimension"
         )
-    if label is None:
-        original_label = (
-            expanded_data[0].label
+    if name is None:
+        original_name = (
+            expanded_data[0].name
             if isinstance(expanded_data[0], PlottableData)
             else None
         )
-        label = original_label or _infer_assigned_name() or expanded_names[0] or "x1"
-    return PlottableData(normalized_data[0], label=label)
+        name = original_name or _infer_assigned_name() or expanded_names[0] or "x1"
+    return PlottableData(normalized_data[0], name=name)
 
 
 @validate

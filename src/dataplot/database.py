@@ -110,7 +110,7 @@ class Data(metaclass=ABCMeta):
             )
         if isinstance(other, Data):
             return self._create_data(
-                f"({this_fmt}{sign}{other.formatted_label(priority=priority)})",
+                f"({this_fmt}{sign}{other.formatted_name(priority=priority)})",
                 func(self.data, other.data),
                 priority,
             )
@@ -142,14 +142,14 @@ class Data(metaclass=ABCMeta):
         Returns
         -------
         str
-            Label format.
+            Format string.
 
         """
         return self.__remove_brackets(self.fmtb)
 
-    def formatted_label(self, priority: int = 0) -> str:
+    def formatted_name(self, priority: int = 0) -> str:
         """
-        Return the label formatted by `self.format`.
+        Return the data name formatted by `self.format`.
 
         Parameters
         ----------
@@ -159,7 +159,7 @@ class Data(metaclass=ABCMeta):
         Returns
         -------
         str
-            Formatted label.
+            Formatted name.
 
         """
         if priority == self.priority and priority in (19, 29):

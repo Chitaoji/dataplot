@@ -66,18 +66,18 @@ class LineChart(Plotter):
 
         rolling_list = self.__normalize_rolling(self.rolling)
         if rolling_list is None:
-            data_and_labels = [(data_array, self.label)]
+            data_and_names = [(data_array, self.name)]
         else:
-            data_and_labels = [
+            data_and_names = [
                 (
                     self.__rolling_mean(data_array, window),
-                    f"rolling({self.label}, {window})" if window > 1 else self.label,
+                    f"rolling({self.name}, {window})" if window > 1 else self.name,
                 )
                 for window in rolling_list
             ]
 
-        for rolling_data, label in data_and_labels:
-            ax.ax.plot(xticks, rolling_data, self.fmt, label=label)
+        for rolling_data, name in data_and_names:
+            ax.ax.plot(xticks, rolling_data, self.fmt, label=name)
             if self.scatter:
                 ax.ax.scatter(xticks, rolling_data, zorder=2.0)
 

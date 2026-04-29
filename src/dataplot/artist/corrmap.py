@@ -39,19 +39,19 @@ class CorrMap(Plotter):
         __multi_is_final__: bool = True,
     ) -> tuple[list[np.ndarray], list[str]]:
         if __multi_prev_returned__ is None:
-            arrays, labels = [], []
+            arrays, names = [], []
         else:
-            arrays, labels = __multi_prev_returned__
+            arrays, names = __multi_prev_returned__
         arrays.append(self.data)
-        labels.append(self.label)
+        names.append(self.name)
         if __multi_is_final__:
             ax.set_axes(title=ax.get_setting("title", "Correlation Heatmap"))
             ax.load(self.settings)
-            self.__plot(ax, arrays, labels)
-        return arrays, labels
+            self.__plot(ax, arrays, names)
+        return arrays, names
 
     def __plot(
-        self, ax: "AxesWrapper", arrays: list[np.ndarray], labels: list[str]
+        self, ax: "AxesWrapper", arrays: list[np.ndarray], names: list[str]
     ) -> None:
-        corr = pd.DataFrame(arrays, index=labels).T.corr()
+        corr = pd.DataFrame(arrays, index=names).T.corr()
         sns.heatmap(corr, ax=ax.ax, annot=self.annot)
