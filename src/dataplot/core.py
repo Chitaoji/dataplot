@@ -18,7 +18,7 @@ from validating import validate
 
 from ._typing import FigureSettingDict
 from .container import FigWrapper
-from .dataset import PlotDataSet, PlotDataSets
+from .plottable import PlottableData, PlottableDataSet
 
 if TYPE_CHECKING:
     from .artist import Artist
@@ -125,7 +125,7 @@ def _infer_assigned_name() -> Optional[str]:
 
 
 @validate
-def data(*x: Any, label: Optional[str | list[str]] = None) -> PlotDataSet:
+def data(*x: Any, label: Optional[str | list[str]] = None) -> PlottableData:
     """
     Initializes a dataset interface which provides methods for mathematical
     operations and plotting.
@@ -143,7 +143,7 @@ def data(*x: Any, label: Optional[str | list[str]] = None) -> PlotDataSet:
 
     Returns
     -------
-    PlotDataSet
+    PlottableData
         Provides methods for mathematical operations and plotting.
 
     """
@@ -154,7 +154,7 @@ def data(*x: Any, label: Optional[str | list[str]] = None) -> PlotDataSet:
     expanded_names: list[Optional[str]] = []
     inferred_names = _infer_var_names(*x)
     for i, value in enumerate(x):
-        if isinstance(value, PlotDataSets):
+        if isinstance(value, PlottableDataSet):
             expanded_data.extend(value.__multiobjects__)
             expanded_names.extend([None] * len(value.__multiobjects__))
         else:
@@ -163,7 +163,7 @@ def data(*x: Any, label: Optional[str | list[str]] = None) -> PlotDataSet:
 
     normalized_data: list[np.ndarray] = []
     for value in expanded_data:
-        if isinstance(value, PlotDataSet):
+        if isinstance(value, PlottableData):
             normalized_data.append(np.array(value.data))
         else:
             normalized_data.append(np.array(value))
@@ -174,7 +174,7 @@ def data(*x: Any, label: Optional[str | list[str]] = None) -> PlotDataSet:
             for i, (d, inferred_name) in enumerate(
                 zip(expanded_data, expanded_names), start=1
             ):
-                if isinstance(d, PlotDataSet):
+                if isinstance(d, PlottableData):
                     label.append(d.formatted_label())
                 else:
                     label.append(
@@ -186,8 +186,8 @@ def data(*x: Any, label: Optional[str | list[str]] = None) -> PlotDataSet:
             )
         elif len(label) != len(expanded_data):
             raise ValueError(f"expected {len(expanded_data)} labels, got {len(label)}")
-        datas = [PlotDataSet(d, lb) for d, lb in zip(normalized_data, label)]
-        return PlotDataSets(*datas)
+        datas = [PlottableData(d, lb) for d, lb in zip(normalized_data, label)]
+        return PlottableDataSet(*datas)
 
     if isinstance(label, list):
         raise ValueError(
@@ -197,11 +197,11 @@ def data(*x: Any, label: Optional[str | list[str]] = None) -> PlotDataSet:
     if label is None:
         original_label = (
             expanded_data[0].label
-            if isinstance(expanded_data[0], PlotDataSet)
+            if isinstance(expanded_data[0], PlottableData)
             else None
         )
         label = original_label or _infer_assigned_name() or expanded_names[0] or "x1"
-    return PlotDataSet(normalized_data[0], label=label)
+    return PlottableData(normalized_data[0], label=label)
 
 
 @validate

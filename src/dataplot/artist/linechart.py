@@ -18,7 +18,7 @@ from .base import Plotter
 
 if TYPE_CHECKING:
     from ..container import AxesWrapper
-    from ..dataset import PlotDataSet
+    from ..plottable import PlottableData
 
 __all__ = ["LineChart"]
 
@@ -30,7 +30,7 @@ class LineChart(Plotter):
 
     """
 
-    xticks: Optional["PlotDataSet | Any"]
+    xticks: Optional["PlottableData | Any"]
     fmt: str
     scatter: bool
     sorted: bool

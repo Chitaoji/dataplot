@@ -27,10 +27,6 @@ def linear_regression_1d(y: np.ndarray, x: np.ndarray) -> tuple[float, float]:
         The regression coefficients (a, b).
 
     """
-    x, y = (
-        np.nan_to_num(x, nan=np.nan, posinf=np.nan, neginf=np.nan),
-        np.nan_to_num(y, nan=np.nan, posinf=np.nan, neginf=np.nan),
-    )
     nanmask = np.isfinite(x) & np.isfinite(y)
     if nanmask.sum() < 2:
         raise ValueError("too few finite-values for x and y")
