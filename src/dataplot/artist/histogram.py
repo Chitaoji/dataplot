@@ -71,7 +71,7 @@ class Histogram(Plotter):
             density=self.density,
             log=self.log,
             alpha=ax.settings.alpha,
-            label=self.label,
+            label=self.name,
         )
         mean, std = np.nanmean(self.data), np.nanstd(self.data)
         skew: float = stats.skew(self.data, bias=False, nan_policy="omit")
@@ -82,13 +82,13 @@ class Histogram(Plotter):
                 bin_list,
                 fit_curve,
                 alpha=ax.settings.alpha,
-                label=f"{self.label} · fit",
+                label=f"{self.name} · fit",
             )
 
         # Disable matplotlib's default horizontal margins for tighter x-limits.
         ax.ax.margins(x=0)
         return (
-            f"{self.label}: mean={mean:.3f}, std={std:.3f}, skew={skew:.3f}, "
+            f"{self.name}: mean={mean:.3f}, std={std:.3f}, skew={skew:.3f}, "
             f"kurt={kurt:.3f}",
             bin_list,
         )

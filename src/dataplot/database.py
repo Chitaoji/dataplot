@@ -15,16 +15,36 @@ __all__ = ["Data"]
 
 @dataclass(validate_methods=True)
 class Data(metaclass=ABCMeta):
-    """Calculation-focused base class for plottable datasets."""
+    """Calculation-focused base class for plottable datasets.
+
+    Attributes
+    ----------
+    fmtb : str
+        Format with brackets.
+    original_data : np.ndarray
+        The original data array.
+    priority : int
+        Priority of the latest mathmatical operation, where:
+        -  0 : is the highest priority, refering to `repr()` and some unary operations.
+        - 10 : refers to binary operations that are prior to / (e.g., **).
+        - 19 : particularly refers to /.
+        - 20 : particularly refers to *.
+        - 29 : particularly refers to binary -.
+        - 30 : particularly refers to +.
+        - 40 : particularly refers to unary -.
+        * Note that / and binary - are distinguished from * or + because the
+        former ones disobey the associative law.
+
+    """
 
     data: np.ndarray
-    label: Optional[str] = attr(default=None)
+    name: Optional[str] = attr(default=None)
     fmtb: str = attr(init=False, default="{0}")
     original_data: np.ndarray = attr(init=False)
     priority: int = attr(init=False, default=0)
 
     def __post_init__(self) -> None:
-        self.label = "x" if self.label is None else self.label
+        self.name = "x" if self.name is None else self.name
         self.original_data = self.data
 
     def __getitem__(self, __key: int):
@@ -90,12 +110,13 @@ class Data(metaclass=ABCMeta):
             )
         if isinstance(other, Data):
             return self._create_data(
-                f"({this_fmt}{sign}{other.formatted_label(priority=priority)})",
+                f"({this_fmt}{sign}{other.formatted_name(priority=priority)})",
                 func(self.data, other.data),
                 priority,
             )
         raise ValueError(
-            f"{sign!r} not supported between instances of 'Data' and {other.__class__.__name__!r}"
+            f"{sign!r} not supported between instances of 'Data' "
+            f"and {other.__class__.__name__!r}"
         )
 
     def __remove_brackets(self, string: str, priority: int = 0):
@@ -105,9 +126,9 @@ class Data(metaclass=ABCMeta):
         return string
 
     def _create_data(
-        self, fmt: str, data: np.ndarray, priority: int = 0, label: Optional[str] = None
+        self, fmt: str, data: np.ndarray, priority: int = 0, name: Optional[str] = None
     ) -> Self:
-        obj = self.__class__(self.original_data, self.label if label is None else label)
+        obj = self.__class__(self.original_data, self.name if name is None else name)
         obj.fmtb = fmt
         obj.priority = priority
         obj.data = data
@@ -116,20 +137,19 @@ class Data(metaclass=ABCMeta):
     @property
     def format(self) -> str:
         """
-        Return the label format.
+        Return a format string recording the mathmatical operations done on the data.
 
         Returns
         -------
         str
-            Label format.
+            Format string.
 
         """
         return self.__remove_brackets(self.fmtb)
 
-    def formatted_label(self, priority: int = 0) -> str:
+    def formatted_name(self, priority: int = 0) -> str:
         """
-        Return the formatted label, but remove the pair of brackets at both ends
-        of the string if neccessary.
+        Return the data name formatted by `self.format`.
 
         Parameters
         ----------
@@ -139,12 +159,12 @@ class Data(metaclass=ABCMeta):
         Returns
         -------
         str
-            Formatted label.
+            Formatted name.
 
         """
         if priority == self.priority and priority in (19, 29):
             priority -= 1
-        return self.__remove_brackets(self.fmtb.format(self.label), priority=priority)
+        return self.__remove_brackets(self.fmtb.format(self.name), priority=priority)
 
     def resample(self, n: int, rule: ResampleRule = "head") -> Self:
         """
@@ -162,11 +182,6 @@ class Data(metaclass=ABCMeta):
         Self
             A new instance of self.__class__.
 
-        Raises
-        ------
-        ValueError
-            Raised when receiving illegal rule.
-
         """
         match rule:
             case "random":
@@ -176,8 +191,6 @@ class Data(metaclass=ABCMeta):
                 new_data = self.data[:n]
             case "tail":
                 new_data = self.data[-n:]
-            case _:
-                raise ValueError(f"rule not supported: {rule!r}")
         return self._create_data(f"resample({self.format}, {n})", new_data)
 
     def rank(self, pct: bool = True) -> Self:
@@ -217,7 +230,7 @@ class Data(metaclass=ABCMeta):
         new_fmt = f"rank({self.format}, pct=True)" if pct else f"rank({self.format})"
         return self._create_data(new_fmt, ranks)
 
-    def normrank(self) -> Self:
+    def ranknorm(self) -> Self:
         """
         Rank-normalize the data values into standard normal scores.
 
@@ -359,38 +372,18 @@ class Data(metaclass=ABCMeta):
         Parameters
         ----------
         n : int, optional
-            Root degree, by default 2.
+            Root degree, must be a positive integer. By default 2.
 
         Returns
         -------
         Self
             A new instance of self.__class__.
 
-        Raises
-        ------
-        ValueError
-            Raised when n is zero.
-
         """
-        if n == 0:
-            raise ValueError("root degree must not be zero")
+        assert n > 0
         return self._create_data(
             f"root({self.format}, {n})", np.power(self.data, 1 / n)
         )
-
-    def sqrt(self) -> Self:
-        """
-        Perform a square-root operation on the data.
-
-        Equivalent to calling `root(2)`.
-
-        Returns
-        -------
-        Self
-            A new instance of self.__class__.
-
-        """
-        return self.root(2)
 
     def signedroot(self, n: int = 2) -> Self:
         """
@@ -405,26 +398,34 @@ class Data(metaclass=ABCMeta):
         Parameters
         ----------
         n : int, optional
-            Root degree, by default 2.
+            Root degree, must be a positive integer. By default 2.
 
         Returns
         -------
         Self
             A new instance of self.__class__.
 
-        Raises
-        ------
-        ValueError
-            Raised when n is zero.
-
         """
-        if n == 0:
-            raise ValueError("root degree must not be zero")
+        assert n > 0
         power = 1 / n
         new_data = np.power(np.where(self.data > 0, self.data, np.nan), power)
         new_data[self.data < 0] = -np.power(-self.data[self.data < 0], power)
         new_data[self.data == 0] = 0
         return self._create_data(f"signedroot({self.format}, {n})", new_data)
+
+    def sqrt(self) -> Self:
+        """
+        Perform a square-root operation on the data.
+
+        Equivalent to calling `root(2)`.
+
+        Returns
+        -------
+        Self
+            A new instance of self.__class__.
+
+        """
+        return self.root(2)
 
     def signedsqrt(self) -> Self:
         """
@@ -456,8 +457,7 @@ class Data(metaclass=ABCMeta):
             A new instance of self.__class__.
 
         """
-        if n < 1:
-            raise ValueError(f"rolling window must be a positive integer, got {n}")
+        assert n > 0
         new_data = np.convolve(
             np.asarray(self.data, dtype=float), np.ones(n, dtype=float), mode="full"
         )[: len(self.data)] / np.minimum(np.arange(1, len(self.data) + 1), n)

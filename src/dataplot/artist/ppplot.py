@@ -40,7 +40,7 @@ class PPPlot(QQPlot):
     def __plot(self, ax: "AxesWrapper") -> None:
         xlabel, p1, q = self._generate_dist(use_edge_precision=False)
         p2 = get_prob(self.data, q)
-        ax.ax.plot(p1, p2, self.fmt, zorder=2.1, label=f"{self.label} & {xlabel}")
+        ax.ax.plot(p1, p2, self.fmt, zorder=2.1, label=f"{self.name} & {xlabel}")
         ax.ax.set_xlim(0, 1)
         ax.ax.set_ylim(0, 1)
         ax.ax.yaxis.set_major_formatter(

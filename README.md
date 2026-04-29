@@ -3,12 +3,17 @@ Provides plotting tools useful in datascience.
 
 A lightweight plotting library for data science that unifies data transformation and plotting in a single chainable API. `dataplot` is designed for fast exploration, teaching demos, and script-based analysis workflows.
 
-## Installation
+## 🛠️ Installation
 ```sh
 $ pip install dataplot
 ```
 
-## Features
+## 📦 Requirements
+```txt
+numpy, pandas, scipy, matplotlib, seaborn, validating, lazyr, loggings
+```
+
+## ✨ Features
 `dataplot` focuses on an **analysis-first plotting workflow**: data processing and visual diagnostics are written in one concise chain.
 
 | Capability | What it gives you | Typical API |
@@ -22,13 +27,13 @@ $ pip install dataplot
 
 In short: **less boilerplate, clearer analysis flow, and more reusable plotting code**.
 
-## Quick Start
+## 🚀 Quick Start
 ```py
 import dataplot as dp
 import numpy as np
 
 raw = np.random.randn(300)
-x = dp.data(raw, label="daily_return")
+x = dp.data(raw, name="daily_return")
 
 artist1 = x.hist(bins=30, alpha=0.7)
 artist2 = x.qqplot(baseline="normal")
@@ -37,8 +42,8 @@ fig = dp.figure(artist1, artist2, title="Distribution diagnostics")
 fig
 ```
 
-## Core Concepts
-### `dp.data(...)`
+## 🧠 Core Concepts
+### 📥 `dp.data(...)`
 `dp.data(...)` is the entry point of `dataplot`.
 It converts array-like input (for example `list`, `numpy.ndarray`, `pandas.Series`, or another `PlottableData`) into a unified `PlottableData` object.
 
@@ -54,10 +59,10 @@ import dataplot as dp
 import numpy as np
 
 raw = np.random.randn(300)
-x = dp.data(raw, label="daily_return")
+x = dp.data(raw, name="daily_return")
 ```
 
-### Typical Workflow
+### 🔄 Typical Workflow
 ```text
 Raw data -> dp.data(...) -> transform chain -> artist(s) -> dp.figure(...)
 ```
@@ -68,7 +73,7 @@ You can think of `dataplot` as a 4-step loop:
 3. **Render** one or more `Artist` objects via plot methods.
 4. **Compose** artists into a figure and apply final figure/axes settings.
 
-### Data Operations
+### 🔢 Data Operations
 `PlottableData` supports both arithmetic operators and built-in transforms:
 - **Arithmetic**: `+ - * / **`
 - **Log / power family**: `log()` / `log10()` / `signedlog()` / `signedlog10()` / `pow()` / `root()` / `sqrt()` / ...
@@ -81,7 +86,7 @@ Operations are chainable, which is useful for quick experimentation:
 x.zscore().rolling(5).rank(pct=True)
 ```
 
-### Plot Methods
+### 📈 Plot Methods
 Every plot method returns an `Artist` object instead of drawing immediately.
 This enables deferred composition and clean multi-panel figure assembly:
 - **Distribution**: `hist(...)`
@@ -99,7 +104,7 @@ fig = dp.figure(artist1, artist2, title="Distribution diagnostics")
 fig  # show both plots
 ```
 
-### Plot Settings
+### ⚙️ Plot Settings
 Common settings:
 - `title`, `xlabel`, `ylabel`
 - `alpha`, `grid`, `grid_alpha`
@@ -108,29 +113,22 @@ Common settings:
 - `subplots_adjust`
 - `reference_lines` (for example: `"y=x"`, `"y=0"`, `"x=1"`)
 
-## Requirements
-```txt
-validating
-lazyr
-loggings
-matplotlib
-numpy
-pandas
-scipy
-seaborn
-```
-
-## See Also
+## 🔗 See Also
 ### Github repository
 * https://github.com/Chitaoji/dataplot/
 
 ### PyPI project
 * https://pypi.org/project/dataplot/
 
-## License
+## ⚖️ License
 This project falls under the BSD 3-Clause License.
 
-## History
+## 🕒 History
+### v0.1.13
+* Removed the legacy `label` alias from `Data`/`PlottableData` internals and completed the naming shift to `name` for a more consistent API.
+* Renamed `normrank()` to `ranknorm()` for method-name consistency with existing rank-normalization terminology.
+* Refined README presentation with updated section icons and clearer visual structure.
+
 ### v0.1.12
 * Added rank-normalization support via `PlottableData.ranknorm(...)`, using normal-quantile mapping for percentile ranks.
 * Optimized rank computation by vectorizing tie handling in `PlottableData.rank(...)`.

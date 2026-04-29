@@ -61,28 +61,8 @@ class PlottableData(Data, PlotSettable, metaclass=ABCMeta):
     ----------
     data : np.ndarray
         Input data.
-    label : str, optional
-        Label of the data. If set to None, use "x" as the label. By default None.
-
-    Properties
-    ----------
-    fmt : str
-        A string recording the mathmatical operations done on the data.
-    original_data : np.ndarray
-        Original input data.
-    settings : PlotSettings
-        Settings for plot (whether a figure or an axes).
-    priority : int
-        Priority of the latest mathmatical operation, where:
-        0 : Highest priority, refering to `repr()` and some of unary operations;
-        10 : Refers to binary operations that are prior to / (e.g., **);
-        19 : Particularly refers to /;
-        20 : Particularly refers to *;
-        29 : Particularly refers to binary -;
-        30 : Particularly refers to +;
-        40 : Particularly refers to unary -.
-            Note that / and binary - are distinguished from * or + because the
-            former ones disobey the associative law.
+    name : str, optional
+        Name of the data. If set to None, use "x" as the default. By default None.
 
     """
 
@@ -96,17 +76,9 @@ class PlottableData(Data, PlotSettable, metaclass=ABCMeta):
         return self.__class__.__name__ + "\n- " + self.data_info()
 
     def data_info(self) -> str:
-        """
-        Information of dataset.
-
-        Returns
-        -------
-        str
-            A string indicating the data label and the plot settings.
-
-        """
+        """Information of data."""
         not_none = self.settings._repr_changes()
-        return f"{self.formatted_label()}{': ' if not_none else ''}{not_none}"
+        return f"{self.formatted_name()}{': ' if not_none else ''}{not_none}"
 
     def join(self, *others: "PlottableData") -> Self:
         """
@@ -142,22 +114,22 @@ class PlottableData(Data, PlotSettable, metaclass=ABCMeta):
         obj.settings.reset()
         return obj
 
-    def set_label(
-        self, label: Optional[str] = None, reset_format: bool = True, /, **kwargs: str
+    def set_names(
+        self, name: Optional[str] = None, reset_format: bool = True, /, **kwargs: str
     ) -> Self:
         """
-        Set the labels.
+        Set the data names.
 
         Parameters
         ----------
-        label : str, optional
-            The new label (if specified), by default None.
+        name : str, optional
+            The new name (if specified), by default None.
         reset_format : bool, optional
-            Determines whether to reset the format of the label (which shows
+            Determines whether to reset the format of the name (which shows
             the operations done on the data), by default True.
         **kwargs : str
-            Works as a mapper to find the new label. If `self.label` is in
-            `kwargs`, the label will be set to `kwargs[self.label]`.
+            Works as a mapper to find the new name. If `self.name` is in
+            `kwargs`, the name will be set to `kwargs[self.name]`.
 
         Returns
         -------
@@ -165,17 +137,17 @@ class PlottableData(Data, PlotSettable, metaclass=ABCMeta):
             A new instance of self.__class__.
 
         """
-        if isinstance(label, str):
-            new_label = label
-        elif self.label in kwargs:
-            new_label = kwargs[self.label]
+        if isinstance(name, str):
+            new_name = name
+        elif self.name in kwargs:
+            new_name = kwargs[self.name]
         else:
-            new_label = self.label
+            new_name = self.name
         return self._create_data(
             "{0}" if reset_format else self.fmtb,
             self.data,
             priority=self.priority,
-            label=new_label,
+            name=new_name,
         )
 
     @overload
@@ -222,9 +194,6 @@ class PlottableData(Data, PlotSettable, metaclass=ABCMeta):
             A dictionary controlling the appearance of the title text.
         legend_loc : LegendLoc, optional
             Location of the legend.
-        format_label : bool, optional
-            Determines whether to format the label (to show the operations done
-            on the data).
         subplots_adjust : SubplotDict, optional
             Adjusts the subplot layout parameters including: left, right, bottom,
             top, wspace, and hspace. See `SubplotDict` for more details.
@@ -351,10 +320,7 @@ class PlottableData(Data, PlotSettable, metaclass=ABCMeta):
 
         """
         if isinstance(xticks, PlotSettable) and "xlabel" not in kwargs:
-            if kwargs.get("format_label", True):
-                kwargs["xlabel"] = xticks.formatted_label()
-            else:
-                kwargs["xlabel"] = xticks.label
+            kwargs["xlabel"] = xticks.formatted_name()
         return self._get_artist(LineChart, locals())
 
     def scatter(
@@ -384,10 +350,7 @@ class PlottableData(Data, PlotSettable, metaclass=ABCMeta):
 
         """
         if isinstance(xticks, PlotSettable) and "xlabel" not in kwargs:
-            if kwargs.get("format_label", True):
-                kwargs["xlabel"] = xticks.formatted_label()
-            else:
-                kwargs["xlabel"] = xticks.label
+            kwargs["xlabel"] = xticks.formatted_name()
         return self._get_artist(ScatterChart, locals())
 
     def qqplot(
@@ -517,11 +480,9 @@ class PlottableData(Data, PlotSettable, metaclass=ABCMeta):
         params: dict[str, Any] = {}
         for key in cls.__init__.__code__.co_varnames[1:]:
             params[key] = local[key]
-        if "format_label" in local["kwargs"] and not local["kwargs"]["format_label"]:
-            label = self.label
-        else:
-            label = self.formatted_label()
-        plotter = self.customize(cls, data=self.data, label=label, **params)
+        plotter = self.customize(
+            cls, data=self.data, name=self.formatted_name(), **params
+        )
         artist = single(self.customize)(Artist, plotter=plotter)
         if local["kwargs"]:
             artist.plotter.load(local["kwargs"])
@@ -529,12 +490,12 @@ class PlottableData(Data, PlotSettable, metaclass=ABCMeta):
         return artist
 
     def _create_data(
-        self, fmt: str, data: np.ndarray, priority: int = 0, label: Optional[str] = None
+        self, fmt: str, data: np.ndarray, priority: int = 0, name: Optional[str] = None
     ) -> Self:
         obj = self.customize(
             self.__class__,
             self.original_data,
-            self.label if label is None else label,
+            self.name if name is None else name,
             fmtb=fmt,
             priority=priority,
         )

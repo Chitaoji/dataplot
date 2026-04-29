@@ -65,7 +65,7 @@ class Plotter(PlotSettable):
     """
 
     data: Optional[np.ndarray] = attr(repr=False, default=None, init=False)
-    label: Optional[str] = attr(default=None, init=False)
+    name: Optional[str] = attr(default=None, init=False)
 
     def paint(
         self,

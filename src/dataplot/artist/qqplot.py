@@ -51,7 +51,7 @@ class QQPlot(Plotter):
     def __plot(self, ax: "AxesWrapper", is_multi: bool) -> None:
         xlabel, p, q1 = self._generate_dist()
         q2 = get_quantile(self.data, p)
-        ax.ax.plot(q1, q2, self.fmt, zorder=2.1, label=f"{self.label} & {xlabel}")
+        ax.ax.plot(q1, q2, self.fmt, zorder=2.1, label=f"{self.name} & {xlabel}")
         if is_multi:
             ax.ax.margins(x=0)
         else:
@@ -69,7 +69,7 @@ class QQPlot(Plotter):
             xlabel = x + "-distribution"
             q = self._get_ppf(x, p)
         elif isinstance(x, PlotSettable):
-            xlabel = x.formatted_label()
+            xlabel = x.formatted_name()
             q = get_quantile(x.data, p)
         else:
             xlabel = "sample"
