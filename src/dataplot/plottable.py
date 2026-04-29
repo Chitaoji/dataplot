@@ -130,7 +130,7 @@ class PlottableData(Data, PlotSettable, metaclass=ABCMeta):
 
     def reset(self) -> Self:
         """
-        Copy and reset the plot settings.
+        Return a copy of self with plot settings reset.
 
         Returns
         -------
