@@ -104,6 +104,15 @@ class Data(metaclass=ABCMeta):
                 return string[1:-1]
         return string
 
+    def _create_data(
+        self, fmt: str, data: np.ndarray, priority: int = 0, label: Optional[str] = None
+    ) -> Self:
+        obj = self.__class__(self.original_data, self.label if label is None else label)
+        obj.fmtb = fmt
+        obj.priority = priority
+        obj.data = data
+        return obj
+
     @property
     def format(self) -> str:
         """
