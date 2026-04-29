@@ -3,12 +3,12 @@ Provides plotting tools useful in datascience.
 
 A lightweight plotting library for data science that unifies data transformation and plotting in a single chainable API. `dataplot` is designed for fast exploration, teaching demos, and script-based analysis workflows.
 
-## Installation
+## 🛠️ Installation
 ```sh
 $ pip install dataplot
 ```
 
-## Features
+## ✨ Features
 `dataplot` focuses on an **analysis-first plotting workflow**: data processing and visual diagnostics are written in one concise chain.
 
 | Capability | What it gives you | Typical API |
@@ -22,7 +22,7 @@ $ pip install dataplot
 
 In short: **less boilerplate, clearer analysis flow, and more reusable plotting code**.
 
-## Quick Start
+## 🚀 Quick Start
 ```py
 import dataplot as dp
 import numpy as np
@@ -37,7 +37,7 @@ fig = dp.figure(artist1, artist2, title="Distribution diagnostics")
 fig
 ```
 
-## Core Concepts
+## 🧠 Core Concepts
 ### `dp.data(...)`
 `dp.data(...)` is the entry point of `dataplot`.
 It converts array-like input (for example `list`, `numpy.ndarray`, `pandas.Series`, or another `PlottableData`) into a unified `PlottableData` object.
@@ -108,7 +108,7 @@ Common settings:
 - `subplots_adjust`
 - `reference_lines` (for example: `"y=x"`, `"y=0"`, `"x=1"`)
 
-## Requirements
+## 📦 Requirements
 ```txt
 validating
 lazyr
@@ -120,17 +120,17 @@ scipy
 seaborn
 ```
 
-## See Also
+## 🔗 See Also
 ### Github repository
 * https://github.com/Chitaoji/dataplot/
 
 ### PyPI project
 * https://pypi.org/project/dataplot/
 
-## License
+## ⚖️ License
 This project falls under the BSD 3-Clause License.
 
-## History
+## 🕒 History
 ### v0.1.12
 * Added rank-normalization support via `PlottableData.ranknorm(...)`, using normal-quantile mapping for percentile ranks.
 * Optimized rank computation by vectorizing tie handling in `PlottableData.rank(...)`.
