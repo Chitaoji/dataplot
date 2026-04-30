@@ -47,6 +47,19 @@ class TestCoreAndContainer(unittest.TestCase):
         with self.assertRaises(ValueError):
             data([1, 2], name=["too", "many"])
 
+
+    def test_data_copy_option_controls_memory_sharing(self):
+        arr = np.array([1.0, 2.0, 3.0])
+
+        ds_copy = data(arr, copy=True)
+        arr[0] = 999.0
+        self.assertEqual(ds_copy.data[0], 1.0)
+
+        arr2 = np.array([4.0, 5.0, 6.0])
+        ds_nocopy = data(arr2, copy=False)
+        arr2[0] = 777.0
+        self.assertEqual(ds_nocopy.data[0], 777.0)
+
     def test_figure_auto_grid_shape(self):
         fig1 = figure()
         self.assertEqual((fig1.nrows, fig1.ncols), (1, 1))

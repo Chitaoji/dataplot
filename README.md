@@ -36,7 +36,7 @@ raw = np.random.randn(300)
 x = dp.data(raw, name="daily_return")
 
 artist1 = x.hist(bins=30, alpha=0.7)
-artist2 = x.qqplot(baseline="normal")
+artist2 = x.qqplot(baseline="norm")
 
 fig = dp.figure(artist1, artist2, title="Distribution diagnostics")
 fig
@@ -78,7 +78,7 @@ You can think of `dataplot` as a 4-step loop:
 - **Arithmetic**: `+ - * / **`
 - **Log / power family**: `log()` / `log10()` / `signedlog()` / `signedlog10()` / `pow()` / `root()` / `sqrt()` / ...
 - **Statistical transforms**: `rolling()` / `demean()` / `zscore()` / `rank(pct=True)` / `cumsum()` / `abs()`
-- **State management**: `copy()` / `reset()` / `undo_all()` / `resample()`
+- **State management**: `copy()` / `reset()` / `undo_all()` / `sample()`
 
 Operations are chainable, which is useful for quick experimentation:
 
@@ -99,7 +99,7 @@ artist1 = x.hist(bins=30, alpha=0.7)
 artist1  # show one plot
 ```
 ```py
-artist2 = x.qqplot(baseline="normal")
+artist2 = x.qqplot(baseline="norm")
 fig = dp.figure(artist1, artist2, title="Distribution diagnostics")
 fig  # show both plots
 ```
@@ -124,6 +124,11 @@ Common settings:
 This project falls under the BSD 3-Clause License.
 
 ## 🕒 History
+### v0.1.14
+* Renamed the original count-based `resample()` workflow to `sample()` for clearer semantics, while introducing interval-based `resample(...)` for fixed-step data aggregation.
+* Added `copy=` support to data normalization/input handling so callers can control whether input values are copied.
+* Optimized non-normal histogram fitting by adding a sampling path to improve performance on large datasets.
+
 ### v0.1.13
 * Removed the legacy `label` alias from `Data`/`PlottableData` internals and completed the naming shift to `name` for a more consistent API.
 * Renamed `normrank()` to `ranknorm()` for method-name consistency with existing rank-normalization terminology.

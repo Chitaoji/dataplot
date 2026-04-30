@@ -81,7 +81,7 @@ ColorId = (
 )
 VerticalAlignment = Literal["baseline", "bottom", "center", "center_baseline", "top"]
 HorizontalAlignment = Literal["left", "center", "right"]
-DistName = Literal["normal", "expon"]
+DistName = Literal["norm", "exp"]
 SettingKey = Literal[
     "title",
     "xlabel",
@@ -97,7 +97,8 @@ SettingKey = Literal[
     "subplots_adjust",
     "reference_lines",
 ]
-ResampleRule = Literal["head", "tail", "random"]
+SampleRule = Literal["head", "tail", "random"]
+ResampleRule = Literal["last", "first", "mean"]
 
 
 class SettingDict(TypedDict):

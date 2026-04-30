@@ -77,7 +77,9 @@ class Histogram(Plotter):
         skew: float = stats.skew(self.data, bias=False, nan_policy="omit")
         kurt: float = stats.kurtosis(self.data, bias=False, nan_policy="omit")
         if self.fit is not None and self.density:
-            fit_curve = self.__fit_pdf(bin_list, self.data, dist=self.fit)
+            fit_curve = self.__fit_pdf(
+                bin_list, self.data, dist=self.fit, moments=(mean, std)
+            )
             ax.ax.plot(
                 bin_list,
                 fit_curve,
@@ -98,40 +100,29 @@ class Histogram(Plotter):
         x: np.ndarray,
         data: np.ndarray,
         dist: Literal["norm", "skew-norm", "t", "skew-t"],
+        moments: tuple[float, ...],
     ) -> np.ndarray:
-        sample = np.asarray(data, dtype=float)
-        sample = sample[np.isfinite(sample)]
+        sample = data[np.isfinite(data)]
+        if dist != "norm" and sample.size > 1000:
+            rng = np.random.default_rng(0)
+            sample = rng.choice(sample, size=1000, replace=False)
         try:
             with warnings.catch_warnings():
                 warnings.filterwarnings("ignore", category=RuntimeWarning)
                 if dist == "norm":
-                    loc, scale = stats.norm.fit(sample)
-                    params: tuple[float, ...] = (loc, scale)
+                    loc, scale = moments
+                    return stats.norm.pdf(x, loc=loc, scale=scale)
                 elif dist == "skew-norm":
                     a, loc, scale = stats.skewnorm.fit(sample)
-                    params = (a, loc, scale)
+                    return stats.skewnorm.pdf(x, a, loc=loc, scale=scale)
                 elif dist == "t":
                     df, loc, scale = stats.t.fit(sample)
-                    params = (df, loc, scale)
+                    return stats.t.pdf(x, df, loc=loc, scale=scale)
                 else:
                     # Jones-Faddy skew-t: captures skewness and heavy tails.
                     # a, b affect skewness and kurtosis; loc/scale shift/scale.
                     a, b, loc, scale = stats.jf_skew_t.fit(sample)
-                    params = (a, b, loc, scale)
+                    return stats.jf_skew_t.pdf(x, a, b, loc=loc, scale=scale)
         except Exception:
             return np.zeros_like(x, dtype=float)
-        if (not np.all(np.isfinite(params))) or params[-1] <= 0:
-            return np.zeros_like(x, dtype=float)
-        if dist == "norm":
-            loc, scale = params
-            return stats.norm.pdf(x, loc=loc, scale=scale)
-        if dist == "skew-norm":
-            a, loc, scale = params
-            return stats.skewnorm.pdf(x, a, loc=loc, scale=scale)
-        if dist == "t":
-            df, loc, scale = params
-            return stats.t.pdf(x, df, loc=loc, scale=scale)
-        a, b, loc, scale = params
-        if a <= 0 or b <= 0:
-            return np.zeros_like(x, dtype=float)
-        return stats.jf_skew_t.pdf(x, a, b, loc=loc, scale=scale)
+        return np.zeros_like(x, dtype=float)

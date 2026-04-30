@@ -46,7 +46,7 @@ raw = np.random.randn(300)
 x = dp.data(raw, name="daily_return")
 
 artist1 = x.hist(bins=30, alpha=0.7)
-artist2 = x.qqplot(baseline="normal")
+artist2 = x.qqplot(baseline="norm")
 
 fig = dp.figure(artist1, artist2, title="Distribution diagnostics")
 fig
@@ -91,7 +91,7 @@ You can think of `dataplot` as a 4-step loop:
 `pow()` / `root()` / `sqrt()` / ...
 - **Statistical transforms**: `rolling()` / `demean()` / `zscore()` / `rank(pct=True)` /
 `cumsum()` / `abs()`
-- **State management**: `copy()` / `reset()` / `undo_all()` / `resample()`
+- **State management**: `copy()` / `reset()` / `undo_all()` / `sample()`
 
 Operations are chainable, which is useful for quick experimentation:
 
@@ -112,7 +112,7 @@ artist1 = x.hist(bins=30, alpha=0.7)
 artist1  # show one plot
 ```
 ```py
-artist2 = x.qqplot(baseline="normal")
+artist2 = x.qqplot(baseline="norm")
 fig = dp.figure(artist1, artist2, title="Distribution diagnostics")
 fig  # show both plots
 ```

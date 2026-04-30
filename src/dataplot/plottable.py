@@ -239,7 +239,7 @@ class PlottableData(Data, PlotSettable, metaclass=ABCMeta):
         density: bool = True,
         log: bool = False,
         same_bin: bool = True,
-        fit: Literal["norm", "skew-norm", "t", "skew-t"] | None = "skew-t",
+        fit: Literal["norm", "skew-norm", "t", "skew-t"] | None = "norm",
         stats: bool = True,
         **kwargs: Unpack[SettingDict],
     ) -> Artist:
@@ -264,7 +264,7 @@ class PlottableData(Data, PlotSettable, metaclass=ABCMeta):
         fit : Literal["norm", "skew-norm", "t", "skew-t"] | None, optional
             Distribution used to fit a curve to the histogram, only available when
             `density=True`. Set to ``None`` to disable fitting. By default
-            ``"skew-t"``.
+            ``"norm"``.
         stats : bool, optional
             Determines whether to show the statistics, including the calculated mean,
             standard deviation, skewness, and kurtosis of the input, by default True.
@@ -319,7 +319,7 @@ class PlottableData(Data, PlotSettable, metaclass=ABCMeta):
             An instance of Artist.
 
         """
-        if isinstance(xticks, PlotSettable) and "xlabel" not in kwargs:
+        if isinstance(xticks, Data) and "xlabel" not in kwargs:
             kwargs["xlabel"] = xticks.formatted_name()
         return self._get_artist(LineChart, locals())
 
@@ -349,13 +349,13 @@ class PlottableData(Data, PlotSettable, metaclass=ABCMeta):
             An instance of Artist.
 
         """
-        if isinstance(xticks, PlotSettable) and "xlabel" not in kwargs:
+        if isinstance(xticks, Data) and "xlabel" not in kwargs:
             kwargs["xlabel"] = xticks.formatted_name()
         return self._get_artist(ScatterChart, locals())
 
     def qqplot(
         self,
-        baseline: DistName | Self | Any = "normal",
+        baseline: DistName | Self | Any = "norm",
         dots: int = 30,
         edge_precision: float = 1e-2,
         fmt: str = "o",
@@ -369,7 +369,7 @@ class PlottableData(Data, PlotSettable, metaclass=ABCMeta):
         baseline : DistName | PlottableData | Any, optional
             Specifies the distribution to compare with. If str, specifies a
             theoretical distribution; if PlottableData or Any, specifies another
-            sample. By default 'normal'.
+            sample. By default 'norm'.
         dots : int, optional
             Number of dots, by default 30.
         edge_precision : float, optional
@@ -390,7 +390,7 @@ class PlottableData(Data, PlotSettable, metaclass=ABCMeta):
 
     def ppplot(
         self,
-        baseline: DistName | Self | Any = "normal",
+        baseline: DistName | Self | Any = "norm",
         dots: int = 30,
         fmt: str = "o",
         **kwargs: Unpack[SettingDict],
@@ -403,7 +403,7 @@ class PlottableData(Data, PlotSettable, metaclass=ABCMeta):
         baseline : DistName | PlottableData | Any, optional
             Specifies the distribution to compare with. If str, specifies a
             theoretical distribution; if PlottableData or Any, specifies another
-            sample. By default 'normal'.
+            sample. By default 'norm'.
         dots : int, optional
             Number of dots, by default 30.
         fmt : str, optional
@@ -422,7 +422,7 @@ class PlottableData(Data, PlotSettable, metaclass=ABCMeta):
 
     def ksplot(
         self,
-        baseline: DistName | Self | Any = "normal",
+        baseline: DistName | Self | Any = "norm",
         dots: int = 1000,
         fmt: str = "",
         **kwargs: Unpack[SettingDict],
@@ -435,7 +435,7 @@ class PlottableData(Data, PlotSettable, metaclass=ABCMeta):
         baseline : DistName | PlottableData | Any, optional
             Specifies the distribution to compare with. If str, specifies a
             theoretical distribution; if np.ndarray or PlottableData, specifies
-            another real sample. By default 'normal'.
+            another real sample. By default 'norm'.
         dots : int, optional
             Number of dots, by default 1000.
         fmt : str, optional
