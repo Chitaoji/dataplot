@@ -217,7 +217,7 @@ class Data(metaclass=ABCMeta):
         if self.data.size == 0:
             new_data = self.data.copy()
         else:
-            windows = [self.data[i : i + n] for i in range(0, self.data.size, n)]
+            windows = (self.data[i : i + n] for i in range(0, self.data.size, n))
             match rule:
                 case "last":
                     new_data = np.array([window[-1] for window in windows])
@@ -225,7 +225,9 @@ class Data(metaclass=ABCMeta):
                     new_data = np.array([window[0] for window in windows])
                 case "mean":
                     new_data = np.array([np.nanmean(window) for window in windows])
-        return self._create_data(f"resample({self.format}, {n}, rule={rule!r})", new_data)
+        return self._create_data(
+            f"resample({self.format}, {n}, rule={rule!r})", new_data
+        )
 
     def rank(self, pct: bool = True) -> Self:
         """
