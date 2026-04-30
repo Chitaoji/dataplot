@@ -77,7 +77,9 @@ class Histogram(Plotter):
         skew: float = stats.skew(self.data, bias=False, nan_policy="omit")
         kurt: float = stats.kurtosis(self.data, bias=False, nan_policy="omit")
         if self.fit is not None and self.density:
-            fit_curve = self.__fit_pdf(bin_list, self.data, dist=self.fit)
+            fit_curve = self.__fit_pdf(
+                bin_list, self.data, dist=self.fit, moments=(mean, std)
+            )
             ax.ax.plot(
                 bin_list,
                 fit_curve,
@@ -98,6 +100,7 @@ class Histogram(Plotter):
         x: np.ndarray,
         data: np.ndarray,
         dist: Literal["norm", "skew-norm", "t", "skew-t"],
+        moments: tuple[float, ...],
     ) -> np.ndarray:
         sample = data[np.isfinite(data)]
         if dist != "norm" and sample.size > 1000:
@@ -107,7 +110,7 @@ class Histogram(Plotter):
             with warnings.catch_warnings():
                 warnings.filterwarnings("ignore", category=RuntimeWarning)
                 if dist == "norm":
-                    loc, scale = stats.norm.fit(sample)
+                    loc, scale = moments
                     return stats.norm.pdf(x, loc=loc, scale=scale)
                 elif dist == "skew-norm":
                     a, loc, scale = stats.skewnorm.fit(sample)
