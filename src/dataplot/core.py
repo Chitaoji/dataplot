@@ -24,7 +24,7 @@ if TYPE_CHECKING:
     from .artist import Artist
 
 
-__all__ = ["data", "figure"]
+__all__ = ["data", "figure", "randn"]
 
 
 def _find_user_frame(start_depth: int = 1) -> FrameType | None:
@@ -206,6 +206,15 @@ def data(
         )
         name = original_name or _infer_assigned_name() or expanded_names[0] or "x1"
     return PlottableData(normalized_data[0], name=name)
+
+
+@validate
+def randn(
+    n: int, mean: int | float = 0, std: int | float = 1, seed: int = 0
+) -> PlottableData:
+    """Generate normal-distributed random values as a :class:`PlottableData`."""
+    values = np.random.default_rng(seed).normal(loc=mean, scale=std, size=n)
+    return data(values, copy=False)
 
 
 @validate
