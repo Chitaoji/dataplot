@@ -6,7 +6,6 @@ NOTE: this module is private. All functions and objects are available in the mai
 
 """
 
-from abc import ABCMeta
 from functools import partial
 from typing import (
     TYPE_CHECKING,
@@ -50,7 +49,7 @@ __all__ = ["PlottableData"]
 
 
 @dataclass(validate_methods=True)
-class PlottableData(Data, PlotSettable, metaclass=ABCMeta):
+class PlottableData(Data, PlotSettable):
     """
     A dataset class providing methods for mathematical operations and plotting.
 

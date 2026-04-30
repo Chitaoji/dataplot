@@ -7,6 +7,7 @@ NOTE: this module is private. All functions and objects are available in the mai
 """
 
 import re
+from abc import ABCMeta
 from dataclasses import asdict
 from typing import Any, Literal, Optional, Self, Unpack, overload
 
@@ -189,7 +190,7 @@ defaults = PlotSettings(
 
 
 @dataclass(init=False)
-class PlotSettable:
+class PlotSettable(metaclass=ABCMeta):
     """Contains an attribute of plot settings, and provides methods for
     handling these settings.
 
