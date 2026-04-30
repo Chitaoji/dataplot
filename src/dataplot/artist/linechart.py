@@ -37,7 +37,11 @@ class LineChart(Plotter):
     rolling: Optional[int | list[int]]
 
     def paint(self, ax: "AxesWrapper", **_) -> None:
-        ax.set_axes(title=ax.get_setting("title", "Line Chart"))
+        ax.set_axes(
+            title=ax.get_setting("title", "Line Chart"),
+            xlabel=ax.get_setting("xlabel", "count"),
+            ylabel=ax.get_setting("ylabel", "value"),
+        )
         ax.load(self.settings)
         self.__plot(ax)
 
