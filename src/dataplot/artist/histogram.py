@@ -100,6 +100,9 @@ class Histogram(Plotter):
         dist: Literal["norm", "skew-norm", "t", "skew-t"],
     ) -> np.ndarray:
         sample = data[np.isfinite(data)]
+        if dist != "norm" and sample.size > 1000:
+            rng = np.random.default_rng(0)
+            sample = rng.choice(sample, size=1000, replace=False)
         try:
             with warnings.catch_warnings():
                 warnings.filterwarnings("ignore", category=RuntimeWarning)
