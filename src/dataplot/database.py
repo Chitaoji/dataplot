@@ -166,14 +166,14 @@ class Data(metaclass=ABCMeta):
             priority -= 1
         return self.__remove_brackets(self.fmtb.format(self.name), priority=priority)
 
-    def sample(self, n: int, rule: SampleRule = "head") -> Self:
+    def sample(self, n: int = 100, rule: SampleRule = "head") -> Self:
         """
         Sample from the data.
 
         Parameters
         ----------
-        n : int
-            Length of new sample.
+        n : int, optional
+            Length of new sample, by default 100.
         rule : SampleRule, optional
             Sample rule, by default "head".
 
