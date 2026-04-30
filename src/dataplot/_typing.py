@@ -97,7 +97,7 @@ SettingKey = Literal[
     "subplots_adjust",
     "reference_lines",
 ]
-ResampleRule = Literal["head", "tail", "random"]
+SampleRule = Literal["head", "tail", "random"]
 
 
 class SettingDict(TypedDict):

@@ -91,7 +91,7 @@ You can think of `dataplot` as a 4-step loop:
 `pow()` / `root()` / `sqrt()` / ...
 - **Statistical transforms**: `rolling()` / `demean()` / `zscore()` / `rank(pct=True)` /
 `cumsum()` / `abs()`
-- **State management**: `copy()` / `reset()` / `undo_all()` / `resample()`
+- **State management**: `copy()` / `reset()` / `undo_all()` / `sample()`
 
 Operations are chainable, which is useful for quick experimentation:
 
