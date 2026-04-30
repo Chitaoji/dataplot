@@ -234,7 +234,7 @@ class PlottableData(Data, PlotSettable):
 
     def hist(
         self,
-        bins: int | list[float] = 100,
+        bins: int | list[int | float] = 100,
         density: bool = True,
         log: bool = False,
         same_bin: bool = True,
