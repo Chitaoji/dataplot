@@ -125,7 +125,9 @@ def _infer_assigned_name() -> Optional[str]:
 
 
 @validate
-def data(*x: Any, name: Optional[str | list[str]] = None) -> PlottableData:
+def data(
+    *x: Any, name: Optional[str | list[str]] = None, copy: bool = True
+) -> PlottableData:
     """
     Initializes a dataset interface which provides methods for mathematical
     operations and plotting.
@@ -140,6 +142,10 @@ def data(*x: Any, name: Optional[str | list[str]] = None) -> PlottableData:
         If a list, should be the same length as the number of input arrays, with
         each element corresponding to a specific array in `x`. If set to None,
         use "x{i}" (i = 1, 2. 3, ...) as the name(s). By default None.
+    copy : bool, optional
+        Whether to copy input values during normalization. When True, values are
+        normalized with ``np.array(..., copy=True)``; when False, ``np.array`` may
+        return a view if possible. By default True.
 
     Returns
     -------
@@ -164,9 +170,9 @@ def data(*x: Any, name: Optional[str | list[str]] = None) -> PlottableData:
     normalized_data: list[np.ndarray] = []
     for value in expanded_data:
         if isinstance(value, PlottableData):
-            normalized_data.append(value.data)
+            normalized_data.append(np.array(value.data, copy=copy).reshape(-1))
         else:
-            normalized_data.append(np.asarray(value).reshape(-1))
+            normalized_data.append(np.array(value, copy=copy).reshape(-1))
 
     if len(expanded_data) > 1:
         if name is None:
