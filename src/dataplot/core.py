@@ -210,10 +210,33 @@ def data(
 
 @validate
 def randn(
-    n: int, mean: int | float = 0, std: int | float = 1, seed: int = 0
+    n: int, mean: int | float = 0, std: int | float = 1, seed: int | None = None
 ) -> PlottableData:
-    """Generate normal-distributed random values as a :class:`PlottableData`."""
-    values = np.random.default_rng(seed).normal(loc=mean, scale=std, size=n)
+    """
+    Generate normal-distributed random values as a :class:`PlottableData`.
+
+    Parameters
+    ----------
+    n : int
+        Data size.
+    mean : int | float, optional
+        Mean of the distribution, by default 0.
+    std : int | float, optional
+        Mean of the distribution, by default 1.
+    seed : int | None, optional
+        Random seed. If None, then fresh, unpredictable entropy will be pulled from the
+        OS. By default None.
+
+    Returns
+    -------
+    PlottableData
+        Provides methods for mathematical operations and plotting.
+
+    """
+    if seed is None:
+        values = np.random.normal(loc=mean, scale=std, size=n)
+    else:
+        values = np.random.default_rng(seed).normal(loc=mean, scale=std, size=n)
     return data(values, copy=False)
 
 
