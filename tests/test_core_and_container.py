@@ -9,6 +9,17 @@ from src.dataplot.core import data, figure, randn
 
 
 class TestCoreAndContainer(unittest.TestCase):
+    def test_plot_defaults_xlabel_count_and_ylabel_value(self):
+        ds = data([10, 20, 30], name="series")
+        artist = ds.plot()
+
+        figw = figure()
+        figw.add(artist)
+        with figw as fig:
+            ax = fig.axes[0].ax
+            self.assertEqual(ax.get_xlabel(), "count")
+            self.assertEqual(ax.get_ylabel(), "value")
+
     def test_parse_linear_expression_for_x_and_y_forms(self):
         intercept, slope = _parse_linear_expression("1+2x-0.5x", "x")
         self.assertTrue(np.isclose(intercept, 1.0))
