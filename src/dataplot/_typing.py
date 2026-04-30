@@ -98,6 +98,7 @@ SettingKey = Literal[
     "reference_lines",
 ]
 SampleRule = Literal["head", "tail", "random"]
+ResampleRule = Literal["last", "first", "mean"]
 
 
 class SettingDict(TypedDict):
