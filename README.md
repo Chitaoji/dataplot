@@ -125,6 +125,10 @@ This project falls under the BSD 3-Clause License.
 
 ## 🕒 History
 ### v0.1.14
+* Added `PlottableData.resample(...)` with rule-based resampling options for time-series style aggregation workflows.
+* Added `copy=` support to data normalization/input handling so callers can control whether input values are copied.
+* Optimized non-normal histogram fitting by adding a sampling path to improve performance on large datasets.
+* Simplified histogram PDF fitting internals by removing legacy positive-parameter guard branches in `_fit_pdf`.
 
 ### v0.1.13
 * Removed the legacy `label` alias from `Data`/`PlottableData` internals and completed the naming shift to `name` for a more consistent API.
