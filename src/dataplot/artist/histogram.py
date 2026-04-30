@@ -99,8 +99,7 @@ class Histogram(Plotter):
         data: np.ndarray,
         dist: Literal["norm", "skew-norm", "t", "skew-t"],
     ) -> np.ndarray:
-        sample = np.asarray(data, dtype=float)
-        sample = sample[np.isfinite(sample)]
+        sample = data[np.isfinite(data)]
         try:
             with warnings.catch_warnings():
                 warnings.filterwarnings("ignore", category=RuntimeWarning)
