@@ -24,7 +24,7 @@ if TYPE_CHECKING:
     from .artist import Artist
 
 
-__all__ = ["data", "figure", "randn"]
+__all__ = ["data", "figure", "random_seed", "randn"]
 
 
 def _find_user_frame(start_depth: int = 1) -> FrameType | None:
@@ -206,6 +206,12 @@ def data(
         )
         name = original_name or _infer_assigned_name() or expanded_names[0] or "x1"
     return PlottableData(normalized_data[0], name=name)
+
+
+@validate
+def random_seed(seed: int) -> None:
+    """Set a random seed."""
+    np.random.seed(seed)
 
 
 @validate
