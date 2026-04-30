@@ -13,12 +13,12 @@ class TestCoreAndContainer(unittest.TestCase):
         ds = data([10, 20, 30], name="series")
         artist = ds.plot()
 
-        figw = figure()
-        figw.add(artist)
-        with figw as fig:
+        with figure() as fig:
+            artist.paint(fig.axes[0])
             ax = fig.axes[0].ax
-            self.assertEqual(ax.get_xlabel(), "count")
-            self.assertEqual(ax.get_ylabel(), "value")
+
+        self.assertEqual(ax.get_xlabel(), "count")
+        self.assertEqual(ax.get_ylabel(), "value")
 
     def test_parse_linear_expression_for_x_and_y_forms(self):
         intercept, slope = _parse_linear_expression("1+2x-0.5x", "x")
@@ -58,7 +58,6 @@ class TestCoreAndContainer(unittest.TestCase):
         with self.assertRaises(ValueError):
             data([1, 2], name=["too", "many"])
 
-
     def test_data_copy_option_controls_memory_sharing(self):
         arr = np.array([1.0, 2.0, 3.0])
 
@@ -70,7 +69,6 @@ class TestCoreAndContainer(unittest.TestCase):
         ds_nocopy = data(arr2, copy=False)
         arr2[0] = 777.0
         self.assertEqual(ds_nocopy.data[0], 777.0)
-
 
     def test_randn_reproducible_with_seed_and_target_moments(self):
         ds1 = randn(1000, mean=2, std=3, seed=42)
