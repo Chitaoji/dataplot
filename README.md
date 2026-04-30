@@ -125,10 +125,9 @@ This project falls under the BSD 3-Clause License.
 
 ## 🕒 History
 ### v0.1.14
-* Renamed the original count-based `resample()` workflow to `sample()` for clearer semantics, while introducing rule-based `resample(...)` for time-series style aggregation.
+* Renamed the original count-based `resample()` workflow to `sample()` for clearer semantics, while introducing interval-based `resample(...)` for fixed-step data aggregation.
 * Added `copy=` support to data normalization/input handling so callers can control whether input values are copied.
 * Optimized non-normal histogram fitting by adding a sampling path to improve performance on large datasets.
-* Simplified histogram PDF fitting internals by removing legacy positive-parameter guard branches in `_fit_pdf`.
 
 ### v0.1.13
 * Removed the legacy `label` alias from `Data`/`PlottableData` internals and completed the naming shift to `name` for a more consistent API.
