@@ -7,7 +7,7 @@ import numpy as np
 from scipy.stats import norm
 from validating import attr, dataclass
 
-from ._typing import SampleRule
+from ._typing import ResampleRule, SampleRule
 from .utils.multi import UNSUBSCRIPTABLE
 
 __all__ = ["Data"]
@@ -192,6 +192,40 @@ class Data(metaclass=ABCMeta):
             case "tail":
                 new_data = self.data[-n:]
         return self._create_data(f"sample({self.format}, {n})", new_data)
+
+    def resample(self, n: int = 10, rule: ResampleRule = "last") -> Self:
+        """
+        Resample the data by selecting one value per fixed-size window.
+
+        Parameters
+        ----------
+        n : int, optional
+            Window size. One value is produced for each consecutive window of
+            length ``n`` (the final window may be shorter), by default 10.
+        rule : Literal["last", "first", "mean"], optional
+            Rule used to generate one value from each window, by default "last".
+
+        Returns
+        -------
+        Self
+            A new instance of self.__class__.
+
+        """
+        if n <= 0:
+            raise ValueError(f"n should be greater than 0, got {n} instead")
+
+        if self.data.size == 0:
+            new_data = self.data.copy()
+        else:
+            windows = [self.data[i : i + n] for i in range(0, self.data.size, n)]
+            match rule:
+                case "last":
+                    new_data = np.array([window[-1] for window in windows])
+                case "first":
+                    new_data = np.array([window[0] for window in windows])
+                case "mean":
+                    new_data = np.array([np.nanmean(window) for window in windows])
+        return self._create_data(f"resample({self.format}, {n}, rule={rule!r})", new_data)
 
     def rank(self, pct: bool = True) -> Self:
         """
