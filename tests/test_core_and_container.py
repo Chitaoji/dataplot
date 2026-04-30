@@ -5,7 +5,7 @@ import unittest
 
 import numpy as np
 from src.dataplot.container import _draw_reference_lines, _parse_linear_expression
-from src.dataplot.core import data, figure
+from src.dataplot.core import data, figure, randn
 
 
 class TestCoreAndContainer(unittest.TestCase):
@@ -59,6 +59,15 @@ class TestCoreAndContainer(unittest.TestCase):
         ds_nocopy = data(arr2, copy=False)
         arr2[0] = 777.0
         self.assertEqual(ds_nocopy.data[0], 777.0)
+
+
+    def test_randn_reproducible_with_seed_and_target_moments(self):
+        ds1 = randn(1000, mean=2, std=3, seed=42)
+        ds2 = randn(1000, mean=2, std=3, seed=42)
+
+        self.assertTrue(np.allclose(ds1.data, ds2.data))
+        self.assertTrue(np.isclose(float(np.mean(ds1.data)), 2.0, atol=0.3))
+        self.assertTrue(np.isclose(float(np.std(ds1.data)), 3.0, atol=0.3))
 
     def test_figure_auto_grid_shape(self):
         fig1 = figure()
