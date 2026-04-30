@@ -124,6 +124,8 @@ Common settings:
 This project falls under the BSD 3-Clause License.
 
 ## 🕒 History
+### v0.1.14
+
 ### v0.1.13
 * Removed the legacy `label` alias from `Data`/`PlottableData` internals and completed the naming shift to `name` for a more consistent API.
 * Renamed `normrank()` to `ranknorm()` for method-name consistency with existing rank-normalization terminology.
