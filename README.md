@@ -10,7 +10,7 @@ $ pip install dataplot
 
 ## 📦 Requirements
 ```txt
-numpy, pandas, scipy, matplotlib, seaborn, validating, lazyr, loggings
+matplotlib, numpy, pandas, scipy, seaborn, loggings, validating, lazyr
 ```
 
 ## ✨ Features
