@@ -72,9 +72,9 @@ class PlottableData(Data, PlotSettable):
         return False
 
     def __repr__(self) -> str:
-        return self.__class__.__name__ + "\n- " + self.data_info()
+        return self.__class__.__name__ + "\n- " + self.info()
 
-    def data_info(self) -> str:
+    def info(self) -> str:
         """Information of data."""
         not_none = self.settings._repr_changes()
         return f"{self.formatted_name()}{': ' if not_none else ''}{not_none}"
@@ -519,7 +519,7 @@ class PlottableDataSet(MultiObject[PlottableData]):
         super().__init__(objs, attr_reducer=self.__dataset_attr_reducer)
 
     def __repr__(self) -> str:
-        data_info = "\n- ".join([x.data_info() for x in self.__multiobjects__])
+        data_info = "\n- ".join([x.info() for x in self.__multiobjects__])
         return f"{PlottableData.__name__}\n- {data_info}"
 
     def batched(self, n: int = 1) -> MultiObject:
