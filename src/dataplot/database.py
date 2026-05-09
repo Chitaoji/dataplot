@@ -380,7 +380,7 @@ class Data(metaclass=ABCMeta):
         """
         return self._create_data(f"pow({self.format}, {n})", self.data**n)
 
-    def signedpow(self, n: int | float) -> Self:
+    def signedpow(self, n: int | float = 2) -> Self:
         """
         Perform a power operation on the data, but keep the sign.
 
@@ -389,6 +389,11 @@ class Data(metaclass=ABCMeta):
         * x**n,     for x > 0;
         * 0,        for x = 0;
         * -x**(-n)  for x < 0.
+
+        Parameters
+        ----------
+        n : int | float, optional
+            Power exponent, by default 2.
 
         Returns
         -------
@@ -399,7 +404,7 @@ class Data(metaclass=ABCMeta):
         new_data = np.where(self.data > 0, self.data, np.nan) ** n
         new_data[self.data < 0] = -((-self.data[self.data < 0]) ** n)
         new_data[self.data == 0] = 0
-        return self._create_data(f"signedpow({self.format})", new_data)
+        return self._create_data(f"signedpow({self.format}, {n})", new_data)
 
     def root(self, n: int = 2) -> Self:
         """
