@@ -9,10 +9,10 @@ NOTE: this module is private. All functions and objects are available in the mai
 from typing import TYPE_CHECKING, Any, Optional
 
 import numpy as np
-from matplotlib.ticker import FixedLocator
 from validating import dataclass
 
 from ..database import Data
+from ._ticks import ensure_rightmost_xtick_label
 from .base import Plotter
 
 if TYPE_CHECKING:
@@ -52,22 +52,4 @@ class ScatterChart(Plotter):
             )
 
         ax.ax.plot(xticks, self.data, self.fmt, linestyle="None", label=self.name)
-        self.__ensure_rightmost_xtick_label(ax, xticks)
-
-    def __ensure_rightmost_xtick_label(self, ax: "AxesWrapper", xticks) -> None:
-        xticks_array = np.asarray(list(xticks))
-        if xticks_array.size == 0:
-            return
-        if not (
-            np.issubdtype(xticks_array.dtype, np.number)
-            or np.issubdtype(xticks_array.dtype, np.datetime64)
-        ):
-            return
-
-        rightmost = float(ax.ax.convert_xunits(xticks_array[-1]))
-        current_ticks = np.asarray(ax.ax.get_xticks(), dtype=float)
-        if np.any(np.isclose(current_ticks, rightmost)):
-            return
-
-        merged_ticks = np.sort(np.append(current_ticks, rightmost))
-        ax.ax.xaxis.set_major_locator(FixedLocator(merged_ticks))
+        ensure_rightmost_xtick_label(ax, xticks)
