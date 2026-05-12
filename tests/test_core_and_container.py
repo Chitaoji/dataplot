@@ -84,3 +84,27 @@ class TestCoreAndContainer(unittest.TestCase):
 
         fig2 = figure(nrows=1, ncols=1)
         self.assertEqual((fig2.nrows, fig2.ncols), (1, 1))
+
+    def test_plot_preserves_rightmost_xtick_without_crowding_neighbor(self):
+        ds = data(np.arange(10), name="series")
+        artist = ds.plot(xticks=np.linspace(0, 9.2, 10))
+
+        with figure() as fig:
+            artist.paint(fig.axes[0])
+            ax = fig.axes[0].ax
+
+        ticks = ax.get_xticks()
+        self.assertTrue(np.any(np.isclose(ticks, 9.2)))
+        self.assertFalse(np.any(np.isclose(ticks, 8)))
+
+    def test_scatter_preserves_rightmost_xtick_without_crowding_neighbor(self):
+        ds = data(np.arange(10), name="series")
+        artist = ds.scatter(xticks=np.linspace(0, 9.2, 10))
+
+        with figure() as fig:
+            artist.paint(fig.axes[0])
+            ax = fig.axes[0].ax
+
+        ticks = ax.get_xticks()
+        self.assertTrue(np.any(np.isclose(ticks, 9.2)))
+        self.assertFalse(np.any(np.isclose(ticks, 8)))
