@@ -124,6 +124,8 @@ Common settings:
 This project falls under the BSD 3-Clause License.
 
 ## 🕒 History
+### v0.1.15
+
 ### v0.1.14
 * Renamed the original count-based `resample()` workflow to `sample()` for clearer semantics, while introducing interval-based `resample(...)` for fixed-step data aggregation.
 * Added `copy=` support to data normalization/input handling so callers can control whether input values are copied.
