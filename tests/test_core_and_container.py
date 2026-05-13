@@ -77,6 +77,30 @@ class TestCoreAndContainer(unittest.TestCase):
             _draw_reference_lines(ax, ["y=x", "x=100"])  # only y=x is visible
             self.assertEqual(len(ax.lines), 1)
 
+    def test_draw_reference_lines_supports_date_xaxis_constants(self):
+        figw = figure()
+        dates = [datetime(2025, 1, 1, 6, 30) + timedelta(days=i) for i in range(3)]
+        with figw as fig:
+            ax = fig.axes[0].ax
+            ax.plot(dates, [1, 2, 3])
+            before = len(ax.lines)
+            _draw_reference_lines(ax, ["y=2", "x=20250101 06:30"])
+            self.assertEqual(len(ax.lines), before + 2)
+
+    def test_draw_reference_lines_rejects_sloped_date_xaxis_lines(self):
+        figw = figure()
+        dates = [datetime(2025, 1, 1) + timedelta(days=i) for i in range(3)]
+        with figw as fig:
+            ax = fig.axes[0].ax
+            ax.plot(dates, [1, 2, 3])
+            with self.assertRaises(ValueError):
+                _draw_reference_lines(ax, ["y=x+1"])
+
+    def test_reference_lines_allow_datetime_text_validation(self):
+        figw = figure()
+        figw.set_figure(reference_lines=["x=20250101 06:30", "y=2"])
+        self.assertEqual(figw.settings.reference_lines, ["x=20250101 06:30", "y=2"])
+
     def test_data_returns_single_and_multiple_datasets_with_labels(self):
         x = [1, 2, 3]
         ds_single = data(x, name="my_x")
