@@ -125,6 +125,11 @@ This project falls under the BSD 3-Clause License.
 
 ## 🕒 History
 ### v0.1.15
+* Added `dp.randn(...)` for generating normally distributed `PlottableData` values, including optional seed-based reproducibility.
+* Improved line and scatter x-axis rendering by preserving the rightmost tick label, supporting datetime tick lists, and refining default x-label behavior.
+* Improved reference-line handling on date-based x-axes, including datetime constants such as `"x=20250101 06:30"` and validation for unsupported sloped date-axis expressions.
+* Smoothed histogram fitted PDF curves by rendering fits on a denser grid when users choose sparse bins.
+* Refined packaging/readme generation so project metadata drives dependency ordering and README-derived module documentation more consistently.
 
 ### v0.1.14
 * Renamed the original count-based `resample()` workflow to `sample()` for clearer semantics, while introducing interval-based `resample(...)` for fixed-step data aggregation.
