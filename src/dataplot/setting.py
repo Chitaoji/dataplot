@@ -202,9 +202,9 @@ class PlotSettable(metaclass=ABCMeta):
     def _validate_reference_line(text: str) -> None:
         if not isinstance(text, str):
             raise TypeError(f"reference line must be str, got {type(text)!r}")
-        if re.search(r"[^0-9xy=+\-.\s]", text):
+        if re.search(r"[^0-9xy=+\-.\s:]", text):
             raise ValueError(
-                "reference line can only contain numbers, x, y, =, +, -, and spaces"
+                "reference line can only contain numbers, x, y, =, +, -, :, and spaces"
             )
         normalized = text.replace(" ", "")
         if normalized.count("=") != 1:

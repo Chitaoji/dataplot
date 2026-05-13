@@ -7,9 +7,11 @@ NOTE: this module is private. All functions and objects are available in the mai
 """
 
 import re
+from datetime import datetime
 from typing import TYPE_CHECKING, Self, Unpack
 
 import loggings
+import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.figure import Figure
@@ -23,6 +25,42 @@ if TYPE_CHECKING:
     from .artist import Artist
 
 __all__ = ["FigWrapper", "AxesWrapper"]
+
+
+def _split_reference_line(text: str, *, remove_spaces: bool = True) -> tuple[str, str]:
+    lhs, rhs = text.split("=", maxsplit=1)
+    if remove_spaces:
+        lhs = lhs.replace(" ", "")
+        rhs = rhs.replace(" ", "")
+    else:
+        lhs = lhs.strip()
+        rhs = rhs.strip()
+    return lhs, rhs
+
+
+def _is_date_xaxis(ax: Axes) -> bool:
+    converter = ax.xaxis.get_converter()
+    return (
+        isinstance(converter, mdates.DateConverter)
+        or converter.__class__.__module__ == mdates.__name__
+        and "Date" in converter.__class__.__name__
+    )
+
+
+def _parse_reference_date(text: str) -> float:
+    for fmt in (
+        "%Y%m%d %H:%M:%S",
+        "%Y%m%d %H:%M",
+        "%Y%m%d",
+        "%Y-%m-%d %H:%M:%S",
+        "%Y-%m-%d %H:%M",
+        "%Y-%m-%d",
+    ):
+        try:
+            return float(mdates.date2num(datetime.strptime(text, fmt)))
+        except ValueError:
+            continue
+    raise ValueError(f"invalid date reference line value: {text!r}")
 
 
 def _parse_linear_expression(expr: str, var: str) -> tuple[float, float]:
@@ -58,12 +96,22 @@ def _draw_reference_lines(ax: Axes, lines: list[str]) -> None:
     view_y0, view_y1 = map(float, ax.get_ylim())
     data_xmin, data_xmax = sorted((view_x0, view_x1))
     data_ymin, data_ymax = sorted((view_y0, view_y1))
+    date_xaxis = _is_date_xaxis(ax)
 
     for text in lines:
-        normalized = text.replace(" ", "")
-        lhs, rhs = normalized.split("=")
+        lhs, rhs = _split_reference_line(text, remove_spaces=not date_xaxis)
         if lhs == "y":
-            intercept, slope = _parse_linear_expression(rhs, "x")
+            if date_xaxis:
+                expr = rhs.replace(" ", "")
+                if "x" in expr or "y" in expr:
+                    raise ValueError(
+                        "date x-axis reference lines only support horizontal "
+                        f"'y=a' lines, got {text!r}"
+                    )
+                intercept = float(expr)
+                slope = 0.0
+            else:
+                intercept, slope = _parse_linear_expression(rhs, "x")
             x_min = data_xmin
             x_max = data_xmax
             if slope == 0:
@@ -90,7 +138,11 @@ def _draw_reference_lines(ax: Axes, lines: list[str]) -> None:
                 scaley=False,
             )
         else:
-            intercept, slope = _parse_linear_expression(rhs, "y")
+            if date_xaxis:
+                intercept = _parse_reference_date(rhs)
+                slope = 0.0
+            else:
+                intercept, slope = _parse_linear_expression(rhs, "y")
             y_min = data_ymin
             y_max = data_ymax
             if slope == 0:
