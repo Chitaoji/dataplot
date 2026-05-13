@@ -77,12 +77,12 @@ class Histogram(Plotter):
         skew: float = stats.skew(self.data, bias=False, nan_policy="omit")
         kurt: float = stats.kurtosis(self.data, bias=False, nan_policy="omit")
         if self.fit is not None and self.density:
-            bins_arr = self.__adjust_bins(bins_arr)
+            adj_bin_arr = self.__adjust_bins(bins_arr)
             fit_curve = self.__fit_pdf(
-                bins_arr, self.data, dist=self.fit, moments=(mean, std)
+                adj_bin_arr, self.data, dist=self.fit, moments=(mean, std)
             )
             ax.ax.plot(
-                bins_arr,
+                adj_bin_arr,
                 fit_curve,
                 alpha=ax.settings.alpha,
                 label=f"{self.name} · fit",
