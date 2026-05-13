@@ -24,7 +24,7 @@ if TYPE_CHECKING:
     from .artist import Artist
 
 
-__all__ = ["data", "figure"]
+__all__ = ["data", "figure", "random_seed", "randn"]
 
 
 def _find_user_frame(start_depth: int = 1) -> FrameType | None:
@@ -206,6 +206,44 @@ def data(
         )
         name = original_name or _infer_assigned_name() or expanded_names[0] or "x1"
     return PlottableData(normalized_data[0], name=name)
+
+
+@validate
+def random_seed(seed: int) -> None:
+    """Set a random seed."""
+    np.random.seed(seed)
+
+
+@validate
+def randn(
+    n: int, mean: int | float = 0, std: int | float = 1, seed: int | None = None
+) -> PlottableData:
+    """
+    Generate normal-distributed random values as a :class:`PlottableData`.
+
+    Parameters
+    ----------
+    n : int
+        Data size.
+    mean : int | float, optional
+        Mean of the distribution, by default 0.
+    std : int | float, optional
+        Mean of the distribution, by default 1.
+    seed : int | None, optional
+        Random seed. If None, then fresh, unpredictable entropy will be pulled from the
+        OS. By default None.
+
+    Returns
+    -------
+    PlottableData
+        Provides methods for mathematical operations and plotting.
+
+    """
+    if seed is None:
+        values = np.random.normal(loc=mean, scale=std, size=n)
+    else:
+        values = np.random.default_rng(seed).normal(loc=mean, scale=std, size=n)
+    return data(values, copy=False)
 
 
 @validate

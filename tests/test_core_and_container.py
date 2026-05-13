@@ -2,13 +2,46 @@ import matplotlib
 
 matplotlib.use("Agg")
 import unittest
+from datetime import datetime, timedelta
 
 import numpy as np
+from matplotlib.dates import date2num
 from src.dataplot.container import _draw_reference_lines, _parse_linear_expression
-from src.dataplot.core import data, figure
+from src.dataplot.core import data, figure, randn
 
 
 class TestCoreAndContainer(unittest.TestCase):
+    def test_plot_with_explicit_xticks_has_no_default_xlabel(self):
+        ds = data([10, 20, 30], name="series")
+        artist = ds.plot(xticks=[1, 2, 3])
+
+        with figure() as fig:
+            artist.paint(fig.axes[0])
+            ax = fig.axes[0].ax
+
+        self.assertEqual(ax.get_xlabel(), "")
+
+    def test_plot_with_data_xticks_has_xlabel(self):
+        ds = data([10, 20, 30], name="series")
+        x = data([1, 2, 3], name="time")
+        artist = ds.plot(xticks=x)
+
+        with figure() as fig:
+            artist.paint(fig.axes[0])
+            ax = fig.axes[0].ax
+
+        self.assertEqual(ax.get_xlabel(), "time")
+
+    def test_plot_with_explicit_xlabel_keeps_label(self):
+        ds = data([10, 20, 30], name="series")
+        artist = ds.plot(xticks=[1, 2, 3], xlabel="time")
+
+        with figure() as fig:
+            artist.paint(fig.axes[0])
+            ax = fig.axes[0].ax
+
+        self.assertEqual(ax.get_xlabel(), "time")
+
     def test_parse_linear_expression_for_x_and_y_forms(self):
         intercept, slope = _parse_linear_expression("1+2x-0.5x", "x")
         self.assertTrue(np.isclose(intercept, 1.0))
@@ -33,6 +66,30 @@ class TestCoreAndContainer(unittest.TestCase):
             _draw_reference_lines(ax, ["y=x", "x=100"])  # only y=x is visible
             self.assertEqual(len(ax.lines), 1)
 
+    def test_draw_reference_lines_supports_date_xaxis_constants(self):
+        figw = figure()
+        dates = [datetime(2025, 1, 1, 6, 30) + timedelta(days=i) for i in range(3)]
+        with figw as fig:
+            ax = fig.axes[0].ax
+            ax.plot(dates, [1, 2, 3])
+            before = len(ax.lines)
+            _draw_reference_lines(ax, ["y=2", "x=20250101 06:30"])
+            self.assertEqual(len(ax.lines), before + 2)
+
+    def test_draw_reference_lines_rejects_sloped_date_xaxis_lines(self):
+        figw = figure()
+        dates = [datetime(2025, 1, 1) + timedelta(days=i) for i in range(3)]
+        with figw as fig:
+            ax = fig.axes[0].ax
+            ax.plot(dates, [1, 2, 3])
+            with self.assertRaises(ValueError):
+                _draw_reference_lines(ax, ["y=x+1"])
+
+    def test_reference_lines_allow_datetime_text_validation(self):
+        figw = figure()
+        figw.set_figure(reference_lines=["x=20250101 06:30", "y=2"])
+        self.assertEqual(figw.settings.reference_lines, ["x=20250101 06:30", "y=2"])
+
     def test_data_returns_single_and_multiple_datasets_with_labels(self):
         x = [1, 2, 3]
         ds_single = data(x, name="my_x")
@@ -47,7 +104,6 @@ class TestCoreAndContainer(unittest.TestCase):
         with self.assertRaises(ValueError):
             data([1, 2], name=["too", "many"])
 
-
     def test_data_copy_option_controls_memory_sharing(self):
         arr = np.array([1.0, 2.0, 3.0])
 
@@ -60,9 +116,65 @@ class TestCoreAndContainer(unittest.TestCase):
         arr2[0] = 777.0
         self.assertEqual(ds_nocopy.data[0], 777.0)
 
+    def test_randn_reproducible_with_seed_and_target_moments(self):
+        ds1 = randn(1000, mean=2, std=3, seed=42)
+        ds2 = randn(1000, mean=2, std=3, seed=42)
+
+        self.assertTrue(np.allclose(ds1.data, ds2.data))
+        self.assertTrue(np.isclose(float(np.mean(ds1.data)), 2.0, atol=0.3))
+        self.assertTrue(np.isclose(float(np.std(ds1.data)), 3.0, atol=0.3))
+
     def test_figure_auto_grid_shape(self):
         fig1 = figure()
         self.assertEqual((fig1.nrows, fig1.ncols), (1, 1))
 
         fig2 = figure(nrows=1, ncols=1)
         self.assertEqual((fig2.nrows, fig2.ncols), (1, 1))
+
+    def test_plot_preserves_rightmost_xtick_without_crowding_neighbor(self):
+        ds = data(np.arange(10), name="series")
+        artist = ds.plot(xticks=np.linspace(0, 9.2, 10))
+
+        with figure() as fig:
+            artist.paint(fig.axes[0])
+            ax = fig.axes[0].ax
+
+        ticks = ax.get_xticks()
+        self.assertTrue(np.any(np.isclose(ticks, 9.2)))
+        self.assertFalse(np.any(np.isclose(ticks, 8)))
+
+    def test_plot_accepts_list_of_datetime_xticks(self):
+        ds = data(np.arange(10), name="series")
+        xticks = [datetime(2024, 1, 1) + timedelta(days=i) for i in range(10)]
+        artist = ds.plot(xticks=xticks)
+
+        with figure() as fig:
+            artist.paint(fig.axes[0])
+            ax = fig.axes[0].ax
+
+        ticks = ax.get_xticks()
+        self.assertTrue(np.any(np.isclose(ticks, date2num(xticks[-1]))))
+
+    def test_scatter_accepts_list_of_datetime_xticks(self):
+        ds = data(np.arange(10), name="series")
+        xticks = [datetime(2024, 1, 1) + timedelta(days=i) for i in range(10)]
+        artist = ds.scatter(xticks=xticks)
+
+        with figure() as fig:
+            artist.paint(fig.axes[0])
+            ax = fig.axes[0].ax
+
+        ticks = ax.get_xticks()
+        self.assertTrue(np.any(np.isclose(ticks, date2num(xticks[-1]))))
+
+    def test_scatter_preserves_rightmost_xtick_without_crowding_neighbor(self):
+        ds = data(np.arange(10), name="series")
+        artist = ds.scatter(xticks=np.linspace(0, 9.2, 10))
+
+        with figure() as fig:
+            artist.paint(fig.axes[0])
+            ax = fig.axes[0].ax
+
+        ticks = ax.get_xticks()
+        self.assertTrue(np.any(np.isclose(ticks, 9.2)))
+        self.assertFalse(np.any(np.isclose(ticks, 8)))

@@ -6,7 +6,6 @@ NOTE: this module is private. All functions and objects are available in the mai
 
 """
 
-from abc import ABCMeta
 from functools import partial
 from typing import (
     TYPE_CHECKING,
@@ -50,7 +49,7 @@ __all__ = ["PlottableData"]
 
 
 @dataclass(validate_methods=True)
-class PlottableData(Data, PlotSettable, metaclass=ABCMeta):
+class PlottableData(Data, PlotSettable):
     """
     A dataset class providing methods for mathematical operations and plotting.
 
@@ -73,9 +72,9 @@ class PlottableData(Data, PlotSettable, metaclass=ABCMeta):
         return False
 
     def __repr__(self) -> str:
-        return self.__class__.__name__ + "\n- " + self.data_info()
+        return self.__class__.__name__ + "\n- " + self.info()
 
-    def data_info(self) -> str:
+    def info(self) -> str:
         """Information of data."""
         not_none = self.settings._repr_changes()
         return f"{self.formatted_name()}{': ' if not_none else ''}{not_none}"
@@ -235,7 +234,7 @@ class PlottableData(Data, PlotSettable, metaclass=ABCMeta):
 
     def hist(
         self,
-        bins: int | list[float] = 100,
+        bins: int | list[int | float] = 100,
         density: bool = True,
         log: bool = False,
         same_bin: bool = True,
@@ -520,7 +519,7 @@ class PlottableDataSet(MultiObject[PlottableData]):
         super().__init__(objs, attr_reducer=self.__dataset_attr_reducer)
 
     def __repr__(self) -> str:
-        data_info = "\n- ".join([x.data_info() for x in self.__multiobjects__])
+        data_info = "\n- ".join([x.info() for x in self.__multiobjects__])
         return f"{PlottableData.__name__}\n- {data_info}"
 
     def batched(self, n: int = 1) -> MultiObject:
