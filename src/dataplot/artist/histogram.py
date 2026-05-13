@@ -77,11 +77,12 @@ class Histogram(Plotter):
         skew: float = stats.skew(self.data, bias=False, nan_policy="omit")
         kurt: float = stats.kurtosis(self.data, bias=False, nan_policy="omit")
         if self.fit is not None and self.density:
+            fit_x = self.__fit_x(bin_list)
             fit_curve = self.__fit_pdf(
-                bin_list, self.data, dist=self.fit, moments=(mean, std)
+                fit_x, self.data, dist=self.fit, moments=(mean, std)
             )
             ax.ax.plot(
-                bin_list,
+                fit_x,
                 fit_curve,
                 alpha=ax.settings.alpha,
                 label=f"{self.name} · fit",
@@ -94,6 +95,16 @@ class Histogram(Plotter):
             f"kurt={kurt:.3f}",
             bin_list,
         )
+
+    @staticmethod
+    def __fit_x(bin_list: np.ndarray, min_points: int = 512) -> np.ndarray:
+        """Return a dense x-grid so fitted PDFs render as smooth curves."""
+        finite_bins = bin_list[np.isfinite(bin_list)]
+        if finite_bins.size < 2:
+            return bin_list.astype(float)
+        start, stop = float(finite_bins[0]), float(finite_bins[-1])
+        points = max(int(min_points), int(bin_list.size))
+        return np.linspace(start, stop, points)
 
     @staticmethod
     def __fit_pdf(
