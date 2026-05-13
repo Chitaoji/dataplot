@@ -97,7 +97,7 @@ class Histogram(Plotter):
         )
 
     @staticmethod
-    def __fit_x(bins_arr: np.ndarray, min_points: int = 512) -> np.ndarray:
+    def __fit_x(bins_arr: np.ndarray, min_points: int = 1000) -> np.ndarray:
         """Return a dense x-grid so fitted PDFs render as smooth curves."""
         start, stop = bins_arr[0], bins_arr[-1]
         points = max(min_points, bins_arr.size)
