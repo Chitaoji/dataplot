@@ -37,7 +37,6 @@ class LineChart(Plotter):
     rolling: Optional[int | list[int]]
 
     def paint(self, ax: "AxesWrapper", **_) -> None:
-            xlabel=ax.get_setting("xlabel", "count"),
         axes_settings = {
             "title": ax.get_setting("title", "Line Chart"),
             "ylabel": ax.get_setting("ylabel", "value"),
