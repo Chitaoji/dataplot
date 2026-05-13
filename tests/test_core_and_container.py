@@ -2,8 +2,10 @@ import matplotlib
 
 matplotlib.use("Agg")
 import unittest
+from datetime import datetime, timedelta
 
 import numpy as np
+from matplotlib.dates import date2num
 from src.dataplot.container import _draw_reference_lines, _parse_linear_expression
 from src.dataplot.core import data, figure, randn
 
@@ -96,6 +98,30 @@ class TestCoreAndContainer(unittest.TestCase):
         ticks = ax.get_xticks()
         self.assertTrue(np.any(np.isclose(ticks, 9.2)))
         self.assertFalse(np.any(np.isclose(ticks, 8)))
+
+    def test_plot_accepts_list_of_datetime_xticks(self):
+        ds = data(np.arange(10), name="series")
+        xticks = [datetime(2024, 1, 1) + timedelta(days=i) for i in range(10)]
+        artist = ds.plot(xticks=xticks)
+
+        with figure() as fig:
+            artist.paint(fig.axes[0])
+            ax = fig.axes[0].ax
+
+        ticks = ax.get_xticks()
+        self.assertTrue(np.any(np.isclose(ticks, date2num(xticks[-1]))))
+
+    def test_scatter_accepts_list_of_datetime_xticks(self):
+        ds = data(np.arange(10), name="series")
+        xticks = [datetime(2024, 1, 1) + timedelta(days=i) for i in range(10)]
+        artist = ds.scatter(xticks=xticks)
+
+        with figure() as fig:
+            artist.paint(fig.axes[0])
+            ax = fig.axes[0].ax
+
+        ticks = ax.get_xticks()
+        self.assertTrue(np.any(np.isclose(ticks, date2num(xticks[-1]))))
 
     def test_scatter_preserves_rightmost_xtick_without_crowding_neighbor(self):
         ds = data(np.arange(10), name="series")

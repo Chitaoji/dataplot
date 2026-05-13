@@ -6,6 +6,7 @@ NOTE: this module is private. All functions and objects are available in the mai
 
 """
 
+from datetime import date, datetime
 from typing import TYPE_CHECKING, Any
 
 import numpy as np
@@ -15,18 +16,29 @@ if TYPE_CHECKING:
     from ..container import AxesWrapper
 
 
+def _supports_rightmost_xtick_label(xticks_array: np.ndarray) -> bool:
+    if np.issubdtype(xticks_array.dtype, np.number) or np.issubdtype(
+        xticks_array.dtype, np.datetime64
+    ):
+        return True
+    return all(
+        isinstance(tick, (date, datetime, np.datetime64)) for tick in xticks_array
+    )
+
+
 def ensure_rightmost_xtick_label(ax: "AxesWrapper", xticks: Any) -> None:
     """Preserve the rightmost x tick label without crowding nearby labels."""
-    xticks_array = np.asarray(list(xticks))
-    if xticks_array.size == 0:
+    xticks_list = list(xticks)
+    if len(xticks_list) == 0:
         return
-    if not (
-        np.issubdtype(xticks_array.dtype, np.number)
-        or np.issubdtype(xticks_array.dtype, np.datetime64)
-    ):
+    xticks_array = np.asarray(xticks_list)
+    if not _supports_rightmost_xtick_label(xticks_array):
         return
 
-    converted_xticks = np.asarray(ax.ax.convert_xunits(xticks_array), dtype=float)
+    try:
+        converted_xticks = np.asarray(ax.ax.convert_xunits(xticks_list), dtype=float)
+    except (TypeError, ValueError):
+        return
     rightmost = float(np.max(converted_xticks))
     current_ticks = np.asarray(ax.ax.get_xticks(), dtype=float)
     if current_ticks.size == 0:
