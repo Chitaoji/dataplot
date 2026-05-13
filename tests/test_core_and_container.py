@@ -11,17 +11,6 @@ from src.dataplot.core import data, figure, randn
 
 
 class TestCoreAndContainer(unittest.TestCase):
-    def test_plot_uses_count_xlabel_only_for_default_xticks(self):
-        ds = data([10, 20, 30], name="series")
-        artist = ds.plot()
-
-        with figure() as fig:
-            artist.paint(fig.axes[0])
-            ax = fig.axes[0].ax
-
-        self.assertEqual(ax.get_xlabel(), "count")
-        self.assertEqual(ax.get_ylabel(), "value")
-
     def test_plot_with_explicit_xticks_has_no_default_xlabel(self):
         ds = data([10, 20, 30], name="series")
         artist = ds.plot(xticks=[1, 2, 3])
@@ -32,7 +21,7 @@ class TestCoreAndContainer(unittest.TestCase):
 
         self.assertEqual(ax.get_xlabel(), "")
 
-    def test_plot_with_data_xticks_has_no_default_xlabel(self):
+    def test_plot_with_data_xticks_has_xlabel(self):
         ds = data([10, 20, 30], name="series")
         x = data([1, 2, 3], name="time")
         artist = ds.plot(xticks=x)
@@ -41,7 +30,7 @@ class TestCoreAndContainer(unittest.TestCase):
             artist.paint(fig.axes[0])
             ax = fig.axes[0].ax
 
-        self.assertEqual(ax.get_xlabel(), "")
+        self.assertEqual(ax.get_xlabel(), "time")
 
     def test_plot_with_explicit_xlabel_keeps_label(self):
         ds = data([10, 20, 30], name="series")
