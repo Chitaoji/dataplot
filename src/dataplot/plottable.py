@@ -318,8 +318,6 @@ class PlottableData(Data, PlotSettable):
             An instance of Artist.
 
         """
-        if isinstance(xticks, Data) and "xlabel" not in kwargs:
-            kwargs["xlabel"] = xticks.formatted_name()
         return self._get_artist(LineChart, locals())
 
     def scatter(
