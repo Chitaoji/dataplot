@@ -65,7 +65,7 @@ class Histogram(Plotter):
     def __hist(
         self, ax: "AxesWrapper", bins: int | list[float] = 100
     ) -> tuple[str, np.ndarray]:
-        _, bin_list, _ = ax.ax.hist(
+        _, bins_arr, _ = ax.ax.hist(
             self.data,
             bins=bins,
             density=self.density,
@@ -77,7 +77,7 @@ class Histogram(Plotter):
         skew: float = stats.skew(self.data, bias=False, nan_policy="omit")
         kurt: float = stats.kurtosis(self.data, bias=False, nan_policy="omit")
         if self.fit is not None and self.density:
-            fit_x = self.__fit_x(bin_list)
+            fit_x = self.__fit_x(bins_arr)
             fit_curve = self.__fit_pdf(
                 fit_x, self.data, dist=self.fit, moments=(mean, std)
             )
@@ -93,17 +93,14 @@ class Histogram(Plotter):
         return (
             f"{self.name}: mean={mean:.3f}, std={std:.3f}, skew={skew:.3f}, "
             f"kurt={kurt:.3f}",
-            bin_list,
+            bins_arr,
         )
 
     @staticmethod
-    def __fit_x(bin_list: np.ndarray, min_points: int = 512) -> np.ndarray:
+    def __fit_x(bins_arr: np.ndarray, min_points: int = 512) -> np.ndarray:
         """Return a dense x-grid so fitted PDFs render as smooth curves."""
-        finite_bins = bin_list[np.isfinite(bin_list)]
-        if finite_bins.size < 2:
-            return bin_list.astype(float)
-        start, stop = float(finite_bins[0]), float(finite_bins[-1])
-        points = max(int(min_points), int(bin_list.size))
+        start, stop = bins_arr[0], bins_arr[-1]
+        points = max(min_points, bins_arr.size)
         return np.linspace(start, stop, points)
 
     @staticmethod
