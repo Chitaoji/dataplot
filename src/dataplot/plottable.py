@@ -21,7 +21,7 @@ from typing import (
 import numpy as np
 from validating import dataclass
 
-from ._typing import DistName, SettingDict
+from ._typing import DistName, SampleRule, SettingDict
 from .artist import (
     Artist,
     CorrMap,
@@ -521,6 +521,30 @@ class PlottableDataSet(MultiObject[PlottableData]):
     def __repr__(self) -> str:
         data_info = "\n- ".join([x.info() for x in self.__multiobjects__])
         return f"{PlottableData.__name__}\n- {data_info}"
+
+    def sample(self, n: int = 100, rule: SampleRule = "head") -> "PlottableDataSet":
+        """Sample every dataset with the same random positions when requested."""
+        if rule != "random":
+            return PlottableDataSet(
+                *(obj.sample(n=n, rule=rule) for obj in self.__multiobjects__)
+            )
+
+        lengths = [len(obj.data) for obj in self.__multiobjects__]
+        if len(set(lengths)) != 1:
+            raise ValueError(
+                "random sampling multiple datasets requires equal data lengths"
+            )
+
+        index = np.random.randint(0, lengths[0], n).tolist()
+        sampled = self.idx(index)
+        return PlottableDataSet(
+            *(
+                obj._create_data(f"sample({obj.format}, {n})", sampled_obj.data)
+                for obj, sampled_obj in zip(
+                    self.__multiobjects__, sampled.__multiobjects__
+                )
+            )
+        )
 
     def batched(self, n: int = 1) -> MultiObject:
         """Overrides `PlottableData.batched()`."""
