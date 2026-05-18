@@ -178,3 +178,37 @@ class TestCoreAndContainer(unittest.TestCase):
         ticks = ax.get_xticks()
         self.assertTrue(np.any(np.isclose(ticks, 9.2)))
         self.assertFalse(np.any(np.isclose(ticks, 8)))
+
+    def test_scatter_fit_draws_straight_line(self):
+        ds = data(np.array([1.0, 3.0, 5.0, 7.0]), name="series")
+        artist = ds.scatter(xticks=np.array([0.0, 1.0, 2.0, 3.0]), fit=True)
+
+        with figure() as fig:
+            artist.paint(fig.axes[0])
+            ax = fig.axes[0].ax
+
+        self.assertEqual(len(ax.lines), 2)
+        fit_line = ax.lines[1]
+        self.assertEqual(fit_line.get_label(), "y = 1.000 + 2.000x")
+        self.assertEqual(fit_line.get_linestyle(), "--")
+        self.assertTrue(
+            np.allclose(fit_line.get_ydata(), 1.0 + 2.0 * fit_line.get_xdata())
+        )
+
+    def test_scatter_fit_rejects_datetime_xticks(self):
+        xticks = [datetime(2024, 1, 1) + timedelta(days=i) for i in range(4)]
+        ds = data(np.array([1.0, 3.0, 5.0, 7.0]), name="series")
+        artist = ds.scatter(xticks=xticks, fit=True)
+
+        with figure() as fig:
+            with self.assertRaisesRegex(ValueError, "numeric x-ticks"):
+                artist.paint(fig.axes[0])
+
+    def test_scatter_fit_rejects_numpy_datetime64_xticks(self):
+        xticks = np.array(["2024-01-01", "2024-01-02"], dtype="datetime64[D]")
+        ds = data(np.array([1.0, 3.0]), name="series")
+        artist = ds.scatter(xticks=xticks, fit=True)
+
+        with figure() as fig:
+            with self.assertRaisesRegex(ValueError, "numeric x-ticks"):
+                artist.paint(fig.axes[0])

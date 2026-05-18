@@ -11,7 +11,9 @@ from typing import TYPE_CHECKING, Any, Optional
 import numpy as np
 from validating import dataclass
 
+from ..container import _is_date_xaxis
 from ..database import Data
+from ..utils.math import linear_regression_1d
 from ._ticks import ensure_rightmost_xtick_label
 from .base import Plotter
 
@@ -31,6 +33,7 @@ class ScatterChart(Plotter):
 
     xticks: Optional["PlottableData | Any"]
     fmt: str
+    fit: bool
 
     def paint(self, ax: "AxesWrapper", **_) -> None:
         ax.set_axes(title=ax.get_setting("title", "Scatter Chart"))
@@ -52,4 +55,22 @@ class ScatterChart(Plotter):
             )
 
         ax.ax.plot(xticks, self.data, self.fmt, linestyle="None", label=self.name)
+        if self.fit:
+            if _is_date_xaxis(ax.ax):
+                raise ValueError("fit=True requires numeric x-ticks")
+            try:
+                fit_xticks = np.asarray(xticks, dtype=float)
+            except (TypeError, ValueError) as exc:
+                raise ValueError("fit=True requires numeric x-ticks") from exc
+            self._plot_fitted_line(ax, fit_xticks, self.data)
         ensure_rightmost_xtick_label(ax, xticks)
+
+    @staticmethod
+    def _plot_fitted_line(ax: "AxesWrapper", x: np.ndarray, y: np.ndarray) -> None:
+        a, b = linear_regression_1d(y, x)
+        lb, ub = ax.ax.get_xlim()
+        if lb == ub:
+            lb, ub = x.min(), x.max()
+        ax.ax.plot(
+            [lb, ub], [a + lb * b, a + ub * b], "--", label=f"y = {a:.3f} + {b:.3f}x"
+        )
