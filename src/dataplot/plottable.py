@@ -528,23 +528,9 @@ class PlottableDataSet(MultiObject[PlottableData]):
             return PlottableDataSet(
                 *(obj.sample(n=n, rule=rule) for obj in self.__multiobjects__)
             )
-
-        lengths = [len(obj.data) for obj in self.__multiobjects__]
-        if len(set(lengths)) != 1:
-            raise ValueError(
-                "random sampling multiple datasets requires equal data lengths"
-            )
-
-        index = np.random.randint(0, lengths[0], n).tolist()
-        sampled = self.idx(index)
-        return PlottableDataSet(
-            *(
-                obj._create_data(f"sample({obj.format}, {n})", sampled_obj.data)
-                for obj, sampled_obj in zip(
-                    self.__multiobjects__, sampled.__multiobjects__
-                )
-            )
-        )
+        length = min(len(obj.data) for obj in self.__multiobjects__)
+        index = np.random.randint(0, length, n).tolist()
+        return self.idx(index)
 
     def batched(self, n: int = 1) -> MultiObject:
         """Overrides `PlottableData.batched()`."""

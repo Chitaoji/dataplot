@@ -181,7 +181,9 @@ class Data(metaclass=ABCMeta):
             A new instance of self.__class__.
 
         """
-        return self._create_data(f"idx({self.format}, {index})", self.data[index])
+        return self._create_data(
+            f"sample({self.format}, {len(index)})", self.data[index]
+        )
 
     def sample(self, n: int = 100, rule: SampleRule = "head") -> Self:
         """
@@ -203,7 +205,7 @@ class Data(metaclass=ABCMeta):
         match rule:
             case "random":
                 index = np.random.randint(0, len(self.data), n).tolist()
-                new_data = self.idx(index).data
+                return self.idx(index)
             case "head":
                 new_data = self.data[:n]
             case "tail":
