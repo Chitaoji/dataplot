@@ -326,6 +326,7 @@ class PlottableData(Data, PlotSettable):
         self,
         xticks: Self | Any = None,
         fmt: str = "o",
+        fit: bool = False,
         **kwargs: Unpack[SettingDict],
     ) -> Artist:
         """
@@ -339,6 +340,9 @@ class PlottableData(Data, PlotSettable):
             be set to `range(len(data))`. By default None.
         fmt : str, optional
             A format string, e.g. 'ro' for red circles, by default 'o'.
+        fit : bool, optional
+            Determines whether to fit and draw a straight trend line. Only numeric
+            x-ticks are supported when fitting. By default False.
         **kwargs : **SettingDict
             Specifies the plot settings, see `.set_plot()` for more details.
 
