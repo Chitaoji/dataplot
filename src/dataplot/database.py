@@ -166,6 +166,23 @@ class Data(metaclass=ABCMeta):
             priority -= 1
         return self.__remove_brackets(self.fmtb.format(self.name), priority=priority)
 
+    def idx(self, index: list[int]) -> Self:
+        """
+        Select data by integer positions.
+
+        Parameters
+        ----------
+        index : list[int]
+            Integer positions to select from the data.
+
+        Returns
+        -------
+        Self
+            A new instance of self.__class__.
+
+        """
+        return self._create_data(f"idx({self.format}, {index})", self.data[index])
+
     def sample(self, n: int = 100, rule: SampleRule = "head") -> Self:
         """
         Sample from the data.
@@ -185,8 +202,8 @@ class Data(metaclass=ABCMeta):
         """
         match rule:
             case "random":
-                idx = np.random.randint(0, len(self.data), n)
-                new_data = self.data[idx]
+                index = np.random.randint(0, len(self.data), n).tolist()
+                new_data = self.idx(index).data
             case "head":
                 new_data = self.data[:n]
             case "tail":
