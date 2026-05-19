@@ -54,7 +54,14 @@ class ScatterChart(Plotter):
                 f"lengths {len_t} and {len_d}"
             )
 
-        ax.ax.plot(xticks, self.data, self.fmt, linestyle="None", label=self.name)
+        ax.ax.plot(
+            xticks,
+            self.data,
+            self.fmt,
+            linestyle="None",
+            label=self.name,
+            alpha=ax.settings.alpha,
+        )
         if self.fit:
             if _is_date_xaxis(ax.ax):
                 raise ValueError("fit=True requires numeric x-ticks")
