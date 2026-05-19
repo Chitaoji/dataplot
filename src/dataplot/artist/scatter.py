@@ -14,7 +14,6 @@ from validating import dataclass
 from ..container import _is_date_xaxis
 from ..database import Data
 from ..utils.math import linear_regression_1d
-from ._ticks import ensure_rightmost_xtick_label
 from .base import Plotter
 
 if TYPE_CHECKING:
@@ -70,7 +69,6 @@ class ScatterChart(Plotter):
             except (TypeError, ValueError) as exc:
                 raise ValueError("fit=True requires numeric x-ticks") from exc
             self._plot_fitted_line(ax, fit_xticks, self.data)
-        ensure_rightmost_xtick_label(ax, xticks)
 
     @staticmethod
     def _plot_fitted_line(ax: "AxesWrapper", x: np.ndarray, y: np.ndarray) -> None:

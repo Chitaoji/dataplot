@@ -12,7 +12,6 @@ import numpy as np
 from validating import dataclass
 
 from ..database import Data
-from ._ticks import ensure_rightmost_xtick_label
 from .base import Plotter
 
 if TYPE_CHECKING:
@@ -58,4 +57,3 @@ class HexBin(Plotter):
             mincnt=self.mincnt,
             alpha=ax.settings.alpha,
         )
-        ensure_rightmost_xtick_label(ax, xticks)
