@@ -57,3 +57,5 @@ class HexBin(Plotter):
             mincnt=self.mincnt,
             alpha=ax.settings.alpha,
         )
+        # Keep hexagons visually regular when the figure/axes ratio is not 1:1.
+        ax.ax.set_aspect("equal", adjustable="box")
