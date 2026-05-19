@@ -47,7 +47,7 @@ class Data(metaclass=ABCMeta):
         self.name = "x" if self.name is None else self.name
         self.original_data = self.data
 
-    def __getitem__(self, __key: int):
+    def __getitem__(self, __key: int) -> Self:
         return UNSUBSCRIPTABLE
 
     def __neg__(self) -> Self:
