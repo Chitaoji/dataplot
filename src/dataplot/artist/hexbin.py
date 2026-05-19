@@ -59,9 +59,7 @@ class HexBin(Plotter):
         )
         # Scale aspect by the current data ranges so x/y limits keep a stable
         # visual proportion for hex bins.
-        x_min, x_max = ax.ax.get_xlim()
-        y_min, y_max = ax.ax.get_ylim()
-        x_range = abs(float(x_max) - float(x_min))
-        y_range = abs(float(y_max) - float(y_min))
-        if x_range > 0 and y_range > 0:
-            ax.ax.set_aspect(x_range / y_range, adjustable="box")
+        xmin, xmax = ax.ax.get_xlim()
+        ymin, ymax = ax.ax.get_ylim()
+        if xmax > xmin and ymax > ymin:
+            ax.ax.set_aspect((xmax - xmin) / (ymax - ymin), adjustable="datalim")
