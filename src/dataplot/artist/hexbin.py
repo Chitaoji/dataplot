@@ -57,5 +57,11 @@ class HexBin(Plotter):
             mincnt=self.mincnt,
             alpha=ax.settings.alpha,
         )
-        # Keep hexagons visually regular when the figure/axes ratio is not 1:1.
-        ax.ax.set_aspect("equal", adjustable="datalim")
+        # Scale aspect by the current data ranges so x/y limits keep a stable
+        # visual proportion for hex bins.
+        x_min, x_max = ax.ax.get_xlim()
+        y_min, y_max = ax.ax.get_ylim()
+        x_range = abs(float(x_max) - float(x_min))
+        y_range = abs(float(y_max) - float(y_min))
+        if x_range > 0 and y_range > 0:
+            ax.ax.set_aspect(x_range / y_range, adjustable="box")
