@@ -25,6 +25,7 @@ from ._typing import DistName, SampleRule, SettingDict
 from .artist import (
     Artist,
     CorrMap,
+    HexBin,
     Histogram,
     KSPlot,
     LineChart,
@@ -356,6 +357,43 @@ class PlottableData(Data, PlotSettable):
             kwargs["xlabel"] = xticks.formatted_name()
         return self._get_artist(ScatterChart, locals())
 
+
+    def hexbin(
+        self,
+        xticks: Self | Any = None,
+        gridsize: int = 30,
+        cmap: str = "viridis",
+        mincnt: int | None = 1,
+        **kwargs: Unpack[SettingDict],
+    ) -> Artist:
+        """
+        Create a hexbin chart for the data.
+
+        Parameters
+        ----------
+        xticks : PlottableData | Any, optional
+            Specifies the x-values for the chart. If not provided, x-values will
+            be set to `range(len(data))`. By default None.
+        gridsize : int, optional
+            Number of hexagons in the x-direction, by default 30.
+        cmap : str, optional
+            Colormap used to color hexagons by counts, by default "viridis".
+        mincnt : int | None, optional
+            Minimum count required to display a hexagon. Set to None to disable
+            filtering. By default 1.
+        **kwargs : **SettingDict
+            Specifies the plot settings, see `.set_plot()` for more details.
+
+        Returns
+        -------
+        Artist
+            An instance of Artist.
+
+        """
+        if isinstance(xticks, Data) and "xlabel" not in kwargs:
+            kwargs["xlabel"] = xticks.formatted_name()
+        return self._get_artist(HexBin, locals())
+
     def qqplot(
         self,
         baseline: DistName | Self | Any = "norm",
@@ -552,6 +590,7 @@ class PlottableDataSet(MultiObject[PlottableData]):
                 "hist"
                 | "plot"
                 | "scatter"
+                | "hexbin"
                 | "ppplot"
                 | "qqplot"
                 | "ksplot"
