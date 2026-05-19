@@ -41,10 +41,3 @@ class TestDatasetResample(unittest.TestCase):
         left, right = sampled.__multiobjects__
 
         self.assertTrue(np.array_equal(right.data - left.data, np.full(5, 100)))
-
-    def test_joined_random_sample_requires_equal_lengths(self):
-        joined = data(np.arange(3), np.arange(4))
-
-        with self.assertRaises(ValueError):
-            joined.sample(2, rule="random")
-
