@@ -325,7 +325,7 @@ class PlottableData(Data, PlotSettable):
     def scatter(
         self,
         xticks: Self | Any = None,
-        fmt: str = "o",
+        fmt: str = ".",
         fit: bool = False,
         **kwargs: Unpack[SettingDict],
     ) -> Artist:
@@ -339,7 +339,7 @@ class PlottableData(Data, PlotSettable):
             Specifies the x-ticks for the chart. If not provided, the x-ticks will
             be set to `range(len(data))`. By default None.
         fmt : str, optional
-            A format string, e.g. 'ro' for red circles, by default 'o'.
+            A format string, e.g. 'r.' for red dots, by default '.'.
         fit : bool, optional
             Determines whether to fit and draw a straight trend line. Only numeric
             x-ticks are supported when fitting. By default False.
