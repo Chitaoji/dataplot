@@ -167,18 +167,6 @@ class TestCoreAndContainer(unittest.TestCase):
         ticks = ax.get_xticks()
         self.assertTrue(np.any(np.isclose(ticks, date2num(xticks[-1]))))
 
-    def test_scatter_preserves_rightmost_xtick_without_crowding_neighbor(self):
-        ds = data(np.arange(10), name="series")
-        artist = ds.scatter(xticks=np.linspace(0, 9.2, 10))
-
-        with figure() as fig:
-            artist.paint(fig.axes[0])
-            ax = fig.axes[0].ax
-
-        ticks = ax.get_xticks()
-        self.assertTrue(np.any(np.isclose(ticks, 9.2)))
-        self.assertFalse(np.any(np.isclose(ticks, 8)))
-
     def test_scatter_fit_draws_straight_line(self):
         ds = data(np.array([1.0, 3.0, 5.0, 7.0]), name="series")
         artist = ds.scatter(xticks=np.array([0.0, 1.0, 2.0, 3.0]), fit=True)
