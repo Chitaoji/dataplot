@@ -25,7 +25,7 @@ from ._typing import DistName, SampleRule, SettingDict
 from .artist import (
     Artist,
     CorrMap,
-    HexBin,
+    HexBinMap,
     Histogram,
     KSPlot,
     LineChart,
@@ -391,7 +391,7 @@ class PlottableData(Data, PlotSettable):
         """
         if isinstance(xticks, Data) and "xlabel" not in kwargs:
             kwargs["xlabel"] = xticks.formatted_name()
-        return self._get_artist(HexBin, locals())
+        return self._get_artist(HexBinMap, locals())
 
     def qqplot(
         self,

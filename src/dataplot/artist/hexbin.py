@@ -18,11 +18,11 @@ if TYPE_CHECKING:
     from ..container import AxesWrapper
     from ..plottable import PlottableData
 
-__all__ = ["HexBin"]
+__all__ = ["HexBinMap"]
 
 
 @dataclass(validate_methods=True)
-class HexBin(Plotter):
+class HexBinMap(Plotter):
     """A plotter class that creates a hexbin chart."""
 
     xticks: Optional["PlottableData | Any"]
@@ -31,7 +31,7 @@ class HexBin(Plotter):
     mincnt: Optional[int]
 
     def paint(self, ax: "AxesWrapper", **_) -> None:
-        ax.set_axes(title=ax.get_setting("title", "Hexbin Chart"))
+        ax.set_axes(title=ax.get_setting("title", "Hexbin Map"))
         ax.load(self.settings)
         self.__plot(ax)
 
