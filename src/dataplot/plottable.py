@@ -31,7 +31,7 @@ from .artist import (
     LineChart,
     PPPlot,
     QQPlot,
-    ScatterChart,
+    ScatterPlot,
 )
 from .database import Data
 from .setting import PlotSettable
@@ -355,8 +355,7 @@ class PlottableData(Data, PlotSettable):
         """
         if isinstance(xticks, Data) and "xlabel" not in kwargs:
             kwargs["xlabel"] = xticks.formatted_name()
-        return self._get_artist(ScatterChart, locals())
-
+        return self._get_artist(ScatterPlot, locals())
 
     def hexbin(
         self,

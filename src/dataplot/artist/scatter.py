@@ -20,11 +20,11 @@ if TYPE_CHECKING:
     from ..container import AxesWrapper
     from ..plottable import PlottableData
 
-__all__ = ["ScatterChart"]
+__all__ = ["ScatterPlot"]
 
 
 @dataclass(validate_methods=True)
-class ScatterChart(Plotter):
+class ScatterPlot(Plotter):
     """
     A plotter class that creates a scatter chart.
 
@@ -35,7 +35,7 @@ class ScatterChart(Plotter):
     fit: bool
 
     def paint(self, ax: "AxesWrapper", **_) -> None:
-        ax.set_axes(title=ax.get_setting("title", "Scatter Chart"))
+        ax.set_axes(title=ax.get_setting("title", "Scatter Plot"))
         ax.load(self.settings)
         self.__plot(ax)
 
