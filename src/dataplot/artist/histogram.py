@@ -81,12 +81,7 @@ class Histogram(Plotter):
             fit_curve = self.__fit_pdf(
                 adj_bin_arr, self.data, dist=self.fit, moments=(mean, std)
             )
-            ax.ax.plot(
-                adj_bin_arr,
-                fit_curve,
-                alpha=ax.settings.alpha,
-                label=f"{self.name} · fit",
-            )
+            ax.ax.plot(adj_bin_arr, fit_curve, alpha=ax.settings.alpha)
 
         # Disable matplotlib's default horizontal margins for tighter x-limits.
         ax.ax.margins(x=0)
