@@ -65,7 +65,7 @@ class Histogram(Plotter):
     def __hist(
         self, ax: "AxesWrapper", bins: int | list[float] = 100
     ) -> tuple[str, np.ndarray]:
-        _, bins_arr, _ = ax.ax.hist(
+        _, bins_arr, patches = ax.ax.hist(
             self.data,
             bins=bins,
             density=self.density,
@@ -81,7 +81,15 @@ class Histogram(Plotter):
             fit_curve = self.__fit_pdf(
                 adj_bin_arr, self.data, dist=self.fit, moments=(mean, std)
             )
-            ax.ax.plot(adj_bin_arr, fit_curve, alpha=ax.settings.alpha)
+            fit_color = None
+            if len(patches) > 0:
+                fit_color = patches[0].get_facecolor()
+            ax.ax.plot(
+                adj_bin_arr,
+                fit_curve,
+                alpha=ax.settings.alpha,
+                color=fit_color,
+            )
 
         # Disable matplotlib's default horizontal margins for tighter x-limits.
         ax.ax.margins(x=0)
