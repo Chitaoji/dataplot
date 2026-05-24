@@ -147,7 +147,7 @@ class AxesSettingDict(TypedDict):
     title: NotRequired[Optional[str]]
     xlabel: NotRequired[Optional[str]]
     ylabel: NotRequired[Optional[str]]
-    alpha: NotRequired[Optional[float]]
+    alpha: NotRequired[Optional[float | int]]
     grid: NotRequired[Optional[bool]]
     grid_alpha: NotRequired[Optional[float]]
     fontdict: NotRequired[Optional["FontDict"]]
