@@ -10,6 +10,7 @@ import warnings
 from typing import TYPE_CHECKING, Literal, Optional
 
 import numpy as np
+from matplotlib.colors import to_rgba
 from scipy import stats
 from validating import dataclass
 
@@ -83,7 +84,7 @@ class Histogram(Plotter):
             )
             fit_color = None
             if len(patches) > 0:
-                fit_color = patches[0].get_facecolor()
+                fit_color = self.__darken_color(patches[0].get_facecolor())
             ax.ax.plot(
                 adj_bin_arr,
                 fit_curve,
@@ -105,6 +106,12 @@ class Histogram(Plotter):
         if len(bins_arr) < min_points:
             return np.linspace(bins_arr[0], bins_arr[-1], min_points)
         return bins_arr
+
+    @staticmethod
+    def __darken_color(color: object, factor: float = 0.75) -> tuple[float, ...]:
+        """Return a darker RGBA color by scaling RGB channels."""
+        r, g, b, a = to_rgba(color)
+        return (r * factor, g * factor, b * factor, a)
 
     @staticmethod
     def __fit_pdf(
