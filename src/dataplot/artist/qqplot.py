@@ -34,7 +34,7 @@ class QQPlot(Plotter):
     baseline: "DistName | PlottableData | Any"
     dots: int
     edge_precision: float = attr(slb=0.0, sub=0.5)
-    fmt: str
+    format: str
 
     def paint(
         self, ax: "AxesWrapper", __multi_prev_returned__: bool | None = None, **_
@@ -51,7 +51,7 @@ class QQPlot(Plotter):
     def __plot(self, ax: "AxesWrapper", is_multi: bool) -> None:
         xlabel, p, q1 = self._generate_dist()
         q2 = get_quantile(self.data, p)
-        ax.ax.plot(q1, q2, self.fmt, zorder=2.1, label=f"{self.name} vs. {xlabel}")
+        ax.ax.plot(q1, q2, self.format, zorder=2.1, label=f"{self.name} vs. {xlabel}")
         if is_multi:
             ax.ax.margins(x=0)
         else:

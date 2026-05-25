@@ -282,7 +282,7 @@ class PlottableData(Data, PlotSettable):
     def plot(
         self,
         xticks: Self | Any = None,
-        fmt: str = "",
+        format: str = "",
         scatter: bool = False,
         sorted: bool = False,
         rolling: Optional[int | list[int]] = None,
@@ -297,7 +297,7 @@ class PlottableData(Data, PlotSettable):
         xticks : PlottableData | Any, optional
             Specifies the x-ticks for the line chart. If not provided, the x-ticks will
             be set to `range(len(data))`. By default None.
-        fmt : str, optional
+        format : str, optional
             A format string, e.g. 'ro' for red circles, by default ''.
         scatter : bool, optional
             Determines whether to include scatter points in the line chart, by default
@@ -326,7 +326,7 @@ class PlottableData(Data, PlotSettable):
     def scatter(
         self,
         xticks: Self | Any = None,
-        fmt: str = ".",
+        format: str = ".",
         fit: bool = False,
         **kwargs: Unpack[SettingDict],
     ) -> Artist:
@@ -339,7 +339,7 @@ class PlottableData(Data, PlotSettable):
         xticks : PlottableData | Any, optional
             Specifies the x-ticks for the chart. If not provided, the x-ticks will
             be set to `range(len(data))`. By default None.
-        fmt : str, optional
+        format : str, optional
             A format string, e.g. 'r.' for red dots, by default '.'.
         fit : bool, optional
             Determines whether to fit and draw a straight trend line. Only numeric
@@ -398,7 +398,7 @@ class PlottableData(Data, PlotSettable):
         baseline: DistName | Self | Any = "norm",
         dots: int = 30,
         edge_precision: float = 1e-2,
-        fmt: str = "o",
+        format: str = "o",
         **kwargs: Unpack[SettingDict],
     ) -> Artist:
         """
@@ -415,7 +415,7 @@ class PlottableData(Data, PlotSettable):
         edge_precision : float, optional
             Specifies the lowest quantile (`=edge_precision`) and the highest
             quantile (`=1-edge_precision`), by default 1e-2.
-        fmt : str, optional
+        format : str, optional
             A format string, e.g. 'ro' for red circles, by default 'o'.
         **kwargs : **SettingDict
             Specifies the plot settings, see `.set_plot()` for more details.
@@ -432,7 +432,7 @@ class PlottableData(Data, PlotSettable):
         self,
         baseline: DistName | Self | Any = "norm",
         dots: int = 30,
-        fmt: str = "o",
+        format: str = "o",
         **kwargs: Unpack[SettingDict],
     ) -> Artist:
         """
@@ -446,7 +446,7 @@ class PlottableData(Data, PlotSettable):
             sample. By default 'norm'.
         dots : int, optional
             Number of dots, by default 30.
-        fmt : str, optional
+        format : str, optional
             A format string, e.g. 'ro' for red circles, by default 'o'.
         **kwargs : **SettingDict
             Specifies the plot settings, see `.set_plot()` for more details.
@@ -464,7 +464,7 @@ class PlottableData(Data, PlotSettable):
         self,
         baseline: DistName | Self | Any = "norm",
         dots: int = 1000,
-        fmt: str = "",
+        format: str = "",
         **kwargs: Unpack[SettingDict],
     ) -> Artist:
         """
@@ -478,7 +478,7 @@ class PlottableData(Data, PlotSettable):
             another real sample. By default 'norm'.
         dots : int, optional
             Number of dots, by default 1000.
-        fmt : str, optional
+        format : str, optional
             A format string, e.g. 'ro' for red circles, by default ''.
         **kwargs : **SettingDict
             Specifies the plot settings, see `.set_plot()` for more details.
