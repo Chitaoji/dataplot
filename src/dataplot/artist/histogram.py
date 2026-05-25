@@ -46,7 +46,6 @@ class Histogram(Plotter):
     ) -> tuple[str, np.ndarray]:
         ax.set_axes(
             title=ax.get_setting("title", "Histogram"),
-            alpha=ax.get_setting("alpha", 0.8),
             xlabel=ax.get_setting("xlabel", "value"),
             ylabel=ax.get_setting("ylabel", "density" if self.density else "count"),
         )
