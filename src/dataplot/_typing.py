@@ -10,7 +10,33 @@ from typing import TYPE_CHECKING, Literal, NotRequired, Optional, TypedDict, Typ
 if TYPE_CHECKING:
     from .setting import PlotSettable
 
-
+MarkerStyle = Literal[
+    ".",
+    ",",
+    "o",
+    "v",
+    "^",
+    "<",
+    ">",
+    "1",
+    "2",
+    "3",
+    "4",
+    "8",
+    "s",
+    "p",
+    "P",
+    "*",
+    "h",
+    "H",
+    "+",
+    "x",
+    "X",
+    "D",
+    "d",
+    "|",
+    "_",
+]
 PlotSettableVar = TypeVar("PlotSettableVar", bound="PlotSettable")
 StyleName = Literal[
     "Solarize_Light2",

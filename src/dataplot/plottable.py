@@ -21,7 +21,7 @@ from typing import (
 import numpy as np
 from validating import dataclass
 
-from ._typing import DistName, SampleRule, SettingDict
+from ._typing import DistName, MarkerStyle, SampleRule, SettingDict
 from .artist import (
     Artist,
     CorrMap,
@@ -47,34 +47,6 @@ if TYPE_CHECKING:
 
 
 __all__ = ["PlottableData"]
-
-MarkerStyle = Literal[
-    ".",
-    ",",
-    "o",
-    "v",
-    "^",
-    "<",
-    ">",
-    "1",
-    "2",
-    "3",
-    "4",
-    "8",
-    "s",
-    "p",
-    "P",
-    "*",
-    "h",
-    "H",
-    "+",
-    "x",
-    "X",
-    "D",
-    "d",
-    "|",
-    "_",
-]
 
 
 @dataclass(validate_methods=True)
@@ -369,7 +341,7 @@ class PlottableData(Data, PlotSettable):
             Specifies the x-ticks for the chart. If not provided, the x-ticks will
             be set to `range(len(data))`. By default None.
         marker : str, optional
-            Marker style (matplotlib format string), e.g. 'r.' for red dots,
+            Marker style (matplotlib format string), e.g. '.' for point markers,
             by default '.'.
         fit : bool, optional
             Determines whether to fit and draw a straight trend line. Only numeric
@@ -447,7 +419,7 @@ class PlottableData(Data, PlotSettable):
             Specifies the lowest quantile (`=edge_precision`) and the highest
             quantile (`=1-edge_precision`), by default 1e-2.
         marker : str, optional
-            Marker style (matplotlib format string), e.g. 'ro' for red circles,
+            Marker style (matplotlib format string), e.g. '.' for point markers,
             by default 'o'.
         **kwargs : **SettingDict
             Specifies the plot settings, see `.set_plot()` for more details.
@@ -480,7 +452,7 @@ class PlottableData(Data, PlotSettable):
         dots : int, optional
             Number of dots, by default 30.
         marker : str, optional
-            Marker style (matplotlib format string), e.g. 'ro' for red circles,
+            Marker style (matplotlib format string), e.g. '.' for point markers,
             by default 'o'.
         **kwargs : **SettingDict
             Specifies the plot settings, see `.set_plot()` for more details.
