@@ -5,6 +5,7 @@ import unittest
 from datetime import datetime, timedelta
 
 import numpy as np
+from matplotlib.colors import to_rgba
 from matplotlib.dates import date2num
 from src.dataplot.container import _draw_reference_lines, _parse_linear_expression
 from src.dataplot.core import data, figure, randn
@@ -179,7 +180,11 @@ class TestCoreAndContainer(unittest.TestCase):
         fit_line = ax.lines[1]
         self.assertEqual(fit_line.get_label(), "y = 1.000 + 2.000x")
         self.assertEqual(fit_line.get_linestyle(), "--")
-        self.assertEqual(fit_line.get_color(), ax.lines[0].get_color())
+        scatter_rgba = to_rgba(ax.lines[0].get_color())
+        fit_rgba = to_rgba(fit_line.get_color())
+        self.assertEqual(scatter_rgba[-1], fit_rgba[-1])
+        self.assertTrue(all(f <= s for f, s in zip(fit_rgba[:3], scatter_rgba[:3])))
+        self.assertNotEqual(fit_rgba[:3], scatter_rgba[:3])
         self.assertTrue(
             np.allclose(fit_line.get_ydata(), 1.0 + 2.0 * fit_line.get_xdata())
         )
