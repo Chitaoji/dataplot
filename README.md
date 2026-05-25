@@ -124,6 +124,12 @@ Common settings:
 This project falls under the BSD 3-Clause License.
 
 ## 🕒 History
+### v0.1.16
+* Added `PlottableData.hexbin(...)` and fixed hexbin distortion/aspect behavior on non-square axes by using axis-range ratio adjustments.
+* Enhanced scatter plotting with a fitted trend line option `fit`.
+* Refined histogram fit-curve rendering by aligning fit-line color with histogram bars and darkening the fit curve for clearer contrast.
+* Completed plotting style API naming cleanup: `fmt` naming was finalized to `linestyle` or `marker`.
+
 ### v0.1.15
 * Added `dp.randn(...)` for generating normally distributed `PlottableData` values, including optional seed-based reproducibility.
 * Improved line and scatter x-axis rendering by preserving the rightmost tick label, supporting datetime tick lists, and refining default x-label behavior.

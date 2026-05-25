@@ -47,7 +47,7 @@ class Data(metaclass=ABCMeta):
         self.name = "x" if self.name is None else self.name
         self.original_data = self.data
 
-    def __getitem__(self, __key: int):
+    def __getitem__(self, __key: int) -> Self:
         return UNSUBSCRIPTABLE
 
     def __neg__(self) -> Self:
@@ -166,6 +166,25 @@ class Data(metaclass=ABCMeta):
             priority -= 1
         return self.__remove_brackets(self.fmtb.format(self.name), priority=priority)
 
+    def idx(self, index: list[int]) -> Self:
+        """
+        Select data by integer positions.
+
+        Parameters
+        ----------
+        index : list[int]
+            Integer positions to select from the data.
+
+        Returns
+        -------
+        Self
+            A new instance of self.__class__.
+
+        """
+        return self._create_data(
+            f"sample({self.format}, {len(index)})", self.data[index]
+        )
+
     def sample(self, n: int = 100, rule: SampleRule = "head") -> Self:
         """
         Sample from the data.
@@ -185,8 +204,8 @@ class Data(metaclass=ABCMeta):
         """
         match rule:
             case "random":
-                idx = np.random.randint(0, len(self.data), n)
-                new_data = self.data[idx]
+                index = np.random.randint(0, len(self.data), n).tolist()
+                return self.idx(index)
             case "head":
                 new_data = self.data[:n]
             case "tail":

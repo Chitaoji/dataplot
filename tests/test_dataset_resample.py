@@ -17,3 +17,27 @@ class TestDatasetResample(unittest.TestCase):
         with self.assertRaises(ValueError):
             ds.resample(0)
 
+    def test_idx_selects_single_dataset_positions(self):
+        ds = data(np.arange(10))
+
+        indexed = ds.idx([3, 1, 3])
+
+        self.assertTrue(np.array_equal(indexed.data, [3, 1, 3]))
+
+    def test_joined_idx_uses_same_indices_for_each_dataset(self):
+        joined = data(np.arange(10), np.arange(10) + 100)
+
+        indexed = joined.idx([3, 1, 3])
+        left, right = indexed.__multiobjects__
+
+        self.assertTrue(np.array_equal(left.data, [3, 1, 3]))
+        self.assertTrue(np.array_equal(right.data, [103, 101, 103]))
+
+    def test_joined_random_sample_uses_same_indices_for_each_dataset(self):
+        first = data(np.arange(10), np.arange(10) + 100)
+        np.random.seed(123)
+
+        sampled = first.sample(5, rule="random")
+        left, right = sampled.__multiobjects__
+
+        self.assertTrue(np.array_equal(right.data - left.data, np.full(5, 100)))

@@ -10,7 +10,33 @@ from typing import TYPE_CHECKING, Literal, NotRequired, Optional, TypedDict, Typ
 if TYPE_CHECKING:
     from .setting import PlotSettable
 
-
+MarkerStyle = Literal[
+    ".",
+    ",",
+    "o",
+    "v",
+    "^",
+    "<",
+    ">",
+    "1",
+    "2",
+    "3",
+    "4",
+    "8",
+    "s",
+    "p",
+    "P",
+    "*",
+    "h",
+    "H",
+    "+",
+    "x",
+    "X",
+    "D",
+    "d",
+    "|",
+    "_",
+]
 PlotSettableVar = TypeVar("PlotSettableVar", bound="PlotSettable")
 StyleName = Literal[
     "Solarize_Light2",
@@ -110,7 +136,7 @@ class SettingDict(TypedDict):
     title: NotRequired[Optional[str]]
     xlabel: NotRequired[Optional[str]]
     ylabel: NotRequired[Optional[str]]
-    alpha: NotRequired[Optional[float]]
+    alpha: NotRequired[Optional[float | int]]
     dpi: NotRequired[Optional[float]]
     grid: NotRequired[Optional[bool]]
     grid_alpha: NotRequired[Optional[float]]
@@ -147,7 +173,7 @@ class AxesSettingDict(TypedDict):
     title: NotRequired[Optional[str]]
     xlabel: NotRequired[Optional[str]]
     ylabel: NotRequired[Optional[str]]
-    alpha: NotRequired[Optional[float]]
+    alpha: NotRequired[Optional[float | int]]
     grid: NotRequired[Optional[bool]]
     grid_alpha: NotRequired[Optional[float]]
     fontdict: NotRequired[Optional["FontDict"]]

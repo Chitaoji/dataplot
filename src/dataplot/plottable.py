@@ -21,16 +21,17 @@ from typing import (
 import numpy as np
 from validating import dataclass
 
-from ._typing import DistName, SettingDict
+from ._typing import DistName, MarkerStyle, SampleRule, SettingDict
 from .artist import (
     Artist,
     CorrMap,
+    HexBinMap,
     Histogram,
     KSPlot,
     LineChart,
     PPPlot,
     QQPlot,
-    ScatterChart,
+    ScatterPlot,
 )
 from .database import Data
 from .setting import PlotSettable
@@ -281,7 +282,7 @@ class PlottableData(Data, PlotSettable):
     def plot(
         self,
         xticks: Self | Any = None,
-        fmt: str = "",
+        linestyle: Literal["-", "--", "-.", ":"] = "-",
         scatter: bool = False,
         sorted: bool = False,
         rolling: Optional[int | list[int]] = None,
@@ -296,8 +297,8 @@ class PlottableData(Data, PlotSettable):
         xticks : PlottableData | Any, optional
             Specifies the x-ticks for the line chart. If not provided, the x-ticks will
             be set to `range(len(data))`. By default None.
-        fmt : str, optional
-            A format string, e.g. 'ro' for red circles, by default ''.
+        linestyle : Literal["-", "--", "-.", ":"], optional
+            Line style passed to matplotlib, by default "-".
         scatter : bool, optional
             Determines whether to include scatter points in the line chart, by default
             False.
@@ -320,12 +321,14 @@ class PlottableData(Data, PlotSettable):
         """
         if isinstance(xticks, Data) and "xlabel" not in kwargs:
             kwargs["xlabel"] = xticks.formatted_name()
+        fmt = linestyle
         return self._get_artist(LineChart, locals())
 
     def scatter(
         self,
         xticks: Self | Any = None,
-        fmt: str = "o",
+        marker: MarkerStyle = ".",
+        fit: bool = False,
         **kwargs: Unpack[SettingDict],
     ) -> Artist:
         """
@@ -337,8 +340,12 @@ class PlottableData(Data, PlotSettable):
         xticks : PlottableData | Any, optional
             Specifies the x-ticks for the chart. If not provided, the x-ticks will
             be set to `range(len(data))`. By default None.
-        fmt : str, optional
-            A format string, e.g. 'ro' for red circles, by default 'o'.
+        marker : str, optional
+            Marker style (matplotlib format string), e.g. '.' for point markers,
+            by default '.'.
+        fit : bool, optional
+            Determines whether to fit and draw a straight trend line. Only numeric
+            x-ticks are supported when fitting. By default False.
         **kwargs : **SettingDict
             Specifies the plot settings, see `.set_plot()` for more details.
 
@@ -350,14 +357,51 @@ class PlottableData(Data, PlotSettable):
         """
         if isinstance(xticks, Data) and "xlabel" not in kwargs:
             kwargs["xlabel"] = xticks.formatted_name()
-        return self._get_artist(ScatterChart, locals())
+        fmt = marker
+        return self._get_artist(ScatterPlot, locals())
+
+    def hexbin(
+        self,
+        xticks: Self | Any = None,
+        gridsize: int = 30,
+        cmap: str = "viridis",
+        mincnt: int | None = 1,
+        **kwargs: Unpack[SettingDict],
+    ) -> Artist:
+        """
+        Create a hexbin chart for the data.
+
+        Parameters
+        ----------
+        xticks : PlottableData | Any, optional
+            Specifies the x-values for the chart. If not provided, x-values will
+            be set to `range(len(data))`. By default None.
+        gridsize : int, optional
+            Number of hexagons in the x-direction, by default 30.
+        cmap : str, optional
+            Colormap used to color hexagons by counts, by default "viridis".
+        mincnt : int | None, optional
+            Minimum count required to display a hexagon. Set to None to disable
+            filtering. By default 1.
+        **kwargs : **SettingDict
+            Specifies the plot settings, see `.set_plot()` for more details.
+
+        Returns
+        -------
+        Artist
+            An instance of Artist.
+
+        """
+        if isinstance(xticks, Data) and "xlabel" not in kwargs:
+            kwargs["xlabel"] = xticks.formatted_name()
+        return self._get_artist(HexBinMap, locals())
 
     def qqplot(
         self,
         baseline: DistName | Self | Any = "norm",
         dots: int = 30,
         edge_precision: float = 1e-2,
-        fmt: str = "o",
+        marker: MarkerStyle = "o",
         **kwargs: Unpack[SettingDict],
     ) -> Artist:
         """
@@ -374,8 +418,9 @@ class PlottableData(Data, PlotSettable):
         edge_precision : float, optional
             Specifies the lowest quantile (`=edge_precision`) and the highest
             quantile (`=1-edge_precision`), by default 1e-2.
-        fmt : str, optional
-            A format string, e.g. 'ro' for red circles, by default 'o'.
+        marker : str, optional
+            Marker style (matplotlib format string), e.g. '.' for point markers,
+            by default 'o'.
         **kwargs : **SettingDict
             Specifies the plot settings, see `.set_plot()` for more details.
 
@@ -385,13 +430,14 @@ class PlottableData(Data, PlotSettable):
             An instance of Artist.
 
         """
+        fmt = marker
         return self._get_artist(QQPlot, locals())
 
     def ppplot(
         self,
         baseline: DistName | Self | Any = "norm",
         dots: int = 30,
-        fmt: str = "o",
+        marker: MarkerStyle = "o",
         **kwargs: Unpack[SettingDict],
     ) -> Artist:
         """
@@ -405,8 +451,9 @@ class PlottableData(Data, PlotSettable):
             sample. By default 'norm'.
         dots : int, optional
             Number of dots, by default 30.
-        fmt : str, optional
-            A format string, e.g. 'ro' for red circles, by default 'o'.
+        marker : str, optional
+            Marker style (matplotlib format string), e.g. '.' for point markers,
+            by default 'o'.
         **kwargs : **SettingDict
             Specifies the plot settings, see `.set_plot()` for more details.
 
@@ -416,6 +463,7 @@ class PlottableData(Data, PlotSettable):
             An instance of Artist.
 
         """
+        fmt = marker
         edge_precision = 1e-6
         return self._get_artist(PPPlot, locals())
 
@@ -423,7 +471,7 @@ class PlottableData(Data, PlotSettable):
         self,
         baseline: DistName | Self | Any = "norm",
         dots: int = 1000,
-        fmt: str = "",
+        linestyle: Literal["-", "--", "-.", ":"] = "-",
         **kwargs: Unpack[SettingDict],
     ) -> Artist:
         """
@@ -437,8 +485,8 @@ class PlottableData(Data, PlotSettable):
             another real sample. By default 'norm'.
         dots : int, optional
             Number of dots, by default 1000.
-        fmt : str, optional
-            A format string, e.g. 'ro' for red circles, by default ''.
+        linestyle : Literal["-", "--", "-.", ":"], optional
+            Line style passed to matplotlib, by default "-".
         **kwargs : **SettingDict
             Specifies the plot settings, see `.set_plot()` for more details.
 
@@ -449,6 +497,7 @@ class PlottableData(Data, PlotSettable):
 
         """
         edge_precision = 1e-6
+        fmt = linestyle
         return self._get_artist(KSPlot, locals())
 
     def corrmap(
@@ -522,6 +571,16 @@ class PlottableDataSet(MultiObject[PlottableData]):
         data_info = "\n- ".join([x.info() for x in self.__multiobjects__])
         return f"{PlottableData.__name__}\n- {data_info}"
 
+    def sample(self, n: int = 100, rule: SampleRule = "head") -> "PlottableDataSet":
+        """Sample every dataset with the same random positions when requested."""
+        if rule != "random":
+            return PlottableDataSet(
+                *(obj.sample(n=n, rule=rule) for obj in self.__multiobjects__)
+            )
+        length = min(len(obj.data) for obj in self.__multiobjects__)
+        index = np.random.randint(0, length, n).tolist()
+        return self.idx(index)
+
     def batched(self, n: int = 1) -> MultiObject:
         """Overrides `PlottableData.batched()`."""
         PlottableData.batched(self, n)
@@ -538,6 +597,7 @@ class PlottableDataSet(MultiObject[PlottableData]):
                 "hist"
                 | "plot"
                 | "scatter"
+                | "hexbin"
                 | "ppplot"
                 | "qqplot"
                 | "ksplot"

@@ -32,7 +32,7 @@ class PlotSettings:
     title: Optional[str] = None
     xlabel: Optional[str] = None
     ylabel: Optional[str] = None
-    alpha: Optional[float] = None
+    alpha: Optional[float | int] = None
     dpi: Optional[int | float] = None
     grid: Optional[bool] = None
     grid_alpha: Optional[float] = None

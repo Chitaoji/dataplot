@@ -92,10 +92,8 @@ def _parse_linear_expression(expr: str, var: str) -> tuple[float, float]:
 
 
 def _draw_reference_lines(ax: Axes, lines: list[str]) -> None:
-    view_x0, view_x1 = map(float, ax.get_xlim())
-    view_y0, view_y1 = map(float, ax.get_ylim())
-    data_xmin, data_xmax = sorted((view_x0, view_x1))
-    data_ymin, data_ymax = sorted((view_y0, view_y1))
+    data_xmin, data_xmax = ax.get_xlim()
+    data_ymin, data_ymax = ax.get_ylim()
     date_xaxis = _is_date_xaxis(ax)
 
     for text in lines:
@@ -118,9 +116,10 @@ def _draw_reference_lines(ax: Axes, lines: list[str]) -> None:
                 if not (data_ymin <= intercept <= data_ymax):
                     continue
             else:
-                y_limited_x = sorted(
-                    ((data_ymin - intercept) / slope, (data_ymax - intercept) / slope)
-                )
+                y_limited_x = sorted((
+                    (data_ymin - intercept) / slope,
+                    (data_ymax - intercept) / slope,
+                ))
                 x_min = max(x_min, y_limited_x[0])
                 x_max = min(x_max, y_limited_x[1])
             if x_min > x_max:
@@ -149,9 +148,10 @@ def _draw_reference_lines(ax: Axes, lines: list[str]) -> None:
                 if not (data_xmin <= intercept <= data_xmax):
                     continue
             else:
-                x_limited_y = sorted(
-                    ((data_xmin - intercept) / slope, (data_xmax - intercept) / slope)
-                )
+                x_limited_y = sorted((
+                    (data_xmin - intercept) / slope,
+                    (data_xmax - intercept) / slope,
+                ))
                 y_min = max(y_min, x_limited_y[0])
                 y_max = min(y_max, x_limited_y[1])
             if y_min > y_max:
