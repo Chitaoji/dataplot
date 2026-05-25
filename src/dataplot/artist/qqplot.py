@@ -64,7 +64,7 @@ class QQPlot(Plotter):
             ax.ax.margins(x=0)
         else:
             ax.ax.margins(x=0.01)
-        self._plot_fitted_line(ax, q1, q2, dots_color=dots_line.get_color())
+        self._plot_fitted_line(ax, q1, q2, dots_line.get_color())
 
     def _generate_dist(
         self, use_edge_precision: bool = True
@@ -89,7 +89,7 @@ class QQPlot(Plotter):
         ax: "AxesWrapper",
         x: np.ndarray,
         y: np.ndarray,
-        dots_color: object | None = None,
+        dots_color: object,
     ) -> None:
         a, b = linear_regression_1d(y, x)
         lb, ub = ax.ax.get_xlim()
@@ -99,7 +99,7 @@ class QQPlot(Plotter):
             [lb, ub],
             [a + lb * b, a + ub * b],
             "-",
-            color=darken_color(dots_color) if dots_color is not None else None,
+            color=darken_color(dots_color),
             label=f"y = {a:.3f} + {b:.3f}x",
             alpha=0.5 if ax.settings.alpha is None else ax.settings.alpha / 2,
         )
