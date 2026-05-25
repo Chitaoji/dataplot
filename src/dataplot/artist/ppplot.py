@@ -40,10 +40,12 @@ class PPPlot(QQPlot):
     def __plot(self, ax: "AxesWrapper") -> None:
         xlabel, p1, q = self._generate_dist(use_edge_precision=False)
         p2 = get_prob(self.data, q)
-        ax.ax.plot(p1, p2, self.fmt, zorder=2.1, label=f"{self.name} & {xlabel}")
+        dots_line = ax.ax.plot(
+            p1, p2, self.fmt, zorder=2.1, label=f"{self.name} & {xlabel}"
+        )[0]
         ax.ax.set_xlim(0, 1)
         ax.ax.set_ylim(0, 1)
         ax.ax.yaxis.set_major_formatter(
             FuncFormatter(lambda value, _: "" if abs(value) < 1e-12 else f"{value:.1f}")
         )
-        self._plot_fitted_line(ax, p1, p2)
+        self._plot_fitted_line(ax, p1, p2, dots_line.get_color())
