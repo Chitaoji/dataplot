@@ -124,6 +124,8 @@ Common settings:
 This project falls under the BSD 3-Clause License.
 
 ## 🕒 History
+### v0.1.16
+
 ### v0.1.15
 * Added `dp.randn(...)` for generating normally distributed `PlottableData` values, including optional seed-based reproducibility.
 * Improved line and scatter x-axis rendering by preserving the rightmost tick label, supporting datetime tick lists, and refining default x-label behavior.
