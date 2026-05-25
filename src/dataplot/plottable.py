@@ -282,7 +282,7 @@ class PlottableData(Data, PlotSettable):
     def plot(
         self,
         xticks: Self | Any = None,
-        format: str = "",
+        linestyle: Literal["-", "--", "-.", ":"] = "-",
         scatter: bool = False,
         sorted: bool = False,
         rolling: Optional[int | list[int]] = None,
@@ -297,8 +297,8 @@ class PlottableData(Data, PlotSettable):
         xticks : PlottableData | Any, optional
             Specifies the x-ticks for the line chart. If not provided, the x-ticks will
             be set to `range(len(data))`. By default None.
-        format : str, optional
-            A format string, e.g. 'ro' for red circles, by default ''.
+        linestyle : Literal["-", "--", "-.", ":"], optional
+            Line style passed to matplotlib, by default "-".
         scatter : bool, optional
             Determines whether to include scatter points in the line chart, by default
             False.
@@ -321,6 +321,7 @@ class PlottableData(Data, PlotSettable):
         """
         if isinstance(xticks, Data) and "xlabel" not in kwargs:
             kwargs["xlabel"] = xticks.formatted_name()
+        format = linestyle
         return self._get_artist(LineChart, locals())
 
     def scatter(
@@ -464,7 +465,7 @@ class PlottableData(Data, PlotSettable):
         self,
         baseline: DistName | Self | Any = "norm",
         dots: int = 1000,
-        format: str = "",
+        linestyle: Literal["-", "--", "-.", ":"] = "-",
         **kwargs: Unpack[SettingDict],
     ) -> Artist:
         """
@@ -478,8 +479,8 @@ class PlottableData(Data, PlotSettable):
             another real sample. By default 'norm'.
         dots : int, optional
             Number of dots, by default 1000.
-        format : str, optional
-            A format string, e.g. 'ro' for red circles, by default ''.
+        linestyle : Literal["-", "--", "-.", ":"], optional
+            Line style passed to matplotlib, by default "-".
         **kwargs : **SettingDict
             Specifies the plot settings, see `.set_plot()` for more details.
 
@@ -490,6 +491,7 @@ class PlottableData(Data, PlotSettable):
 
         """
         edge_precision = 1e-6
+        format = linestyle
         return self._get_artist(KSPlot, locals())
 
     def corrmap(
