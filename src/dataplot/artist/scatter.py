@@ -31,7 +31,7 @@ class ScatterPlot(Plotter):
     """
 
     xticks: Optional["PlottableData | Any"]
-    format: str
+    fmt: str
     fit: bool
 
     def paint(self, ax: "AxesWrapper", **_) -> None:
@@ -56,7 +56,7 @@ class ScatterPlot(Plotter):
         ax.ax.plot(
             xticks,
             self.data,
-            self.format,
+            self.fmt,
             linestyle="None",
             label=self.name,
             alpha=ax.settings.alpha,

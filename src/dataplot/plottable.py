@@ -321,13 +321,13 @@ class PlottableData(Data, PlotSettable):
         """
         if isinstance(xticks, Data) and "xlabel" not in kwargs:
             kwargs["xlabel"] = xticks.formatted_name()
-        format = linestyle
+        fmt = linestyle
         return self._get_artist(LineChart, locals())
 
     def scatter(
         self,
         xticks: Self | Any = None,
-        format: str = ".",
+        fmt: str = ".",
         fit: bool = False,
         **kwargs: Unpack[SettingDict],
     ) -> Artist:
@@ -340,7 +340,7 @@ class PlottableData(Data, PlotSettable):
         xticks : PlottableData | Any, optional
             Specifies the x-ticks for the chart. If not provided, the x-ticks will
             be set to `range(len(data))`. By default None.
-        format : str, optional
+        fmt : str, optional
             A format string, e.g. 'r.' for red dots, by default '.'.
         fit : bool, optional
             Determines whether to fit and draw a straight trend line. Only numeric
@@ -399,7 +399,7 @@ class PlottableData(Data, PlotSettable):
         baseline: DistName | Self | Any = "norm",
         dots: int = 30,
         edge_precision: float = 1e-2,
-        format: str = "o",
+        fmt: str = "o",
         **kwargs: Unpack[SettingDict],
     ) -> Artist:
         """
@@ -416,7 +416,7 @@ class PlottableData(Data, PlotSettable):
         edge_precision : float, optional
             Specifies the lowest quantile (`=edge_precision`) and the highest
             quantile (`=1-edge_precision`), by default 1e-2.
-        format : str, optional
+        fmt : str, optional
             A format string, e.g. 'ro' for red circles, by default 'o'.
         **kwargs : **SettingDict
             Specifies the plot settings, see `.set_plot()` for more details.
@@ -433,7 +433,7 @@ class PlottableData(Data, PlotSettable):
         self,
         baseline: DistName | Self | Any = "norm",
         dots: int = 30,
-        format: str = "o",
+        fmt: str = "o",
         **kwargs: Unpack[SettingDict],
     ) -> Artist:
         """
@@ -447,7 +447,7 @@ class PlottableData(Data, PlotSettable):
             sample. By default 'norm'.
         dots : int, optional
             Number of dots, by default 30.
-        format : str, optional
+        fmt : str, optional
             A format string, e.g. 'ro' for red circles, by default 'o'.
         **kwargs : **SettingDict
             Specifies the plot settings, see `.set_plot()` for more details.
@@ -491,7 +491,7 @@ class PlottableData(Data, PlotSettable):
 
         """
         edge_precision = 1e-6
-        format = linestyle
+        fmt = linestyle
         return self._get_artist(KSPlot, locals())
 
     def corrmap(

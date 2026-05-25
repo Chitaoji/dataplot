@@ -31,7 +31,7 @@ class LineChart(Plotter):
     """
 
     xticks: Optional["PlottableData | Any"]
-    format: str
+    fmt: str
     scatter: bool
     sorted: bool
     rolling: Optional[int | list[int]]
@@ -78,7 +78,7 @@ class LineChart(Plotter):
 
         for rolling_data, name in data_and_names:
             ax.ax.plot(
-                xticks, rolling_data, self.format, label=name, alpha=ax.settings.alpha
+                xticks, rolling_data, self.fmt, label=name, alpha=ax.settings.alpha
             )
             if self.scatter:
                 ax.ax.scatter(xticks, rolling_data, zorder=2.0, alpha=ax.settings.alpha)
