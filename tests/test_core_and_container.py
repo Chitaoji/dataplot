@@ -179,6 +179,7 @@ class TestCoreAndContainer(unittest.TestCase):
         fit_line = ax.lines[1]
         self.assertEqual(fit_line.get_label(), "y = 1.000 + 2.000x")
         self.assertEqual(fit_line.get_linestyle(), "--")
+        self.assertEqual(fit_line.get_color(), ax.lines[0].get_color())
         self.assertTrue(
             np.allclose(fit_line.get_ydata(), 1.0 + 2.0 * fit_line.get_xdata())
         )

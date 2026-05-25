@@ -53,14 +53,14 @@ class ScatterPlot(Plotter):
                 f"lengths {len_t} and {len_d}"
             )
 
-        ax.ax.plot(
+        scatter_line = ax.ax.plot(
             xticks,
             self.data,
             self.fmt,
             linestyle="None",
             label=self.name,
             alpha=ax.settings.alpha,
-        )
+        )[0]
         if self.fit:
             if _is_date_xaxis(ax.ax):
                 raise ValueError("fit=True requires numeric x-ticks")
@@ -68,14 +68,22 @@ class ScatterPlot(Plotter):
                 fit_xticks = np.asarray(xticks, dtype=float)
             except (TypeError, ValueError) as exc:
                 raise ValueError("fit=True requires numeric x-ticks") from exc
-            self._plot_fitted_line(ax, fit_xticks, self.data)
+            self._plot_fitted_line(
+                ax, fit_xticks, self.data, scatter_color=scatter_line.get_color()
+            )
 
     @staticmethod
-    def _plot_fitted_line(ax: "AxesWrapper", x: np.ndarray, y: np.ndarray) -> None:
+    def _plot_fitted_line(
+        ax: "AxesWrapper", x: np.ndarray, y: np.ndarray, scatter_color: str
+    ) -> None:
         a, b = linear_regression_1d(y, x)
         lb, ub = ax.ax.get_xlim()
         if lb == ub:
             lb, ub = x.min(), x.max()
         ax.ax.plot(
-            [lb, ub], [a + lb * b, a + ub * b], "--", label=f"y = {a:.3f} + {b:.3f}x"
+            [lb, ub],
+            [a + lb * b, a + ub * b],
+            "--",
+            color=scatter_color,
+            label=f"y = {a:.3f} + {b:.3f}x",
         )
