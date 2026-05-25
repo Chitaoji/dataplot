@@ -53,7 +53,12 @@ class QQPlot(Plotter):
         xlabel, p, q1 = self._generate_dist()
         q2 = get_quantile(self.data, p)
         dots_line = ax.ax.plot(
-            q1, q2, self.fmt, zorder=2.1, label=f"{self.name} vs. {xlabel}"
+            q1,
+            q2,
+            self.fmt,
+            zorder=2.1,
+            label=f"{self.name} vs. {xlabel}",
+            alpha=ax.settings.alpha,
         )[0]
         if is_multi:
             ax.ax.margins(x=0)
@@ -81,7 +86,10 @@ class QQPlot(Plotter):
 
     @staticmethod
     def _plot_fitted_line(
-        ax: "AxesWrapper", x: np.ndarray, y: np.ndarray, dots_color: object | None = None
+        ax: "AxesWrapper",
+        x: np.ndarray,
+        y: np.ndarray,
+        dots_color: object | None = None,
     ) -> None:
         a, b = linear_regression_1d(y, x)
         lb, ub = ax.ax.get_xlim()
@@ -90,9 +98,10 @@ class QQPlot(Plotter):
         ax.ax.plot(
             [lb, ub],
             [a + lb * b, a + ub * b],
-            "--",
+            "-",
             color=darken_color(dots_color) if dots_color is not None else None,
             label=f"y = {a:.3f} + {b:.3f}x",
+            alpha=0.5 if ax.settings.alpha is None else ax.settings.alpha / 2,
         )
 
     @staticmethod

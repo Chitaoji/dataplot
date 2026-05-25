@@ -179,7 +179,7 @@ class TestCoreAndContainer(unittest.TestCase):
         self.assertEqual(len(ax.lines), 2)
         fit_line = ax.lines[1]
         self.assertEqual(fit_line.get_label(), "y = 1.000 + 2.000x")
-        self.assertEqual(fit_line.get_linestyle(), "--")
+        self.assertEqual(fit_line.get_linestyle(), "-")
         scatter_rgba = to_rgba(ax.lines[0].get_color())
         fit_rgba = to_rgba(fit_line.get_color())
         self.assertEqual(scatter_rgba[-1], fit_rgba[-1])

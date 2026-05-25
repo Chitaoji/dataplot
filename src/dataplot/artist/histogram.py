@@ -85,7 +85,7 @@ class Histogram(Plotter):
             ax.ax.plot(
                 adj_bin_arr,
                 fit_curve,
-                alpha=ax.settings.alpha,
+                alpha=0.5 if ax.settings.alpha is None else ax.settings.alpha / 2,
                 color=darken_color(patches[0].get_facecolor()),
             )
 

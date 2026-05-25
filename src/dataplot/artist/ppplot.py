@@ -41,7 +41,7 @@ class PPPlot(QQPlot):
         xlabel, p1, q = self._generate_dist(use_edge_precision=False)
         p2 = get_prob(self.data, q)
         dots_line = ax.ax.plot(
-            p1, p2, self.fmt, zorder=2.1, label=f"{self.name} & {xlabel}"
+            p1, p2, self.fmt, zorder=2.1, label=f"{self.name} vs. {xlabel}"
         )[0]
         ax.ax.set_xlim(0, 1)
         ax.ax.set_ylim(0, 1)
