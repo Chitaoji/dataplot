@@ -197,7 +197,7 @@ This project falls under the BSD 3-Clause License.
 
 ### v0.1.2
 * New methods `PlottableData.corrmap()`, `PlottableData.ppplot()`, and `PlottableData.resample()`.
-* New optional parameter `format=` for `PlottableData.plot()`, `PlottableData.qqplot()`, `PlottableData.ppplot()`, and `PlottableData.ksplot()`.
+* New optional parameter `fmt=` for `PlottableData.plot()`, `PlottableData.qqplot()`, `PlottableData.ppplot()`, and `PlottableData.ksplot()`.
 * Bugfix.
 
 ### v0.1.1
