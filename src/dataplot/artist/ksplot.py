@@ -53,6 +53,6 @@ class KSPlot(QQPlot):
         new_q1_mask = np.isfinite(q1)
         new_q2_mask = np.isfinite(q2)
         if not no_baseline:
-            ax.ax.plot(q1[new_q1_mask], p[new_q1_mask], self.format, label=xlabel)
-        ax.ax.plot(q2[new_q2_mask], p[new_q2_mask], self.format, label=self.name)
+            ax.ax.plot(q1[new_q1_mask], p[new_q1_mask], self.fmt, label=xlabel)
+        ax.ax.plot(q2[new_q2_mask], p[new_q2_mask], self.fmt, label=self.name)
         ax.ax.margins(x=0)
