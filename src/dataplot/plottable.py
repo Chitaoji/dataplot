@@ -48,6 +48,34 @@ if TYPE_CHECKING:
 
 __all__ = ["PlottableData"]
 
+MarkerStyle = Literal[
+    ".",
+    ",",
+    "o",
+    "v",
+    "^",
+    "<",
+    ">",
+    "1",
+    "2",
+    "3",
+    "4",
+    "8",
+    "s",
+    "p",
+    "P",
+    "*",
+    "h",
+    "H",
+    "+",
+    "x",
+    "X",
+    "D",
+    "d",
+    "|",
+    "_",
+]
+
 
 @dataclass(validate_methods=True)
 class PlottableData(Data, PlotSettable):
@@ -327,7 +355,7 @@ class PlottableData(Data, PlotSettable):
     def scatter(
         self,
         xticks: Self | Any = None,
-        fmt: str = ".",
+        marker: MarkerStyle = ".",
         fit: bool = False,
         **kwargs: Unpack[SettingDict],
     ) -> Artist:
@@ -340,8 +368,9 @@ class PlottableData(Data, PlotSettable):
         xticks : PlottableData | Any, optional
             Specifies the x-ticks for the chart. If not provided, the x-ticks will
             be set to `range(len(data))`. By default None.
-        fmt : str, optional
-            A format string, e.g. 'r.' for red dots, by default '.'.
+        marker : str, optional
+            Marker style (matplotlib format string), e.g. 'r.' for red dots,
+            by default '.'.
         fit : bool, optional
             Determines whether to fit and draw a straight trend line. Only numeric
             x-ticks are supported when fitting. By default False.
@@ -356,6 +385,7 @@ class PlottableData(Data, PlotSettable):
         """
         if isinstance(xticks, Data) and "xlabel" not in kwargs:
             kwargs["xlabel"] = xticks.formatted_name()
+        fmt = marker
         return self._get_artist(ScatterPlot, locals())
 
     def hexbin(
@@ -399,7 +429,7 @@ class PlottableData(Data, PlotSettable):
         baseline: DistName | Self | Any = "norm",
         dots: int = 30,
         edge_precision: float = 1e-2,
-        fmt: str = "o",
+        marker: MarkerStyle = "o",
         **kwargs: Unpack[SettingDict],
     ) -> Artist:
         """
@@ -416,8 +446,9 @@ class PlottableData(Data, PlotSettable):
         edge_precision : float, optional
             Specifies the lowest quantile (`=edge_precision`) and the highest
             quantile (`=1-edge_precision`), by default 1e-2.
-        fmt : str, optional
-            A format string, e.g. 'ro' for red circles, by default 'o'.
+        marker : str, optional
+            Marker style (matplotlib format string), e.g. 'ro' for red circles,
+            by default 'o'.
         **kwargs : **SettingDict
             Specifies the plot settings, see `.set_plot()` for more details.
 
@@ -427,13 +458,14 @@ class PlottableData(Data, PlotSettable):
             An instance of Artist.
 
         """
+        fmt = marker
         return self._get_artist(QQPlot, locals())
 
     def ppplot(
         self,
         baseline: DistName | Self | Any = "norm",
         dots: int = 30,
-        fmt: str = "o",
+        marker: MarkerStyle = "o",
         **kwargs: Unpack[SettingDict],
     ) -> Artist:
         """
@@ -447,8 +479,9 @@ class PlottableData(Data, PlotSettable):
             sample. By default 'norm'.
         dots : int, optional
             Number of dots, by default 30.
-        fmt : str, optional
-            A format string, e.g. 'ro' for red circles, by default 'o'.
+        marker : str, optional
+            Marker style (matplotlib format string), e.g. 'ro' for red circles,
+            by default 'o'.
         **kwargs : **SettingDict
             Specifies the plot settings, see `.set_plot()` for more details.
 
@@ -458,6 +491,7 @@ class PlottableData(Data, PlotSettable):
             An instance of Artist.
 
         """
+        fmt = marker
         edge_precision = 1e-6
         return self._get_artist(PPPlot, locals())
 
