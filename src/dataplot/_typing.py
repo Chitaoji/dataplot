@@ -108,6 +108,7 @@ ColorId = (
 VerticalAlignment = Literal["baseline", "bottom", "center", "center_baseline", "top"]
 HorizontalAlignment = Literal["left", "center", "right"]
 DistName = Literal["norm", "exp"]
+DistNameForHist = Literal["norm", "skew-norm", "t", "skew-t"]
 SettingKey = Literal[
     "title",
     "xlabel",

@@ -7,12 +7,13 @@ NOTE: this module is private. All functions and objects are available in the mai
 """
 
 import warnings
-from typing import TYPE_CHECKING, Literal, Optional
+from typing import TYPE_CHECKING, Optional
 
 import numpy as np
 from scipy import stats
 from validating import dataclass
 
+from .._typing import DistNameForHist
 from ._color import darken_color
 from .base import Plotter
 
@@ -30,7 +31,7 @@ class Histogram(Plotter):
     """
 
     bins: int | list[float]
-    fit: Literal["norm", "skew-norm", "t", "skew-t"] | None
+    fit: DistNameForHist | None
     density: bool
     log: bool
     same_bin: bool
@@ -108,7 +109,7 @@ class Histogram(Plotter):
     def __fit_pdf(
         x: np.ndarray,
         data: np.ndarray,
-        dist: Literal["norm", "skew-norm", "t", "skew-t"],
+        dist: DistNameForHist,
         moments: tuple[float, ...],
     ) -> np.ndarray:
         sample = data[np.isfinite(data)]

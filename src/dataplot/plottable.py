@@ -21,7 +21,7 @@ from typing import (
 import numpy as np
 from validating import dataclass
 
-from ._typing import DistName, MarkerStyle, SampleRule, SettingDict
+from ._typing import DistName, DistNameForHist, MarkerStyle, SampleRule, SettingDict
 from .artist import (
     Artist,
     CorrMap,
@@ -239,7 +239,7 @@ class PlottableData(Data, PlotSettable):
         density: bool = True,
         log: bool = False,
         same_bin: bool = True,
-        fit: Literal["norm", "skew-norm", "t", "skew-t"] | None = "norm",
+        fit: DistNameForHist | None = "norm",
         stats: bool = True,
         **kwargs: Unpack[SettingDict],
     ) -> Artist:
@@ -261,7 +261,7 @@ class PlottableData(Data, PlotSettable):
         same_bin : bool, optional
             Determines whether the bins should be the same for all sets of data, by
             default True.
-        fit : Literal["norm", "skew-norm", "t", "skew-t"] | None, optional
+        fit : DistNameForHist | None, optional
             Distribution used to fit a curve to the histogram, only available when
             `density=True`. Set to ``None`` to disable fitting. By default
             ``"norm"``.
@@ -340,7 +340,7 @@ class PlottableData(Data, PlotSettable):
         xticks : PlottableData | Any, optional
             Specifies the x-ticks for the chart. If not provided, the x-ticks will
             be set to `range(len(data))`. By default None.
-        marker : str, optional
+        marker : MarkerStyle, optional
             Marker style (matplotlib format string), e.g. '.' for point markers,
             by default '.'.
         fit : bool, optional
