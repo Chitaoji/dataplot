@@ -82,14 +82,11 @@ class Histogram(Plotter):
             fit_curve = self.__fit_pdf(
                 adj_bin_arr, self.data, dist=self.fit, moments=(mean, std)
             )
-            fit_color = None
-            if len(patches) > 0:
-                fit_color = darken_color(patches[0].get_facecolor())
             ax.ax.plot(
                 adj_bin_arr,
                 fit_curve,
                 alpha=ax.settings.alpha,
-                color=fit_color,
+                color=darken_color(patches[0].get_facecolor()),
             )
 
         # Disable matplotlib's default horizontal margins for tighter x-limits.

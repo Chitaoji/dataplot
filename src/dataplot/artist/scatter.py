@@ -87,5 +87,5 @@ class ScatterPlot(Plotter):
             "--",
             color=darken_color(scatter_color),
             label=f"y = {a:.3f} + {b:.3f}x",
+            alpha=ax.settings.alpha,
         )
-
