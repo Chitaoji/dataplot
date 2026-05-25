@@ -206,3 +206,33 @@ class TestCoreAndContainer(unittest.TestCase):
         with figure() as fig:
             with self.assertRaisesRegex(ValueError, "numeric x-ticks"):
                 artist.paint(fig.axes[0])
+
+    def test_qqplot_fit_uses_darker_data_color(self):
+        ds = data(np.array([1.0, 2.0, 3.0, 4.0]), name="series")
+        artist = ds.qqplot(baseline="norm")
+
+        with figure() as fig:
+            artist.paint(fig.axes[0])
+            ax = fig.axes[0].ax
+
+        self.assertEqual(len(ax.lines), 2)
+        dots_rgba = to_rgba(ax.lines[0].get_color())
+        fit_rgba = to_rgba(ax.lines[1].get_color())
+        self.assertEqual(dots_rgba[-1], fit_rgba[-1])
+        self.assertTrue(all(f <= s for f, s in zip(fit_rgba[:3], dots_rgba[:3])))
+        self.assertNotEqual(fit_rgba[:3], dots_rgba[:3])
+
+    def test_ppplot_fit_uses_darker_data_color(self):
+        ds = data(np.array([1.0, 2.0, 3.0, 4.0]), name="series")
+        artist = ds.ppplot(baseline="norm")
+
+        with figure() as fig:
+            artist.paint(fig.axes[0])
+            ax = fig.axes[0].ax
+
+        self.assertEqual(len(ax.lines), 2)
+        dots_rgba = to_rgba(ax.lines[0].get_color())
+        fit_rgba = to_rgba(ax.lines[1].get_color())
+        self.assertEqual(dots_rgba[-1], fit_rgba[-1])
+        self.assertTrue(all(f <= s for f, s in zip(fit_rgba[:3], dots_rgba[:3])))
+        self.assertNotEqual(fit_rgba[:3], dots_rgba[:3])
