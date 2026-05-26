@@ -78,13 +78,13 @@ class Histogram(Plotter):
         skew: float = stats.skew(self.data, bias=False, nan_policy="omit")
         kurt: float = stats.kurtosis(self.data, bias=False, nan_policy="omit")
         if self.fit is not None and self.density:
-            adj_bin_arr = self.__adjust_bins(bins_arr)
-            fit_curve = self.__fit_pdf(
-                adj_bin_arr, self.data, dist=self.fit, moments=(mean, std)
+            adj_bins = self.__adjust_bins(bins_arr)
+            pdf = self.__fit_pdf(
+                adj_bins, self.data, dist=self.fit, moments=(mean, std)
             )
             ax.ax.plot(
-                adj_bin_arr,
-                fit_curve,
+                adj_bins,
+                pdf,
                 alpha=0.5 if ax.settings.alpha is None else ax.settings.alpha / 2,
                 color=darken_color(patches[0].get_facecolor()),
             )
@@ -98,15 +98,15 @@ class Histogram(Plotter):
         )
 
     @staticmethod
-    def __adjust_bins(bins_arr: np.ndarray, min_points: int = 1000) -> np.ndarray:
+    def __adjust_bins(bins: np.ndarray, min_points: int = 1000) -> np.ndarray:
         """Return a dense x-grid so fitted PDFs render as smooth curves."""
-        if len(bins_arr) < min_points:
-            return np.linspace(bins_arr[0], bins_arr[-1], min_points)
-        return bins_arr
+        if len(bins) < min_points:
+            return np.linspace(bins[0], bins[-1], min_points)
+        return bins
 
     @staticmethod
     def __fit_pdf(
-        x: np.ndarray,
+        bins: np.ndarray,
         data: np.ndarray,
         dist: DistNameForHist,
         moments: tuple[float, ...],
@@ -120,18 +120,18 @@ class Histogram(Plotter):
                 warnings.filterwarnings("ignore", category=RuntimeWarning)
                 if dist == "norm":
                     loc, scale = moments
-                    return stats.norm.pdf(x, loc=loc, scale=scale)
+                    return stats.norm.pdf(bins, loc=loc, scale=scale)
                 elif dist == "skew-norm":
                     a, loc, scale = stats.skewnorm.fit(sample)
-                    return stats.skewnorm.pdf(x, a, loc=loc, scale=scale)
+                    return stats.skewnorm.pdf(bins, a, loc=loc, scale=scale)
                 elif dist == "t":
                     df, loc, scale = stats.t.fit(sample)
-                    return stats.t.pdf(x, df, loc=loc, scale=scale)
+                    return stats.t.pdf(bins, df, loc=loc, scale=scale)
                 else:
                     # Jones-Faddy skew-t: captures skewness and heavy tails.
                     # a, b affect skewness and kurtosis; loc/scale shift/scale.
                     a, b, loc, scale = stats.jf_skew_t.fit(sample)
-                    return stats.jf_skew_t.pdf(x, a, b, loc=loc, scale=scale)
+                    return stats.jf_skew_t.pdf(bins, a, b, loc=loc, scale=scale)
         except Exception:
-            return np.zeros_like(x, dtype=float)
-        return np.zeros_like(x, dtype=float)
+            return np.zeros_like(bins, dtype=float)
+        return np.zeros_like(bins, dtype=float)

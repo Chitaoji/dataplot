@@ -13,8 +13,6 @@ from validating import dataclass
 
 from ..container import _is_date_xaxis
 from ..database import Data
-from ..utils.math import linear_regression_1d
-from ._color import darken_color
 from .base import Plotter
 
 if TYPE_CHECKING:
@@ -72,20 +70,3 @@ class ScatterPlot(Plotter):
             self._plot_fitted_line(
                 ax, fit_xticks, self.data, scatter_color=scatter_line.get_color()
             )
-
-    @staticmethod
-    def _plot_fitted_line(
-        ax: "AxesWrapper", x: np.ndarray, y: np.ndarray, scatter_color: str
-    ) -> None:
-        a, b = linear_regression_1d(y, x)
-        lb, ub = ax.ax.get_xlim()
-        if lb == ub:
-            lb, ub = x.min(), x.max()
-        ax.ax.plot(
-            [lb, ub],
-            [a + lb * b, a + ub * b],
-            "-",
-            color=darken_color(scatter_color),
-            label=f"y = {a:.3f} + {b:.3f}x",
-            alpha=0.5 if ax.settings.alpha is None else ax.settings.alpha / 2,
-        )

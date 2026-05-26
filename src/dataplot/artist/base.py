@@ -14,7 +14,9 @@ from validating import attr, dataclass
 
 from ..container import FigWrapper
 from ..setting import PlotSettable
+from ..utils.math import linear_regression_1d
 from ..utils.multi import MultiObject, multiple
+from ._color import darken_color
 
 if TYPE_CHECKING:
     from ..container import AxesWrapper
@@ -75,3 +77,20 @@ class Plotter(PlotSettable):
         __multi_is_final__: bool = True,
     ) -> Any:
         """Paint."""
+
+    @staticmethod
+    def _plot_fitted_line(
+        ax: "AxesWrapper", x: np.ndarray, y: np.ndarray, scatter_color: str
+    ) -> None:
+        a, b = linear_regression_1d(y, x)
+        lb, ub = ax.ax.get_xlim()
+        if lb == ub:
+            lb, ub = x.min(), x.max()
+        ax.ax.plot(
+            [lb, ub],
+            [a + lb * b, a + ub * b],
+            "-",
+            color=darken_color(scatter_color),
+            label=f"y = {a:.3f} + {b:.3f}x",
+            alpha=0.5 if ax.settings.alpha is None else ax.settings.alpha / 2,
+        )

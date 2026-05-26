@@ -14,8 +14,7 @@ from validating import attr, dataclass
 
 from .._typing import DistName
 from ..database import Data
-from ..utils.math import get_quantile, linear_regression_1d
-from ._color import darken_color
+from ..utils.math import get_quantile
 from .base import Plotter
 
 if TYPE_CHECKING:
@@ -83,26 +82,6 @@ class QQPlot(Plotter):
             xlabel = "sample"
             q = get_quantile(np.array(x), p)
         return xlabel, p, q
-
-    @staticmethod
-    def _plot_fitted_line(
-        ax: "AxesWrapper",
-        x: np.ndarray,
-        y: np.ndarray,
-        dots_color: object,
-    ) -> None:
-        a, b = linear_regression_1d(y, x)
-        lb, ub = ax.ax.get_xlim()
-        if lb == ub:
-            lb, ub = x.min(), x.max()
-        ax.ax.plot(
-            [lb, ub],
-            [a + lb * b, a + ub * b],
-            "-",
-            color=darken_color(dots_color),
-            label=f"y = {a:.3f} + {b:.3f}x",
-            alpha=0.5 if ax.settings.alpha is None else ax.settings.alpha / 2,
-        )
 
     @staticmethod
     def _get_ppf(dist: DistName, p: np.ndarray) -> np.ndarray:
