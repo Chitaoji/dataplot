@@ -221,8 +221,14 @@ class AxesWrapper(PlotSettable):
         self.ax.set_ylabel(self.settings.ylabel)
         if len(self.ax.get_legend_handles_labels()[0]):
             legend = self.ax.legend(loc=self.get_setting("legend_loc"))
+            min_legend_alpha = 0.5
             for handle in legend.legend_handles:
-                handle.set_alpha(1)
+                handle_alpha = handle.get_alpha()
+                handle.set_alpha(
+                    min_legend_alpha
+                    if handle_alpha is None
+                    else max(handle_alpha, min_legend_alpha)
+                )
         if self.get_setting("grid"):
             alpha = self.get_setting("alpha")
             default_grid_alpha = (
