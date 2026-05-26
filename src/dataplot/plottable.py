@@ -239,8 +239,8 @@ class PlottableData(Data, PlotSettable):
         density: bool = True,
         log: bool = False,
         same_bin: bool = True,
-        fit: DistNameForHist | None = "norm",
         stats: bool = True,
+        fit: DistNameForHist | None = "norm",
         **kwargs: Unpack[SettingDict],
     ) -> Artist:
         """
@@ -261,13 +261,13 @@ class PlottableData(Data, PlotSettable):
         same_bin : bool, optional
             Determines whether the bins should be the same for all sets of data, by
             default True.
+        stats : bool, optional
+            Determines whether to show the statistics, including the calculated mean,
+            standard deviation, skewness, and kurtosis of the input, by default True.
         fit : DistNameForHist | None, optional
             Distribution used to fit a curve to the histogram, only available when
             `density=True`. Set to ``None`` to disable fitting. By default
             ``"norm"``.
-        stats : bool, optional
-            Determines whether to show the statistics, including the calculated mean,
-            standard deviation, skewness, and kurtosis of the input, by default True.
         **kwargs : **SettingDict
             Specifies the plot settings, see `.set_plot()` for more details.
 

@@ -31,11 +31,11 @@ class Histogram(Plotter):
     """
 
     bins: int | list[float]
-    fit: DistNameForHist | None
     density: bool
     log: bool
     same_bin: bool
     stats: bool
+    fit: DistNameForHist | None
 
     def paint(
         self,
