@@ -220,7 +220,9 @@ class AxesWrapper(PlotSettable):
         self.ax.set_xlabel(self.settings.xlabel)
         self.ax.set_ylabel(self.settings.ylabel)
         if len(self.ax.get_legend_handles_labels()[0]):
-            self.ax.legend(loc=self.get_setting("legend_loc"))
+            legend = self.ax.legend(loc=self.get_setting("legend_loc"))
+            for handle in legend.legend_handles:
+                handle.set_alpha(1)
         if self.get_setting("grid"):
             alpha = self.get_setting("alpha")
             default_grid_alpha = (
