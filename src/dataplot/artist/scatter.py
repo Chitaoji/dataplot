@@ -33,12 +33,15 @@ class ScatterPlot(Plotter):
     fmt: str
     fit: bool
 
-    def paint(self, ax: "AxesWrapper", **_) -> None:
+    def paint(
+        self, ax: "AxesWrapper", __multi_prev_returned__: bool | None = None, **_
+    ) -> bool:
         ax.set_axes(title=ax.get_setting("title", "Scatter Plot"))
         ax.load(self.settings)
-        self.__plot(ax)
+        self.__plot(ax, __multi_prev_returned__ is True)
+        return True
 
-    def __plot(self, ax: "AxesWrapper") -> None:
+    def __plot(self, ax: "AxesWrapper", has_prev: bool) -> None:
         if self.xticks is None:
             xticks = np.array(range(len(self.data)))
         elif isinstance(self.xticks, Data):
@@ -60,6 +63,10 @@ class ScatterPlot(Plotter):
             label=self.name,
             alpha=ax.settings.alpha,
         )[0]
+        if has_prev:
+            ax.ax.margins(x=0)
+        else:
+            ax.ax.margins(x=0.01)
         if self.fit:
             if _is_date_xaxis(ax.ax):
                 raise ValueError("fit=True requires numeric x-ticks")

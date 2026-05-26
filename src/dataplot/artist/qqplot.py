@@ -45,10 +45,10 @@ class QQPlot(Plotter):
             ylabel=ax.get_setting("ylabel", "sample quantiles"),
         )
         ax.load(self.settings)
-        self.__plot(ax, __multi_prev_returned__)
+        self.__plot(ax, __multi_prev_returned__ is True)
         return True
 
-    def __plot(self, ax: "AxesWrapper", is_multi: bool) -> None:
+    def __plot(self, ax: "AxesWrapper", has_prev: bool) -> None:
         xlabel, p, q1 = self._generate_dist()
         q2 = get_quantile(self.data, p)
         dots_line = ax.ax.plot(
@@ -59,7 +59,7 @@ class QQPlot(Plotter):
             label=f"{self.name} vs. {xlabel}",
             alpha=ax.settings.alpha,
         )[0]
-        if is_multi:
+        if has_prev:
             ax.ax.margins(x=0)
         else:
             ax.ax.margins(x=0.01)
