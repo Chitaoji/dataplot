@@ -561,7 +561,8 @@ class PlottableData(Data, PlotSettable):
         if isinstance(fmt, list):
             if len(fmt) > 1:
                 raise ValueError(
-                    f"fmt list length must match number of datasets, but got {len(fmt)}"
+                    "fmt list length must match number of datasets (=1), "
+                    f"but got {len(fmt)}"
                 )
             return fmt[0]
         return fmt
@@ -591,7 +592,8 @@ class PlottableDataSet(MultiObject[PlottableData]):
         if isinstance(fmt, list):
             if len(fmt) != len(self.__multiobjects__):
                 raise ValueError(
-                    f"fmt list length must match number of datasets, but got {len(fmt)}"
+                    "fmt list length must match number of datasets "
+                    f"(={len(self.__multiobjects__)}), but got {len(fmt)}"
                 )
             return MultiObject(fmt)
         return fmt
