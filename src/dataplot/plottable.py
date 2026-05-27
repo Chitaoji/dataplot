@@ -100,6 +100,17 @@ class PlottableData(Data, PlotSettable):
     def copy(self) -> Self:
         return self._create_data(self.fmtb, self.data, priority=self.priority)
 
+    @staticmethod
+    def __normalize_fmt(fmt: str | list[str], length: int) -> str | MultiObject[str]:
+        if isinstance(fmt, list):
+            if len(fmt) != length:
+                raise ValueError(
+                    "fmt list length must match number of datasets, but got "
+                    f"{len(fmt)} and {length}"
+                )
+            return MultiObject(fmt)
+        return fmt
+
     def reset(self) -> Self:
         """
         Return a copy of self with plot settings reset.
@@ -282,7 +293,7 @@ class PlottableData(Data, PlotSettable):
     def plot(
         self,
         xticks: Self | Any = None,
-        linestyle: Literal["-", "--", "-.", ":"] = "-",
+        linestyle: Literal["-", "--", "-.", ":"] | list[str] = "-",
         scatter: bool = False,
         sorted: bool = False,
         rolling: Optional[int | list[int]] = None,
@@ -321,13 +332,13 @@ class PlottableData(Data, PlotSettable):
         """
         if isinstance(xticks, Data) and "xlabel" not in kwargs:
             kwargs["xlabel"] = xticks.formatted_name()
-        fmt = linestyle
+        fmt = self.__normalize_fmt(linestyle, len(self.__multiobjects__))
         return self._get_artist(LineChart, locals())
 
     def scatter(
         self,
         xticks: Self | Any = None,
-        marker: MarkerStyle = ".",
+        marker: MarkerStyle | list[str] = ".",
         fit: bool = False,
         **kwargs: Unpack[SettingDict],
     ) -> Artist:
@@ -357,7 +368,7 @@ class PlottableData(Data, PlotSettable):
         """
         if isinstance(xticks, Data) and "xlabel" not in kwargs:
             kwargs["xlabel"] = xticks.formatted_name()
-        fmt = marker
+        fmt = self.__normalize_fmt(marker, len(self.__multiobjects__))
         return self._get_artist(ScatterPlot, locals())
 
     def hexbin(
