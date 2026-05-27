@@ -100,17 +100,6 @@ class PlottableData(Data, PlotSettable):
     def copy(self) -> Self:
         return self._create_data(self.fmtb, self.data, priority=self.priority)
 
-    @staticmethod
-    def __normalize_fmt(fmt: str | list[str], length: int) -> str | MultiObject[str]:
-        if isinstance(fmt, list):
-            if len(fmt) != length:
-                raise ValueError(
-                    "fmt list length must match number of datasets, but got "
-                    f"{len(fmt)} and {length}"
-                )
-            return MultiObject(fmt)
-        return fmt
-
     def reset(self) -> Self:
         """
         Return a copy of self with plot settings reset.
@@ -560,6 +549,17 @@ class PlottableData(Data, PlotSettable):
         )
         obj.data = data
         return obj
+
+    @staticmethod
+    def __normalize_fmt(fmt: str | list[str], length: int) -> str | MultiObject[str]:
+        if isinstance(fmt, list):
+            if len(fmt) != length:
+                raise ValueError(
+                    "fmt list length must match number of datasets, but got "
+                    f"{len(fmt)} and {length}"
+                )
+            return MultiObject(fmt)
+        return fmt
 
 
 class PlottableDataSet(MultiObject[PlottableData]):

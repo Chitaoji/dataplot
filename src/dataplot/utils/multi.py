@@ -165,9 +165,12 @@ class MultiObject(Generic[T]):
     def __binary_operation(self, other: Any, method: str) -> "MultiObject":
         if isinstance(other, MultiObject):
             if len(self.__items) != len(other.__multiobjects__):
-                raise ValueError("MultiObject with different lengths cannot be operated")
+                raise ValueError(
+                    "MultiObject with different lengths cannot be operated"
+                )
             returns = [
-                getattr(x, method)(y) for x, y in zip(self.__items, other.__multiobjects__)
+                getattr(x, method)(y)
+                for x, y in zip(self.__items, other.__multiobjects__)
             ]
             return self.__create_new(returns)
         returns = [getattr(x, method)(other) for x in self.__items]
