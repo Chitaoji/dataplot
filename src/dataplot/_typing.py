@@ -37,6 +37,7 @@ MarkerStyle = Literal[
     "|",
     "_",
 ]
+LineStyle = Literal["-", "--", "-.", ":"]
 PlotSettableVar = TypeVar("PlotSettableVar", bound="PlotSettable")
 StyleName = Literal[
     "Solarize_Light2",

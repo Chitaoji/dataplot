@@ -21,7 +21,14 @@ from typing import (
 import numpy as np
 from validating import dataclass
 
-from ._typing import DistName, DistNameForHist, MarkerStyle, SampleRule, SettingDict
+from ._typing import (
+    DistName,
+    DistNameForHist,
+    LineStyle,
+    MarkerStyle,
+    SampleRule,
+    SettingDict,
+)
 from .artist import (
     Artist,
     CorrMap,
@@ -282,7 +289,7 @@ class PlottableData(Data, PlotSettable):
     def plot(
         self,
         xticks: Self | Any = None,
-        linestyle: Literal["-", "--", "-.", ":"] | list[str] = "-",
+        linestyle: LineStyle | list[LineStyle] = "-",
         scatter: bool = False,
         sorted: bool = False,
         rolling: Optional[int | list[int]] = None,
@@ -297,7 +304,7 @@ class PlottableData(Data, PlotSettable):
         xticks : PlottableData | Any, optional
             Specifies the x-ticks for the line chart. If not provided, the x-ticks will
             be set to `range(len(data))`. By default None.
-        linestyle : Literal["-", "--", "-.", ":"], optional
+        linestyle : LineStyle | list[LineStyle], optional
             Line style passed to matplotlib, by default "-".
         scatter : bool, optional
             Determines whether to include scatter points in the line chart, by default
@@ -327,7 +334,7 @@ class PlottableData(Data, PlotSettable):
     def scatter(
         self,
         xticks: Self | Any = None,
-        marker: MarkerStyle | list[str] = ".",
+        marker: MarkerStyle | list[MarkerStyle] = ".",
         fit: bool = False,
         **kwargs: Unpack[SettingDict],
     ) -> Artist:
@@ -340,7 +347,7 @@ class PlottableData(Data, PlotSettable):
         xticks : PlottableData | Any, optional
             Specifies the x-ticks for the chart. If not provided, the x-ticks will
             be set to `range(len(data))`. By default None.
-        marker : MarkerStyle, optional
+        marker : MarkerStyle | list[MarkerStyle], optional
             Marker style (matplotlib format string), e.g. '.' for point markers,
             by default '.'.
         fit : bool, optional
@@ -401,7 +408,7 @@ class PlottableData(Data, PlotSettable):
         baseline: DistName | Self | Any = "norm",
         dots: int = 30,
         edge_precision: float = 1e-2,
-        marker: MarkerStyle = "o",
+        marker: MarkerStyle | list[MarkerStyle] = "o",
         **kwargs: Unpack[SettingDict],
     ) -> Artist:
         """
@@ -418,7 +425,7 @@ class PlottableData(Data, PlotSettable):
         edge_precision : float, optional
             Specifies the lowest quantile (`=edge_precision`) and the highest
             quantile (`=1-edge_precision`), by default 1e-2.
-        marker : str, optional
+        marker : MarkerStyle | list[MarkerStyle], optional
             Marker style (matplotlib format string), e.g. '.' for point markers,
             by default 'o'.
         **kwargs : **SettingDict
@@ -437,7 +444,7 @@ class PlottableData(Data, PlotSettable):
         self,
         baseline: DistName | Self | Any = "norm",
         dots: int = 30,
-        marker: MarkerStyle = "o",
+        marker: MarkerStyle | list[MarkerStyle] = "o",
         **kwargs: Unpack[SettingDict],
     ) -> Artist:
         """
@@ -451,7 +458,7 @@ class PlottableData(Data, PlotSettable):
             sample. By default 'norm'.
         dots : int, optional
             Number of dots, by default 30.
-        marker : str, optional
+        marker : MarkerStyle | list[MarkerStyle], optional
             Marker style (matplotlib format string), e.g. '.' for point markers,
             by default 'o'.
         **kwargs : **SettingDict
@@ -471,7 +478,7 @@ class PlottableData(Data, PlotSettable):
         self,
         baseline: DistName | Self | Any = "norm",
         dots: int = 1000,
-        linestyle: Literal["-", "--", "-.", ":"] = "-",
+        linestyle: LineStyle | list[LineStyle] = "-",
         **kwargs: Unpack[SettingDict],
     ) -> Artist:
         """
@@ -485,7 +492,7 @@ class PlottableData(Data, PlotSettable):
             another real sample. By default 'norm'.
         dots : int, optional
             Number of dots, by default 1000.
-        linestyle : Literal["-", "--", "-.", ":"], optional
+        linestyle : LineStyle | list[LineStyle], optional
             Line style passed to matplotlib, by default "-".
         **kwargs : **SettingDict
             Specifies the plot settings, see `.set_plot()` for more details.
