@@ -321,7 +321,7 @@ class PlottableData(Data, PlotSettable):
         """
         if isinstance(xticks, Data) and "xlabel" not in kwargs:
             kwargs["xlabel"] = xticks.formatted_name()
-        fmt = self.__normalize_fmt(linestyle, len(self.__multiobjects__))
+        fmt = self._normalize_fmt(linestyle)
         return self._get_artist(LineChart, locals())
 
     def scatter(
@@ -357,7 +357,7 @@ class PlottableData(Data, PlotSettable):
         """
         if isinstance(xticks, Data) and "xlabel" not in kwargs:
             kwargs["xlabel"] = xticks.formatted_name()
-        fmt = self.__normalize_fmt(marker, len(self.__multiobjects__))
+        fmt = self._normalize_fmt(marker)
         return self._get_artist(ScatterPlot, locals())
 
     def hexbin(
@@ -550,15 +550,13 @@ class PlottableData(Data, PlotSettable):
         obj.data = data
         return obj
 
-    @staticmethod
-    def __normalize_fmt(fmt: str | list[str], length: int) -> str | MultiObject[str]:
+    def _normalize_fmt(self, fmt: str | list[str]) -> str:
         if isinstance(fmt, list):
-            if len(fmt) != length:
+            if len(fmt) > 1:
                 raise ValueError(
-                    "fmt list length must match number of datasets, but got "
-                    f"{len(fmt)} and {length}"
+                    f"fmt list length must match number of datasets, but got {len(fmt)}"
                 )
-            return MultiObject(fmt)
+            return fmt[0]
         return fmt
 
 
@@ -581,6 +579,15 @@ class PlottableDataSet(MultiObject[PlottableData]):
     def __repr__(self) -> str:
         data_info = "\n- ".join([x.info() for x in self.__multiobjects__])
         return f"{PlottableData.__name__}\n- {data_info}"
+
+    def _normalize_fmt(self, fmt: str | list[str]) -> str | MultiObject[str]:
+        if isinstance(fmt, list):
+            if len(fmt) != len(self.__multiobjects__):
+                raise ValueError(
+                    f"fmt list length must match number of datasets, but got {len(fmt)}"
+                )
+            return MultiObject(fmt)
+        return fmt
 
     def sample(self, n: int = 100, rule: SampleRule = "head") -> "PlottableDataSet":
         """Sample every dataset with the same random positions when requested."""
