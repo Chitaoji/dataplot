@@ -406,9 +406,9 @@ class PlottableData(Data, PlotSettable):
     def qqplot(
         self,
         baseline: DistName | Self | Any = "norm",
+        marker: MarkerStyle | list[MarkerStyle] = "o",
         dots: int = 30,
         edge_precision: float = 1e-2,
-        marker: MarkerStyle | list[MarkerStyle] = "o",
         **kwargs: Unpack[SettingDict],
     ) -> Artist:
         """
@@ -420,14 +420,14 @@ class PlottableData(Data, PlotSettable):
             Specifies the distribution to compare with. If str, specifies a
             theoretical distribution; if PlottableData or Any, specifies another
             sample. By default 'norm'.
+        marker : MarkerStyle | list[MarkerStyle], optional
+            Marker style (matplotlib format string), e.g. '.' for point markers,
+            by default 'o'.
         dots : int, optional
             Number of dots, by default 30.
         edge_precision : float, optional
             Specifies the lowest quantile (`=edge_precision`) and the highest
             quantile (`=1-edge_precision`), by default 1e-2.
-        marker : MarkerStyle | list[MarkerStyle], optional
-            Marker style (matplotlib format string), e.g. '.' for point markers,
-            by default 'o'.
         **kwargs : **SettingDict
             Specifies the plot settings, see `.set_plot()` for more details.
 
@@ -443,8 +443,8 @@ class PlottableData(Data, PlotSettable):
     def ppplot(
         self,
         baseline: DistName | Self | Any = "norm",
-        dots: int = 30,
         marker: MarkerStyle | list[MarkerStyle] = "o",
+        dots: int = 30,
         **kwargs: Unpack[SettingDict],
     ) -> Artist:
         """
@@ -456,11 +456,11 @@ class PlottableData(Data, PlotSettable):
             Specifies the distribution to compare with. If str, specifies a
             theoretical distribution; if PlottableData or Any, specifies another
             sample. By default 'norm'.
-        dots : int, optional
-            Number of dots, by default 30.
         marker : MarkerStyle | list[MarkerStyle], optional
             Marker style (matplotlib format string), e.g. '.' for point markers,
             by default 'o'.
+        dots : int, optional
+            Number of dots, by default 30.
         **kwargs : **SettingDict
             Specifies the plot settings, see `.set_plot()` for more details.
 
@@ -477,8 +477,8 @@ class PlottableData(Data, PlotSettable):
     def ksplot(
         self,
         baseline: DistName | Self | Any = "norm",
-        dots: int = 1000,
         linestyle: LineStyle | list[LineStyle] = "-",
+        dots: int = 1000,
         **kwargs: Unpack[SettingDict],
     ) -> Artist:
         """
@@ -490,10 +490,10 @@ class PlottableData(Data, PlotSettable):
             Specifies the distribution to compare with. If str, specifies a
             theoretical distribution; if np.ndarray or PlottableData, specifies
             another real sample. By default 'norm'.
-        dots : int, optional
-            Number of dots, by default 1000.
         linestyle : LineStyle | list[LineStyle], optional
             Line style passed to matplotlib, by default "-".
+        dots : int, optional
+            Number of dots, by default 1000.
         **kwargs : **SettingDict
             Specifies the plot settings, see `.set_plot()` for more details.
 

@@ -32,9 +32,9 @@ class QQPlot(Plotter):
     """
 
     baseline: "DistName | PlottableData | Any"
+    fmt: str
     dots: int
     edge_precision: float = attr(slb=0.0, sub=0.5)
-    fmt: str
 
     def paint(
         self, ax: "AxesWrapper", __multi_prev_returned__: bool | None = None, **_
