@@ -284,7 +284,7 @@ class PlottableData(Data, PlotSettable):
             An instance of Artist.
 
         """
-        return self._get_artist(Histogram, locals())
+        return self._create_artist(Histogram, locals())
 
     def plot(
         self,
@@ -329,7 +329,7 @@ class PlottableData(Data, PlotSettable):
         if isinstance(xticks, Data) and "xlabel" not in kwargs:
             kwargs["xlabel"] = xticks.formatted_name()
         fmt = self._normalize_fmt(linestyle)
-        return self._get_artist(LineChart, locals())
+        return self._create_artist(LineChart, locals())
 
     def scatter(
         self,
@@ -365,7 +365,7 @@ class PlottableData(Data, PlotSettable):
         if isinstance(xticks, Data) and "xlabel" not in kwargs:
             kwargs["xlabel"] = xticks.formatted_name()
         fmt = self._normalize_fmt(marker)
-        return self._get_artist(ScatterPlot, locals())
+        return self._create_artist(ScatterPlot, locals())
 
     def hexbin(
         self,
@@ -401,7 +401,7 @@ class PlottableData(Data, PlotSettable):
         """
         if isinstance(xticks, Data) and "xlabel" not in kwargs:
             kwargs["xlabel"] = xticks.formatted_name()
-        return self._get_artist(HexBinMap, locals())
+        return self._create_artist(HexBinMap, locals())
 
     def qqplot(
         self,
@@ -438,7 +438,7 @@ class PlottableData(Data, PlotSettable):
 
         """
         fmt = marker
-        return self._get_artist(QQPlot, locals())
+        return self._create_artist(QQPlot, locals())
 
     def ppplot(
         self,
@@ -472,7 +472,7 @@ class PlottableData(Data, PlotSettable):
         """
         fmt = marker
         edge_precision = 1e-6
-        return self._get_artist(PPPlot, locals())
+        return self._create_artist(PPPlot, locals())
 
     def ksplot(
         self,
@@ -505,7 +505,7 @@ class PlottableData(Data, PlotSettable):
         """
         edge_precision = 1e-6
         fmt = linestyle
-        return self._get_artist(KSPlot, locals())
+        return self._create_artist(KSPlot, locals())
 
     def corrmap(
         self,
@@ -529,9 +529,9 @@ class PlottableData(Data, PlotSettable):
             An instance of Artist.
 
         """
-        return self._get_artist(CorrMap, locals())
+        return self._create_artist(CorrMap, locals())
 
-    def _get_artist(self, cls: type["Plotter"], local: dict[str, Any]) -> Artist:
+    def _create_artist(self, cls: type["Plotter"], local: dict[str, Any]) -> Artist:
         params: dict[str, Any] = {}
         for key in cls.__init__.__code__.co_varnames[1:]:
             params[key] = local[key]
