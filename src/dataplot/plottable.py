@@ -630,7 +630,7 @@ class PlottableDataSet(MultiObject[PlottableData]):
                 | "ksplot"
                 | "corrmap"
                 | "join"
-                | "_get_artist"
+                | "_create_artist"
             ):
                 return lambda _: partial(getattr(PlottableData, n), self)
             case "customize":
